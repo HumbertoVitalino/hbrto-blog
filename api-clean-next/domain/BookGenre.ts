@@ -1,0 +1,16 @@
+export enum BookGenre {
+    Fiction = 'fiction',
+    NonFiction = 'non-fiction',
+    Fantasy = 'fantasy',
+    ScienceFiction = 'science-fiction',
+    Mystery = 'mystery',
+    Thriller = 'thriller',
+    Romance = 'romance',
+    Horror = 'horror',
+    Biography = 'biography',
+    History = 'history',
+    SelfHelp = 'self-help',
+    Business = 'business',
+    Technology = 'technology',
+    Philosophy = 'philosophy',
+}
