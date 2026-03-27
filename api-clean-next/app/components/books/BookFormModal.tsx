@@ -1,0 +1,179 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { BookData } from '@/app/hooks/useBooks'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Loader2 } from 'lucide-react'
+
+interface BookFormModalProps {
+    isOpen: boolean
+    book?: BookData
+    isLoading?: boolean
+    onSubmit: (data: Omit<BookData, 'id'>) => Promise<void>
+    onOpenChange: (open: boolean) => void
+}
+
+export function BookFormModal({
+    isOpen,
+    book,
+    isLoading,
+    onSubmit,
+    onOpenChange,
+}: BookFormModalProps) {
+    const [formData, setFormData] = useState<Omit<BookData, 'id'>>({
+        title: '',
+        author: '',
+        pages: 0,
+    })
+
+    const [errors, setErrors] = useState<Record<string, string>>({})
+
+    useEffect(() => {
+        if (book) {
+            setFormData({
+                title: book.title,
+                author: book.author,
+                pages: book.pages,
+            })
+        } else {
+            setFormData({
+                title: '',
+                author: '',
+                pages: 0,
+            })
+        }
+        setErrors({})
+    }, [book, isOpen])
+
+    const validateForm = () => {
+        const newErrors: Record<string, string> = {}
+
+        if (!formData.title.trim()) {
+            newErrors.title = 'Título é obrigatório'
+        }
+        if (!formData.author.trim()) {
+            newErrors.author = 'Autor é obrigatório'
+        }
+        if (!formData.pages || formData.pages <= 0) {
+            newErrors.pages = 'Páginas deve ser maior que 0'
+        }
+
+        setErrors(newErrors)
+        return Object.keys(newErrors).length === 0
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+
+        if (!validateForm()) {
+            return
+        }
+
+        try {
+            await onSubmit(formData)
+            onOpenChange(false)
+        } catch (error) {
+            console.error('Erro ao enviar formulário:', error)
+        }
+    }
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-106.25">
+                <DialogHeader>
+                    <DialogTitle>
+                        {book ? 'Editar Livro' : 'Novo Livro'}
+                    </DialogTitle>
+                    <DialogDescription>
+                        {book
+                            ? 'Atualize as informações do livro.'
+                            : 'Adicione um novo livro ao seu blog.'}
+                    </DialogDescription>
+                </DialogHeader>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="title">Título</Label>
+                        <Input
+                            id="title"
+                            placeholder="Ex: Clean Code"
+                            value={formData.title}
+                            onChange={(e) =>
+                                setFormData({ ...formData, title: e.target.value })
+                            }
+                            disabled={isLoading}
+                            className={errors.title ? 'border-destructive' : ''}
+                        />
+                        {errors.title && (
+                            <p className="text-sm text-destructive">{errors.title}</p>
+                        )}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="author">Autor</Label>
+                        <Input
+                            id="author"
+                            placeholder="Ex: Robert Martin"
+                            value={formData.author}
+                            onChange={(e) =>
+                                setFormData({ ...formData, author: e.target.value })
+                            }
+                            disabled={isLoading}
+                            className={errors.author ? 'border-destructive' : ''}
+                        />
+                        {errors.author && (
+                            <p className="text-sm text-destructive">{errors.author}</p>
+                        )}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="pages">Número de Páginas</Label>
+                        <Input
+                            id="pages"
+                            type="number"
+                            placeholder="Ex: 464"
+                            value={formData.pages || ''}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    pages: parseInt(e.target.value) || 0,
+                                })
+                            }
+                            disabled={isLoading}
+                            min="1"
+                            className={errors.pages ? 'border-destructive' : ''}
+                        />
+                        {errors.pages && (
+                            <p className="text-sm text-destructive">{errors.pages}</p>
+                        )}
+                    </div>
+
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                            disabled={isLoading}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button type="submit" disabled={isLoading}>
+                            {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                            {book ? 'Salvar' : 'Criar'}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    )
+}
