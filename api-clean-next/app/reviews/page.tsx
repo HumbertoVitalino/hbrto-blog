@@ -109,7 +109,6 @@ export default function ReviewsPage() {
               isAdmin={isAdmin}
               onDelete={isAdmin ? handleDelete : undefined}
               onUpdate={isAdmin ? updateReview : undefined}
-              variant="editorial" // 👈 NOVO
             />
           </div>
         )}
@@ -121,7 +120,6 @@ export default function ReviewsPage() {
           open={isFormOpen}
           onOpenChange={setIsFormOpen}
           onSubmit={handleSubmit}
-          isLoading={isSubmitting}
           mode="create"
         />
       )}

@@ -36,7 +36,12 @@ export default function BookDetailPage() {
   useEffect(() => {
     if (!booksLoading) {
       const found = books.find(b => b.id === bookId)
-      setBook(found || null)
+      setBook(found && found.id ? new Book({
+        id: found.id,
+        title: found.title,
+        author: found.author,
+        pages: found.pages
+      }) : null)
     }
   }, [books, bookId, booksLoading])
 
@@ -165,7 +170,6 @@ export default function BookDetailPage() {
               isAdmin={isAdmin}
               onDelete={isAdmin ? handleDelete : undefined}
               onUpdate={isAdmin ? updateReview : undefined}
-              variant="feed" // 👈 MESMA IDEIA DO ARTICLES
             />
           </div>
         )}
@@ -177,7 +181,6 @@ export default function BookDetailPage() {
           open={isFormOpen}
           onOpenChange={setIsFormOpen}
           onSubmit={handleSubmit}
-          isLoading={isSubmitting}
           mode="create"
           bookId={bookId}
         />

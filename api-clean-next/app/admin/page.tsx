@@ -21,6 +21,57 @@ export default function AdminPage() {
   const [deletingId, setDeletingId] = useState<string | undefined>()
   const [submitError, setSubmitError] = useState<string | null>(null)
 
+  // All hooks must be defined before any conditional returns
+  const handleEdit = useCallback((book: BookData) => {
+    setSelectedBook(book)
+    setSubmitError(null)
+    setIsFormOpen(true)
+  }, [])
+
+  const handleNew = useCallback(() => {
+    setSelectedBook(undefined)
+    setSubmitError(null)
+    setIsFormOpen(true)
+  }, [])
+
+  const handleSubmit = useCallback(
+    async (data: Omit<BookData, 'id'>) => {
+      try {
+        setIsSubmitting(true)
+        setSubmitError(null)
+
+        if (selectedBook?.id) {
+          await updateBook(selectedBook.id, data)
+        } else {
+          await createBook(data)
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to save article'
+        setSubmitError(message)
+        throw err
+      } finally {
+        setIsSubmitting(false)
+      }
+    },
+    [selectedBook, createBook, updateBook]
+  )
+
+  const handleDelete = useCallback(
+    async (id: string) => {
+      if (!confirm('Are you sure you want to delete this article? This action cannot be undone.')) {
+        return
+      }
+
+      try {
+        setDeletingId(id)
+        await deleteBook(id)
+      } finally {
+        setDeletingId(undefined)
+      }
+    },
+    [deleteBook]
+  )
+
   // Protect this route - redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
@@ -42,90 +93,42 @@ export default function AdminPage() {
     return null
   }
 
-  const handleEdit = useCallback((book: BookData) => {
-    setSelectedBook(book)
-    setSubmitError(null)
-    setIsFormOpen(true)
-  }, [])
-
-  const handleNewBook = useCallback(() => {
-    setSelectedBook(undefined)
-    setSubmitError(null)
-    setIsFormOpen(true)
-  }, [])
-
-  const handleFormSubmit = useCallback(
-    async (data: Omit<BookData, 'id'>) => {
-      try {
-        setIsSubmitting(true)
-        setSubmitError(null)
-
-        if (selectedBook && selectedBook.id) {
-          await updateBook(selectedBook.id, data)
-        } else {
-          await createBook(data)
-        }
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Erro ao salvar livro'
-        setSubmitError(message)
-        throw err
-      } finally {
-        setIsSubmitting(false)
-      }
-    },
-    [selectedBook, createBook, updateBook]
-  )
-
-  const handleDelete = useCallback(
-    async (id: string) => {
-      if (!confirm('Tem certeza que deseja deletar este artigo? Esta ação não pode ser desfeita.')) {
-        return
-      }
-
-      try {
-        setDeletingId(id)
-        await deleteBook(id)
-      } finally {
-        setDeletingId(undefined)
-      }
-    },
-    [deleteBook]
-  )
-
   return (
-    <main className="min-h-screen bg-linear-to-b from-background to-muted/20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold tracking-tight mb-3">
-            Painel Administrativo
-          </h1>
-          <p className="text-lg text-muted-foreground mb-2">
-            Gerencie seus artigos e conteúdo
-          </p>
-          <p className="text-sm text-muted-foreground mb-6">
-            Autenticado como: <span className="font-semibold">{user?.email}</span>
-          </p>
-
-          <Button size="lg" onClick={handleNewBook}>
-            <Plus className="w-5 h-5 mr-2" />
-            Novo Artigo
+    <main className="min-h-screen bg-background">
+      <div className="max-w-2xl mx-auto px-4 py-16 space-y-10">
+        
+        {/* HEADER */}
+        <div className="space-y-4">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Admin Panel
+            </h1>
+            <p className="text-sm text-muted-foreground mt-2">
+              Manage your articles and content.
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Authenticated as: <span className="font-semibold">{user?.email}</span>
+            </p>
+          </div>
+          <Button size="sm" onClick={handleNew}>
+            <Plus className="w-4 h-4 mr-2" />
+            New Article
           </Button>
         </div>
 
         {/* Error Messages */}
         {error && (
-          <Alert variant="destructive" className="mb-6">
+          <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Erro ao carregar artigos</AlertTitle>
+            <AlertTitle>Failed to load articles</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
         {submitError && (
-          <Alert variant="destructive" className="mb-6">
+          <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Erro ao salvar</AlertTitle>
+            <AlertTitle>Error saving</AlertTitle>
             <AlertDescription>{submitError}</AlertDescription>
           </Alert>
         )}
@@ -151,7 +154,7 @@ export default function AdminPage() {
         isOpen={isFormOpen}
         book={selectedBook}
         isLoading={isSubmitting}
-        onSubmit={handleFormSubmit}
+        onSubmit={handleSubmit}
         onOpenChange={setIsFormOpen}
       />
     </main>

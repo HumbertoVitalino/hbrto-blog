@@ -24,7 +24,7 @@ export function ReviewCard({ review, isAdmin, bookId, onDelete, onUpdate }: Revi
             try {
                 setIsDeleting(true)
                 if (onDelete) {
-                    await onDelete(review.id, bookId || review.bookId)
+                    await onDelete(review.id, bookId || review.bookId || undefined)
                 }
             } catch (error) {
                 alert('Failed to delete review')

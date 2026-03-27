@@ -96,7 +96,7 @@ export function ReviewFormModal({
                                     <button
                                         key={book.id}
                                         onClick={() => {
-                                            setSelectedBookId(book.id)
+                                            setSelectedBookId(book.id || null)
                                             setStep('form')
                                         }}
                                         className={`w-full text-left p-3 rounded border transition-colors ${

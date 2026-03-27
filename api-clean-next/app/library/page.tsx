@@ -128,7 +128,6 @@ export default function ArticlesPage() {
               onDelete={isAdmin ? handleDelete : () => {}}
               deletingId={deletingId}
               isPublic={!isAdmin}
-              variant="feed" // 👈 importante (explico abaixo)
             />
           </div>
         )}
