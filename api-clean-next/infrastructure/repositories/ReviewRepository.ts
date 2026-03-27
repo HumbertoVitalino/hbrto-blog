@@ -5,7 +5,8 @@ export class ReviewRepository {
     async findAll(): Promise<Review[]> {
         const { data, error } = await supabase
             .from("reviews")
-            .select("*");
+            .select("*")
+            .order("created_at", { ascending: false });
 
         if (error) {
             throw new Error(error.message);
@@ -15,9 +16,11 @@ export class ReviewRepository {
             (item) =>
                 new Review({
                     id: item.id,
+                    title: item.title,
                     bookId: item.book_id,
                     rating: item.rating,
-                    comment: item.comment
+                    comment: item.comment,
+                    createdAt: item.created_at ? new Date(item.created_at) : new Date()
                 }))
     }
 
@@ -38,6 +41,7 @@ export class ReviewRepository {
 
         return new Review({
             id: data.id,
+            title: data.title,
             bookId: data.book_id,
             rating: data.rating,
             comment: data.comment
@@ -48,7 +52,8 @@ export class ReviewRepository {
         const { data, error } = await supabase
             .from("reviews")
             .select("*")
-            .eq("book_id", bookId);
+            .eq("book_id", bookId)
+            .order("created_at", { ascending: false });
 
         if (error) {
             throw new Error(error.message);
@@ -58,9 +63,11 @@ export class ReviewRepository {
             (item) =>
                 new Review({
                     id: item.id,
+                    title: item.title,
                     bookId: item.book_id,
                     rating: item.rating,
-                    comment: item.comment
+                    comment: item.comment,
+                    createdAt: item.created_at ? new Date(item.created_at) : new Date()
                 }))
     }
 
@@ -68,6 +75,7 @@ export class ReviewRepository {
         const { data, error } = await supabase
             .from("reviews")
             .insert({
+                title: review.title,
                 book_id: review.bookId,
                 rating: review.rating,
                 comment: review.comment
@@ -81,9 +89,11 @@ export class ReviewRepository {
 
         return new Review({
             id: data.id,
+            title: data.title,
             bookId: data.book_id,
             rating: data.rating,
-            comment: data.comment
+            comment: data.comment,
+            createdAt: data.created_at ? new Date(data.created_at) : new Date()
         });
     }
 
@@ -91,6 +101,7 @@ export class ReviewRepository {
         const { data, error } = await supabase
             .from("reviews")
             .update({
+                ...(updates.title && { title: updates.title }),
                 ...(updates.rating !== undefined && { rating: updates.rating }),
                 ...(updates.comment && { comment: updates.comment })
             })
@@ -104,9 +115,11 @@ export class ReviewRepository {
 
         return new Review({
             id: data.id,
+            title: data.title,
             bookId: data.book_id,
             rating: data.rating,
-            comment: data.comment
+            comment: data.comment,
+            createdAt: data.created_at ? new Date(data.created_at) : new Date()
         });
     }
 
