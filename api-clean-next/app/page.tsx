@@ -1,7 +1,8 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { FiArrowRight, FiLinkedin, FiMail } from 'react-icons/fi'
+import { SocialFooter } from '@/app/components/layout/Footer'
+import { FiArrowRight } from 'react-icons/fi'
 
 export default function HomePage() {
   return (
@@ -53,39 +54,68 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SOCIAL (mais discreto e alinhado) */}
-      <section className="border-y py-6">
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
+      {/* TECHNOLOGIES */}
+      <section className="py-20 border-t">
+        <div className="max-w-6xl mx-auto px-6">
 
-          <p className="text-sm text-muted-foreground">
-            Connect
-          </p>
+          <h2 className="text-3xl font-bold mb-12">
+            Technologies
+          </h2>
 
-          <div className="flex items-center gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-10">
 
-            <a
-              href="https://www.linkedin.com/in/humbertovitalino"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-muted-foreground hover:text-foreground transition"
-            >
-              LinkedIn
-            </a>
+            <div>
+              <h3 className="text-sm text-muted-foreground mb-3">Backend</h3>
+              <ul className="space-y-2">
+                <li>.NET / C#</li>
+                <li>Node.js</li>
+                <li>REST APIs</li>
+                <li>Distributed Systems</li>
+              </ul>
+            </div>
 
-            <a
-              href="mailto:humbertovitalino@gmail.com"
-              className="text-sm text-muted-foreground hover:text-foreground transition"
-            >
-              Email
-            </a>
+            <div>
+              <h3 className="text-sm text-muted-foreground mb-3">Frontend</h3>
+              <ul className="space-y-2">
+                <li>React</li>
+                <li>Next.js</li>
+                <li>TypeScript</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-sm text-muted-foreground mb-3">Cloud & Infra</h3>
+              <ul className="space-y-2">
+                <li>AWS</li>
+                <li>Azure</li>
+                <li>Docker</li>
+                <li>CI/CD</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-sm text-muted-foreground mb-3">Data</h3>
+              <ul className="space-y-2">
+                <li>MySQL</li>
+                <li>SQL Server</li>
+                <li>Relational Modeling</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-sm text-muted-foreground mb-3">Messaging</h3>
+              <ul className="space-y-2">
+                <li>Kafka</li>
+                <li>Event-driven Architecture</li>
+              </ul>
+            </div>
 
           </div>
-
         </div>
       </section>
 
       {/* EXPERIENCE */}
-      <section className="py-20">
+      <section className="py-20 border-t">
         <div className="max-w-6xl mx-auto px-6">
 
           <h2 className="text-3xl font-bold mb-12">
@@ -94,7 +124,6 @@ export default function HomePage() {
 
           <div className="space-y-12">
 
-            {/* ITAU */}
             <div>
               <h3 className="text-xl font-semibold">
                 Software Engineer — Itaú Unibanco
@@ -110,7 +139,6 @@ export default function HomePage() {
               </ul>
             </div>
 
-            {/* TEGY (NOVO - MUITO FORTE) */}
             <div>
               <h3 className="text-xl font-semibold">
                 Founder / Engineer — Tegy
@@ -141,7 +169,6 @@ export default function HomePage() {
               </a>
             </div>
 
-            {/* XP */}
             <div>
               <h3 className="text-xl font-semibold">
                 Software Engineer — XP Inc.
@@ -156,9 +183,12 @@ export default function HomePage() {
                 <li>Focused on maintainability</li>
               </ul>
             </div>
+
           </div>
         </div>
       </section>
+
+      <SocialFooter />
 
     </div>
   )

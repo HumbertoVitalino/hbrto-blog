@@ -17,7 +17,8 @@ export class BookRepository {
                     id: item.id,
                     title: item.title,
                     author: item.author,
-                    pages: item.pages
+                    pages: item.pages,
+                    genre: item.genre
                 })
         )
     }
@@ -40,7 +41,8 @@ export class BookRepository {
             id: data.id,
             title: data.title,
             author: data.author,
-            pages: data.pages
+            pages: data.pages,
+            genre: data.genre
         });
     }
 
@@ -50,7 +52,8 @@ export class BookRepository {
             .insert({
                 title: book.title,
                 author: book.author,
-                pages: book.pages
+                pages: book.pages,
+                genre: book.genre
             })
             .select()
             .single();
@@ -63,7 +66,8 @@ export class BookRepository {
             id: data.id,
             title: data.title,
             author: data.author,
-            pages: data.pages
+            pages: data.pages,
+            genre: data.genre
         });
     }
 
@@ -73,7 +77,8 @@ export class BookRepository {
             .update({
                 ...(updates.title && { title: updates.title }),
                 ...(updates.author && { author: updates.author }),
-                ...(updates.pages !== undefined && { pages: updates.pages })
+                ...(updates.pages !== undefined && { pages: updates.pages }),
+                ...(updates.genre && { genre: updates.genre })
             })
             .eq("id", id)
             .select()
@@ -87,7 +92,8 @@ export class BookRepository {
             id: data.id,
             title: data.title,
             author: data.author,
-            pages: data.pages
+            pages: data.pages,
+            genre: data.genre
         });
     }
 

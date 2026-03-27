@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
 
         // Allow creating with or without bookId
         const review = await useCase.execute({
+            title: body.title,
             bookId: body.bookId || null,
             rating: body.rating,
             comment: body.comment

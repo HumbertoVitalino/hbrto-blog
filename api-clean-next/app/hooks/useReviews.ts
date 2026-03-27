@@ -40,7 +40,7 @@ export function useReviews(bookId?: string) {
         }
     }
 
-    const createReview = async (bookId: string | null, rating: number, comment: string) => {
+    const createReview = async (title: string, bookId: string | null, rating: number, comment: string) => {
         try {
             const token = await getAuthHeader()
 
@@ -58,7 +58,7 @@ export function useReviews(bookId?: string) {
                     'Content-Type': 'application/json',
                     ...(token && { 'Authorization': token })
                 },
-                body: JSON.stringify({ bookId: normalizedBookId, rating, comment })
+                body: JSON.stringify({ title, bookId: normalizedBookId, rating, comment })
             })
 
             if (!response.ok) {
@@ -75,7 +75,7 @@ export function useReviews(bookId?: string) {
         }
     }
 
-    const updateReview = async (id: string, bookId: string | null, rating?: number, comment?: string) => {
+    const updateReview = async (id: string, bookId: string | null, title?: string, rating?: number, comment?: string) => {
         try {
             const token = await getAuthHeader()
 
@@ -93,7 +93,7 @@ export function useReviews(bookId?: string) {
                     'Content-Type': 'application/json',
                     ...(token && { 'Authorization': token })
                 },
-                body: JSON.stringify({ rating, comment })
+                body: JSON.stringify({ title, rating, comment })
             })
 
             if (!response.ok) {

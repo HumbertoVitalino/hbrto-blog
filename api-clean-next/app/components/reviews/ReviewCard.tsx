@@ -12,7 +12,7 @@ interface ReviewCardProps {
     isAdmin?: boolean
     bookId?: string
     onDelete?: (id: string, bookId?: string) => Promise<void>
-    onUpdate?: (id: string, bookId: string | null, rating: number, comment: string) => Promise<void>
+    onUpdate?: (id: string, bookId: string | null, title: string, rating: number, comment: string) => Promise<void>
 }
 
 export function ReviewCard({ review, isAdmin, bookId, onDelete, onUpdate }: ReviewCardProps) {
@@ -34,9 +34,9 @@ export function ReviewCard({ review, isAdmin, bookId, onDelete, onUpdate }: Revi
         }
     }
 
-    const handleUpdate = async (data: { rating: number; comment: string }) => {
+    const handleUpdate = async (data: { title: string; rating: number; comment: string }) => {
         if (onUpdate) {
-            await onUpdate(review.id, review.bookId, data.rating, data.comment)
+            await onUpdate(review.id, review.bookId, data.title, data.rating, data.comment)
         }
         setIsEditOpen(false)
     }
@@ -45,20 +45,23 @@ export function ReviewCard({ review, isAdmin, bookId, onDelete, onUpdate }: Revi
         <>
             <div className="border rounded-lg p-4 bg-card">
                 <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                        {[...Array(5)].map((_, i) => (
-                            <span
-                                key={i}
-                                className={`text-lg ${
-                                    i < review.rating ? 'text-yellow-400' : 'text-gray-300'
-                                }`}
-                            >
-                                ★
+                    <div className="flex-1">
+                        <h4 className="font-semibold text-sm mb-2">{review.title}</h4>
+                        <div className="flex items-center gap-2">
+                            {[...Array(5)].map((_, i) => (
+                                <span
+                                    key={i}
+                                    className={`text-lg ${
+                                        i < review.rating ? 'text-yellow-400' : 'text-gray-300'
+                                    }`}
+                                >
+                                    ★
+                                </span>
+                            ))}
+                            <span className="ml-2 text-sm text-muted-foreground">
+                                {review.rating}/5
                             </span>
-                        ))}
-                        <span className="ml-2 text-sm text-muted-foreground">
-                            {review.rating}/5
-                        </span>
+                        </div>
                     </div>
 
                     {isAdmin && (
@@ -90,6 +93,7 @@ export function ReviewCard({ review, isAdmin, bookId, onDelete, onUpdate }: Revi
                     open={isEditOpen}
                     onOpenChange={setIsEditOpen}
                     initialValues={{
+                        title: review.title,
                         rating: review.rating,
                         comment: review.comment
                     }}

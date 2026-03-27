@@ -70,6 +70,7 @@ export async function POST(
         const useCase = new CreateReviewUseCase(repo);
 
         const review = await useCase.execute({
+            title: body.title,
             bookId: bookId,
             rating: body.rating,
             comment: body.comment

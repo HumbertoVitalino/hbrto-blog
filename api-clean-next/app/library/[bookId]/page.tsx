@@ -40,16 +40,17 @@ export default function BookDetailPage() {
         id: found.id,
         title: found.title,
         author: found.author,
-        pages: found.pages
+        pages: found.pages,
+        genre: found.genre
       }) : null)
     }
   }, [books, bookId, booksLoading])
 
-  const handleSubmit = async (data: { rating: number; comment: string }) => {
+  const handleSubmit = async (data: { title: string; rating: number; comment: string }) => {
     try {
       setIsSubmitting(true)
       setSubmitError(null)
-      await createReview(bookId, data.rating, data.comment)
+      await createReview(data.title, bookId, data.rating, data.comment)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to save review'
       setSubmitError(message)

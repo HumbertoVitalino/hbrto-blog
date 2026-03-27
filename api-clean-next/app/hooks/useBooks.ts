@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
+import { BookGenre } from '@/domain/BookGenre'
 import { supabase } from '@/infrastructure/supabase/client'
 
 export interface BookData {
@@ -8,6 +9,7 @@ export interface BookData {
     title: string
     author: string
     pages: number
+    genre?: BookGenre
 }
 
 async function getAuthHeader(): Promise<Record<string, string>> {
@@ -64,7 +66,8 @@ export function useBooks() {
                 body: JSON.stringify({
                     title: book.title,
                     author: book.author,
-                    pages: book.pages
+                    pages: book.pages,
+                    genre: book.genre
                 })
             })
 
@@ -96,7 +99,8 @@ export function useBooks() {
                 body: JSON.stringify({
                     title: updates.title,
                     author: updates.author,
-                    pages: updates.pages
+                    pages: updates.pages,
+                    genre: updates.genre
                 })
             })
 

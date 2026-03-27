@@ -1,10 +1,12 @@
 import { Book } from "@/domain/Book";
+import { BookGenre } from "@/domain/BookGenre";
 import { BookRepository } from "@/infrastructure/repositories/BookRepository";
 
 export interface UpdateBookDTO {
     title?: string;
     author?: string;
     pages?: number;
+    genre?: BookGenre;
 }
 
 export class UpdateBookUseCase {
@@ -27,7 +29,8 @@ export class UpdateBookUseCase {
         return await this.bookRepository.update(id, {
             title: dto.title ?? book.title,
             author: dto.author ?? book.author,
-            pages: dto.pages ?? book.pages
+            pages: dto.pages ?? book.pages,
+            genre: dto.genre ?? book.genre
         });
     }
 }

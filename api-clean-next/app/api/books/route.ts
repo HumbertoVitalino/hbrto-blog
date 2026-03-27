@@ -85,7 +85,8 @@ export async function POST(request: NextRequest) {
         const book = await useCase.execute({
             title: body.title,
             author: body.author,
-            pages: body.pages
+            pages: body.pages,
+            genre: body.genre
         });
 
         return NextResponse.json(bookToPlain(book), { status: 201 });

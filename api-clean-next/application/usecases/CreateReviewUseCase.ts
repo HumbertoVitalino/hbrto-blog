@@ -2,6 +2,7 @@ import { Review } from "@/domain/Review";
 import { ReviewRepository } from "@/infrastructure/repositories/ReviewRepository";
 
 export interface CreateReviewDTO {
+    title: string;
     bookId?: string | null;
     rating: number;
     comment: string;
@@ -11,6 +12,10 @@ export class CreateReviewUseCase {
     constructor(private reviewRepository: ReviewRepository) {}
 
     async execute(dto: CreateReviewDTO): Promise<Review> {
+        if (!dto.title) {
+            throw new Error("Title is required");
+        }
+
         if (!dto.comment) {
             throw new Error("Comment is required");
         }
@@ -24,6 +29,7 @@ export class CreateReviewUseCase {
 
         const review = new Review({
             id: crypto.randomUUID(),
+            title: dto.title,
             bookId: bookId,
             rating: dto.rating,
             comment: dto.comment
