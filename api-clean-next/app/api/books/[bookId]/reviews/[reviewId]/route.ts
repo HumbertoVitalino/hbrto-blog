@@ -78,6 +78,7 @@ export async function PUT(
         const useCase = new UpdateReviewUseCase(repo);
 
         const review = await useCase.execute(reviewId, {
+            title: body.title,
             rating: body.rating,
             comment: body.comment
         });
