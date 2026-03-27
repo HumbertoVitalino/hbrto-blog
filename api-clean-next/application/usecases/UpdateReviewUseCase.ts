@@ -2,6 +2,7 @@ import { Review } from "@/domain/Review";
 import { ReviewRepository } from "@/infrastructure/repositories/ReviewRepository";
 
 export interface UpdateReviewDTO {
+    title?: string;
     rating?: number;
     comment?: string;
 }
@@ -24,6 +25,7 @@ export class UpdateReviewUseCase {
         }
 
         return await this.reviewRepository.update(id, {
+            title: dto.title ?? review.title,
             rating: dto.rating ?? review.rating,
             comment: dto.comment ?? review.comment,
             bookId: review.bookId
