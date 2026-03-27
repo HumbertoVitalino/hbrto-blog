@@ -1,12 +1,12 @@
 export class Review {
     private _id: string
-    private _bookId: string
+    private _bookId: string | null
     private _rating: number
     private _comment: string
 
     constructor(props: {
         id: string
-        bookId: string
+        bookId: string | null
         rating: number
         comment: string
     }) {
