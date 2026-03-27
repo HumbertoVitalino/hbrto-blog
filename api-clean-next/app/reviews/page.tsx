@@ -23,11 +23,11 @@ export default function ReviewsPage() {
   }, [])
 
   const handleSubmit = useCallback(
-    async (data: { bookId: string | null; rating: number; comment: string }) => {
+    async (data: { title: string; bookId: string | null; rating: number; comment: string }) => {
       try {
         setIsSubmitting(true)
         setSubmitError(null)
-        await createReview(data.bookId, data.rating, data.comment)
+        await createReview(data.title, data.bookId, data.rating, data.comment)
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to publish'
         setSubmitError(message)
