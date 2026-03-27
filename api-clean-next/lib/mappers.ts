@@ -10,7 +10,8 @@ export function bookToPlain(book: Book) {
         id: book.id,
         title: book.title,
         author: book.author,
-        pages: book.pages
+        pages: book.pages,
+        genre: book.genre
     };
 }
 
@@ -27,9 +28,11 @@ export function booksToPlain(books: Book[]) {
 export function reviewToPlain(review: Review) {
     return {
         id: review.id,
+        title: review.title,
         bookId: review.bookId,
         rating: review.rating,
-        comment: review.comment
+        comment: review.comment,
+        createdAt: review.createdAt
     };
 }
 
