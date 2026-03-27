@@ -15,8 +15,8 @@ import { useBooks } from '@/app/hooks/useBooks'
 interface ReviewFormModalProps {
     open: boolean
     onOpenChange: (open: boolean) => void
-    onSubmit: (data: { bookId: string | null; rating: number; comment: string }) => Promise<void>
-    initialValues?: { rating: number; comment: string }
+    onSubmit: (data: { title: string; bookId: string | null; rating: number; comment: string }) => Promise<void>
+    initialValues?: { title?: string; rating: number; comment: string }
     mode?: 'create' | 'edit'
     bookId?: string | null
 }
@@ -30,6 +30,7 @@ export function ReviewFormModal({
     bookId
 }: ReviewFormModalProps) {
     const { books, isLoading: booksLoading } = useBooks()
+    const [title, setTitle] = useState(initialValues?.title ?? '')
     const [rating, setRating] = useState(initialValues?.rating ?? 5)
     const [comment, setComment] = useState(initialValues?.comment ?? '')
     const [selectedBookId, setSelectedBookId] = useState<string | null>(bookId ?? null)
@@ -39,6 +40,11 @@ export function ReviewFormModal({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+
+        if (!title.trim()) {
+            setError('Title is required')
+            return
+        }
 
         if (!comment.trim()) {
             setError('Comment is required')
@@ -53,9 +59,16 @@ export function ReviewFormModal({
         try {
             setError(null)
             setIsLoading(true)
-            await onSubmit({ bookId: selectedBookId, rating, comment })
+            
+            // Em modo create, passa bookId; em modo edit, não passa
+            if (mode === 'create') {
+                await onSubmit({ title, bookId: selectedBookId, rating, comment })
+            } else {
+                await onSubmit({ title, rating, comment } as any)
+            }
             
             // Reset form
+            setTitle('')
             setRating(5)
             setComment('')
             if (!bookId) {
@@ -136,6 +149,16 @@ export function ReviewFormModal({
                             </p>
                         </div>
                     )}
+
+                    <div>
+                        <label className="text-sm font-medium">Title</label>
+                        <Input
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder="Review title..."
+                            className="mt-2"
+                        />
+                    </div>
 
                     <div>
                         <label className="text-sm font-medium">Rating</label>

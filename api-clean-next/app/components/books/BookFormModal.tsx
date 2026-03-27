@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { BookData } from '@/app/hooks/useBooks'
+import { BookGenre } from '@/domain/BookGenre'
 import {
     Dialog,
     DialogContent,
@@ -34,6 +35,7 @@ export function BookFormModal({
         title: '',
         author: '',
         pages: 0,
+        genre: undefined,
     })
 
     const [errors, setErrors] = useState<Record<string, string>>({})
@@ -44,12 +46,14 @@ export function BookFormModal({
                 title: book.title,
                 author: book.author,
                 pages: book.pages,
+                genre: book.genre,
             })
         } else {
             setFormData({
                 title: '',
                 author: '',
                 pages: 0,
+                genre: undefined,
             })
         }
         setErrors({})
@@ -156,6 +160,38 @@ export function BookFormModal({
                         {errors.pages && (
                             <p className="text-sm text-destructive">{errors.pages}</p>
                         )}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="genre">Gênero</Label>
+                        <select
+                            id="genre"
+                            value={formData.genre || ''}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    genre: (e.target.value as BookGenre) || undefined,
+                                })
+                            }
+                            disabled={isLoading}
+                            className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        >
+                            <option value="">Selecione um gênero</option>
+                            <option value={BookGenre.Fiction}>Fiction</option>
+                            <option value={BookGenre.NonFiction}>Non-Fiction</option>
+                            <option value={BookGenre.Fantasy}>Fantasy</option>
+                            <option value={BookGenre.ScienceFiction}>Science Fiction</option>
+                            <option value={BookGenre.Mystery}>Mystery</option>
+                            <option value={BookGenre.Thriller}>Thriller</option>
+                            <option value={BookGenre.Romance}>Romance</option>
+                            <option value={BookGenre.Horror}>Horror</option>
+                            <option value={BookGenre.Biography}>Biography</option>
+                            <option value={BookGenre.History}>History</option>
+                            <option value={BookGenre.SelfHelp}>Self-Help</option>
+                            <option value={BookGenre.Business}>Business</option>
+                            <option value={BookGenre.Technology}>Technology</option>
+                            <option value={BookGenre.Philosophy}>Philosophy</option>
+                        </select>
                     </div>
 
                     <DialogFooter>
