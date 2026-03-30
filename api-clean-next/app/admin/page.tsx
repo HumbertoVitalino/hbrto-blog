@@ -2,8 +2,9 @@
 
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/app/context/AuthContext'
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { useBooks, BookData } from '@/app/hooks/useBooks'
+import { BookStatus } from '@/domain/BookStatus'
 import { BookFormModal } from '@/app/components/books/BookFormModal'
 import { BooksGrid } from '@/app/components/books/BooksGrid'
 import { Button } from '@/components/ui/button'
@@ -20,6 +21,7 @@ export default function AdminPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState<string | undefined>()
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [statusFilter, setStatusFilter] = useState<BookStatus | 'all'>('all')
 
   // All hooks must be defined before any conditional returns
   const handleEdit = useCallback((book: BookData) => {
@@ -72,6 +74,12 @@ export default function AdminPage() {
     [deleteBook]
   )
 
+  // Filtrar livros por status
+  const filteredBooks = useMemo(() => {
+    if (statusFilter === 'all') return books
+    return books.filter(book => book.status === statusFilter)
+  }, [books, statusFilter])
+
   // Protect this route - redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
@@ -110,9 +118,46 @@ export default function AdminPage() {
               Authenticated as: <span className="font-semibold">{user?.email}</span>
             </p>
           </div>
-          <Button size="sm" onClick={handleNew}>
-            <Plus className="w-4 h-4 mr-2" />
-            New Article
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <Button size="sm" onClick={handleNew}>
+              <Plus className="w-4 h-4 mr-2" />
+              New Article
+            </Button>
+          </div>
+        </div>
+
+        {/* Status Filter */}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant={statusFilter === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setStatusFilter('all')}
+          >
+            All ({books.length})
+          </Button>
+          <Button
+            variant={statusFilter === BookStatus.NotStarted ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setStatusFilter(BookStatus.NotStarted)}
+            className={statusFilter === BookStatus.NotStarted ? 'bg-gray-600 hover:bg-gray-700' : ''}
+          >
+            Not Started ({books.filter(b => b.status === BookStatus.NotStarted).length})
+          </Button>
+          <Button
+            variant={statusFilter === BookStatus.InProgress ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setStatusFilter(BookStatus.InProgress)}
+            className={statusFilter === BookStatus.InProgress ? 'bg-blue-600 hover:bg-blue-700' : ''}
+          >
+            In Progress ({books.filter(b => b.status === BookStatus.InProgress).length})
+          </Button>
+          <Button
+            variant={statusFilter === BookStatus.Completed ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setStatusFilter(BookStatus.Completed)}
+            className={statusFilter === BookStatus.Completed ? 'bg-green-600 hover:bg-green-700' : ''}
+          >
+            Completed ({books.filter(b => b.status === BookStatus.Completed).length})
           </Button>
         </div>
 
@@ -140,7 +185,7 @@ export default function AdminPage() {
           </div>
         ) : (
           <BooksGrid
-            books={books}
+            books={filteredBooks}
             onEdit={handleEdit}
             onDelete={handleDelete}
             deletingId={deletingId}
