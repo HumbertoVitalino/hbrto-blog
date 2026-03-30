@@ -16,15 +16,12 @@ async function isAdmin(request: NextRequest) {
         }
 
         const token = authHeader.slice(7);
-
-        // Verify token with Supabase
         const { data, error } = await supabase.auth.getUser(token);
 
         if (error || !data.user) {
             return false;
         }
 
-        // Check if user is admin
         const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
         return data.user.email === adminEmail;
     } catch (error) {
@@ -56,7 +53,6 @@ export async function POST(
     { params }: { params: Promise<{ bookId: string }> }
 ) {
     try {
-        // Verify admin status
         if (!await isAdmin(request)) {
             return NextResponse.json(
                 { error: "Unauthorized. Only admin can create reviews." },
