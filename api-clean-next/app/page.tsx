@@ -42,7 +42,7 @@ export default function HomePage() {
                 </Button>
               </a>
 
-              <a href="mailto:humbertovitalino@gmail.com">
+              <a href="mailto:humbertovitalino01@gmail.com">
                 <Button size="lg" variant="outline">
                   Contact Me
                 </Button>
