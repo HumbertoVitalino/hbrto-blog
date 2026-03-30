@@ -18,7 +18,9 @@ export class BookRepository {
                     title: item.title,
                     author: item.author,
                     pages: item.pages,
-                    genre: item.genre
+                    genre: item.genre,
+                    coverImageUrl: item.cover_image_url,
+                    status: item.status
                 })
         )
     }
@@ -42,7 +44,9 @@ export class BookRepository {
             title: data.title,
             author: data.author,
             pages: data.pages,
-            genre: data.genre
+            genre: data.genre,
+            coverImageUrl: data.cover_image_url,
+            status: data.status
         });
     }
 
@@ -53,7 +57,9 @@ export class BookRepository {
                 title: book.title,
                 author: book.author,
                 pages: book.pages,
-                genre: book.genre
+                genre: book.genre,
+                cover_image_url: book.coverImageUrl,
+                status: book.status
             })
             .select()
             .single();
@@ -67,7 +73,9 @@ export class BookRepository {
             title: data.title,
             author: data.author,
             pages: data.pages,
-            genre: data.genre
+            genre: data.genre,
+            coverImageUrl: data.cover_image_url,
+            status: data.status
         });
     }
 
@@ -78,7 +86,9 @@ export class BookRepository {
                 ...(updates.title && { title: updates.title }),
                 ...(updates.author && { author: updates.author }),
                 ...(updates.pages !== undefined && { pages: updates.pages }),
-                ...(updates.genre && { genre: updates.genre })
+                ...(updates.genre && { genre: updates.genre }),
+                ...(updates.coverImageUrl && { cover_image_url: updates.coverImageUrl }),
+                ...(updates.status && { status: updates.status })
             })
             .eq("id", id)
             .select()
@@ -93,7 +103,9 @@ export class BookRepository {
             title: data.title,
             author: data.author,
             pages: data.pages,
-            genre: data.genre
+            genre: data.genre,
+            coverImageUrl: data.cover_image_url,
+            status: data.status
         });
     }
 

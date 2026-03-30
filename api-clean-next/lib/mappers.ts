@@ -7,7 +7,9 @@ export function bookToPlain(book: Book) {
         title: book.title,
         author: book.author,
         pages: book.pages,
-        genre: book.genre
+        genre: book.genre,
+        coverImageUrl: book.coverImageUrl,
+        status: book.status
     };
 }
 

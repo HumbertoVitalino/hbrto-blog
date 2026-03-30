@@ -83,7 +83,9 @@ export async function POST(request: NextRequest) {
             title: body.title,
             author: body.author,
             pages: body.pages,
-            genre: body.genre
+            genre: body.genre,
+            coverImageUrl: body.coverImageUrl,
+            status: body.status
         });
 
         return NextResponse.json(bookToPlain(book), { status: 201 });
@@ -122,7 +124,10 @@ export async function PUT(request: NextRequest) {
         const book = await useCase.execute(id, {
             title: body.title,
             author: body.author,
-            pages: body.pages
+            pages: body.pages,
+            genre: body.genre,
+            coverImageUrl: body.coverImageUrl,
+            status: body.status
         });
 
         return NextResponse.json(bookToPlain(book));

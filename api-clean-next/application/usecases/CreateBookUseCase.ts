@@ -1,5 +1,6 @@
 import { Book } from "@/domain/Book";
 import { BookGenre } from "@/domain/BookGenre";
+import { BookStatus } from "@/domain/BookStatus";
 import { BookRepository } from "@/infrastructure/repositories/BookRepository";
 
 export interface CreateBookDTO {
@@ -7,6 +8,8 @@ export interface CreateBookDTO {
     author: string;
     pages: number;
     genre?: BookGenre;
+    coverImageUrl?: string;
+    status?: BookStatus;
 }
 
 export class CreateBookUseCase {
@@ -26,7 +29,9 @@ export class CreateBookUseCase {
             title: dto.title,
             author: dto.author,
             pages: dto.pages,
-            genre: dto.genre
+            genre: dto.genre,
+            coverImageUrl: dto.coverImageUrl,
+            status: dto.status || BookStatus.NotStarted
         });
 
         return await this.bookRepository.create(book);

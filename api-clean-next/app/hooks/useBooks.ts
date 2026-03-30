@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { BookGenre } from '@/domain/BookGenre'
+import { BookStatus } from '@/domain/BookStatus'
 import { supabase } from '@/infrastructure/supabase/client'
 
 export interface BookData {
@@ -10,6 +11,8 @@ export interface BookData {
     author: string
     pages: number
     genre?: BookGenre
+    coverImageUrl?: string
+    status?: BookStatus
 }
 
 async function getAuthHeader(): Promise<Record<string, string>> {
@@ -67,7 +70,9 @@ export function useBooks() {
                     title: book.title,
                     author: book.author,
                     pages: book.pages,
-                    genre: book.genre
+                    genre: book.genre,
+                    coverImageUrl: book.coverImageUrl,
+                    status: book.status
                 })
             })
 
@@ -100,7 +105,9 @@ export function useBooks() {
                     title: updates.title,
                     author: updates.author,
                     pages: updates.pages,
-                    genre: updates.genre
+                    genre: updates.genre,
+                    coverImageUrl: updates.coverImageUrl,
+                    status: updates.status
                 })
             })
 
