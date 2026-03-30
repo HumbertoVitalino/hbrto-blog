@@ -8,15 +8,13 @@ export async function validateAdminToken(request: NextRequest) {
     if (!authHeader?.startsWith('Bearer ')) {
       return {
         valid: false,
-        error: 'Token não fornecido',
+        error: 'Token not provided',
         status: 401
       }
     }
 
     const token = authHeader.slice(7)
 
-    // Optionally validate the token server-side
-    // For now, we trust the client-side session
     return {
       valid: true,
       error: null,
@@ -25,7 +23,7 @@ export async function validateAdminToken(request: NextRequest) {
   } catch (error) {
     return {
       valid: false,
-      error: 'Erro ao validar token',
+      error: 'Error validating token',
       status: 401
     }
   }
@@ -33,14 +31,14 @@ export async function validateAdminToken(request: NextRequest) {
 
 export function unauthorized() {
   return NextResponse.json(
-    { error: 'Não autorizado' },
+    { error: 'Unauthorized' },
     { status: 401 }
   )
 }
 
 export function forbidden() {
   return NextResponse.json(
-    { error: 'Acesso proibido' },
+    { error: 'Access denied' },
     { status: 403 }
   )
 }

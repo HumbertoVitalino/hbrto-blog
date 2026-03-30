@@ -41,13 +41,13 @@ export function useBooks() {
             const response = await fetch('/api/books')
             
             if (!response.ok) {
-                throw new Error('Falha ao carregar livros')
+                throw new Error('Failed to load books')
             }
             
             const data = await response.json()
             setBooks(data)
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Erro desconhecido')
+            setError(err instanceof Error ? err.message : 'Unknown error')
         } finally {
             setIsLoading(false)
         }
@@ -73,14 +73,14 @@ export function useBooks() {
 
             if (!response.ok) {
                 const errorData = await response.json()
-                throw new Error(errorData.error || 'Falha ao criar livro')
+                throw new Error(errorData.error || 'Failed to create book')
             }
 
             const newBook = await response.json()
             setBooks(prev => [...prev, newBook])
             return newBook
         } catch (err) {
-            const message = err instanceof Error ? err.message : 'Erro ao criar livro'
+            const message = err instanceof Error ? err.message : 'Error creating book'
             setError(message)
             throw err
         }
@@ -106,14 +106,14 @@ export function useBooks() {
 
             if (!response.ok) {
                 const errorData = await response.json()
-                throw new Error(errorData.error || 'Falha ao atualizar livro')
+                throw new Error(errorData.error || 'Failed to update book')
             }
 
             const updatedBook = await response.json()
             setBooks(prev => prev.map(b => b.id === id ? updatedBook : b))
             return updatedBook
         } catch (err) {
-            const message = err instanceof Error ? err.message : 'Erro ao atualizar livro'
+            const message = err instanceof Error ? err.message : 'Error updating book'
             setError(message)
             throw err
         }
@@ -130,12 +130,12 @@ export function useBooks() {
 
             if (!response.ok) {
                 const errorData = await response.json()
-                throw new Error(errorData.error || 'Falha ao deletar livro')
+                throw new Error(errorData.error || 'Failed to delete book')
             }
 
             setBooks(prev => prev.filter(b => b.id !== id))
         } catch (err) {
-            const message = err instanceof Error ? err.message : 'Erro ao deletar livro'
+            const message = err instanceof Error ? err.message : 'Error deleting book'
             setError(message)
             throw err
         }

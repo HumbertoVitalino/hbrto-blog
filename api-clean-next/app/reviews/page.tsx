@@ -14,67 +14,51 @@ export default function ReviewsPage() {
   const { isAdmin } = useAuth()
 
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const handleNew = useCallback(() => {
-    setSubmitError(null)
-    setIsFormOpen(true)
-  }, [])
+  const handleSubmit = useCallback(async (data: any) => {
+    try {
+      setSubmitError(null)
+      await createReview(data.title, data.bookId, data.rating, data.comment)
+      setIsFormOpen(false)
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Failed to publish')
+    }
+  }, [createReview])
 
-  const handleSubmit = useCallback(
-    async (data: { title: string; bookId: string | null; rating: number; comment: string }) => {
-      try {
-        setIsSubmitting(true)
-        setSubmitError(null)
-        await createReview(data.title, data.bookId, data.rating, data.comment)
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to publish'
-        setSubmitError(message)
-        throw err
-      } finally {
-        setIsSubmitting(false)
-      }
-    },
-    [createReview]
-  )
+  const handleDelete = useCallback(async (id: string) => {
+    await deleteReview(id, null)
+  }, [deleteReview])
 
-  const handleDelete = useCallback(
-    async (id: string) => {
-      if (!confirm('Delete this entry?')) return
-      await deleteReview(id, null)
-    },
-    [deleteReview]
-  )
+  const handleUpdate = useCallback(async (id: string, bookId: string | null, title: string, rating: number, comment: string) => {
+    await updateReview(id, bookId, title, rating, comment)
+  }, [updateReview])
 
   return (
     <main className="min-h-screen bg-background">
+
       <div className="max-w-2xl mx-auto px-4 py-16 space-y-12">
 
-        {/* HEADER (EDITORIAL) */}
-        <div className="space-y-3">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Writing
-          </h1>
-
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Thoughts, notes and reflections — not limited to books.
-          </p>
+        {/* HEADER */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Writing
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Thoughts, notes and reflections — not limited to books.
+            </p>
+          </div>
 
           {isAdmin && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleNew}
-              className="mt-4 gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              New Entry
+            <Button size="sm" onClick={() => setIsFormOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              New
             </Button>
           )}
         </div>
 
-        {/* ERRORS */}
+        {/* ERROR */}
         {(error || submitError) && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -85,32 +69,34 @@ export default function ReviewsPage() {
           </Alert>
         )}
 
-        {/* FEED */}
-        {isLoading ? (
+        {/* STATES */}
+        {isLoading && (
           <div className="flex justify-center py-20">
             <div className="h-5 w-5 rounded-full border border-muted border-t-foreground animate-spin" />
           </div>
-        ) : reviews.length === 0 ? (
+        )}
+
+        {!isLoading && reviews.length === 0 && (
           <div className="text-center py-20">
             <p className="text-sm text-muted-foreground">
               No entries yet.
             </p>
 
             {isAdmin && (
-              <Button variant="ghost" onClick={handleNew} className="mt-4">
+              <Button onClick={() => setIsFormOpen(true)} className="mt-4">
                 Write your first entry
               </Button>
             )}
           </div>
-        ) : (
-          <div className="space-y-12">
-            <ReviewsGrid
-              reviews={reviews}
-              isAdmin={isAdmin}
-              onDelete={isAdmin ? handleDelete : undefined}
-              onUpdate={isAdmin ? updateReview : undefined}
-            />
-          </div>
+        )}
+
+        {!isLoading && reviews.length > 0 && (
+          <ReviewsGrid
+            reviews={reviews}
+            isAdmin={isAdmin}
+            onDelete={isAdmin ? handleDelete : undefined}
+            onUpdate={isAdmin ? handleUpdate : undefined}
+          />
         )}
       </div>
 

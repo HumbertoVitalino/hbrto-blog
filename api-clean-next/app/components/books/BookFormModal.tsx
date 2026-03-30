@@ -63,13 +63,13 @@ export function BookFormModal({
         const newErrors: Record<string, string> = {}
 
         if (!formData.title.trim()) {
-            newErrors.title = 'Título é obrigatório'
+            newErrors.title = 'Title is required'
         }
         if (!formData.author.trim()) {
-            newErrors.author = 'Autor é obrigatório'
+            newErrors.author = 'Author is required'
         }
         if (!formData.pages || formData.pages <= 0) {
-            newErrors.pages = 'Páginas deve ser maior que 0'
+            newErrors.pages = 'Pages must be greater than 0'
         }
 
         setErrors(newErrors)
@@ -87,7 +87,7 @@ export function BookFormModal({
             await onSubmit(formData)
             onOpenChange(false)
         } catch (error) {
-            console.error('Erro ao enviar formulário:', error)
+            console.error('Error submitting form:', error)
         }
     }
 
@@ -96,18 +96,18 @@ export function BookFormModal({
             <DialogContent className="sm:max-w-106.25">
                 <DialogHeader>
                     <DialogTitle>
-                        {book ? 'Editar Livro' : 'Novo Livro'}
+                        {book ? 'Edit Book' : 'New Book'}
                     </DialogTitle>
                     <DialogDescription>
                         {book
-                            ? 'Atualize as informações do livro.'
-                            : 'Adicione um novo livro ao seu blog.'}
+                            ? 'Update the book information.'
+                            : 'Add a new book to your blog.'}
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="title">Título</Label>
+                        <Label htmlFor="title">Title</Label>
                         <Input
                             id="title"
                             placeholder="Ex: Clean Code"
@@ -124,7 +124,7 @@ export function BookFormModal({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="author">Autor</Label>
+                        <Label htmlFor="author">Author</Label>
                         <Input
                             id="author"
                             placeholder="Ex: Robert Martin"
@@ -141,7 +141,7 @@ export function BookFormModal({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="pages">Número de Páginas</Label>
+                        <Label htmlFor="pages">Number of Pages</Label>
                         <Input
                             id="pages"
                             type="number"
@@ -163,7 +163,7 @@ export function BookFormModal({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="genre">Gênero</Label>
+                        <Label htmlFor="genre">Genre</Label>
                         <select
                             id="genre"
                             value={formData.genre || ''}
@@ -176,7 +176,7 @@ export function BookFormModal({
                             disabled={isLoading}
                             className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                         >
-                            <option value="">Selecione um gênero</option>
+                            <option value="">Select a genre</option>
                             <option value={BookGenre.Fiction}>Fiction</option>
                             <option value={BookGenre.NonFiction}>Non-Fiction</option>
                             <option value={BookGenre.Fantasy}>Fantasy</option>
@@ -201,11 +201,11 @@ export function BookFormModal({
                             onClick={() => onOpenChange(false)}
                             disabled={isLoading}
                         >
-                            Cancelar
+                            Cancel
                         </Button>
                         <Button type="submit" disabled={isLoading}>
                             {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                            {book ? 'Salvar' : 'Criar'}
+                            {book ? 'Save' : 'Create'}
                         </Button>
                     </DialogFooter>
                 </form>

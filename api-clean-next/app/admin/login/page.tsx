@@ -22,14 +22,12 @@ export default function AdminLoginPage() {
   const [isForgotPassword, setIsForgotPassword] = useState(false)
   const [resetEmail, setResetEmail] = useState('')
 
-  // Redirect if already authenticated (use useEffect)
   useEffect(() => {
     if (user && !authLoading) {
       router.push('/admin')
     }
   }, [user, authLoading, router])
 
-  // Show loading while checking auth
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -43,17 +41,16 @@ export default function AdminLoginPage() {
     setError(null)
 
     if (!email || !password) {
-      setError('Email e senha são obrigatórios')
+      setError('Email and password are required')
       return
     }
 
     try {
       setIsLoading(true)
       await login(email, password)
-      toast.success('Login realizado com sucesso!')
-      // Redirect handled by useEffect
+      toast.success('Login successful!')
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao fazer login'
+      const message = err instanceof Error ? err.message : 'Error logging in'
       setError(message)
       toast.error(message)
     } finally {
@@ -66,18 +63,18 @@ export default function AdminLoginPage() {
     setError(null)
 
     if (!resetEmail) {
-      setError('Digite seu email')
+      setError('Enter your email')
       return
     }
 
     try {
       setIsLoading(true)
       await resetPassword(resetEmail)
-      toast.success('Email de recuperação enviado!')
+      toast.success('Recovery email sent!')
       setIsForgotPassword(false)
       setResetEmail('')
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao enviar email'
+      const message = err instanceof Error ? err.message : 'Error sending email'
       setError(message)
       toast.error(message)
     } finally {
@@ -90,9 +87,9 @@ export default function AdminLoginPage() {
       <div className="min-h-screen flex items-center justify-center px-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Recuperar Senha</CardTitle>
+            <CardTitle>Reset Password</CardTitle>
             <CardDescription>
-              Digite seu email para receber um link de recuperação
+              Enter your email to receive a recovery link
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -100,7 +97,7 @@ export default function AdminLoginPage() {
               {error && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Erro</AlertTitle>
+                  <AlertTitle>Error</AlertTitle>
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
@@ -123,7 +120,7 @@ export default function AdminLoginPage() {
                   disabled={isLoading}
                   className="flex-1"
                 >
-                  {isLoading ? 'Enviando...' : 'Enviar Link'}
+                  {isLoading ? 'Sending...' : 'Send Link'}
                 </Button>
                 <Button
                   type="button"
@@ -132,7 +129,7 @@ export default function AdminLoginPage() {
                   disabled={isLoading}
                   className="flex-1"
                 >
-                  Voltar
+                  Back
                 </Button>
               </div>
             </form>
@@ -146,9 +143,9 @@ export default function AdminLoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4 bg-linear-to-b from-background to-muted/20">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Acesso Admin</CardTitle>
+          <CardTitle>Admin Access</CardTitle>
           <CardDescription>
-            Faça login para gerenciar seu blog
+            Sign in to manage your blog
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -156,7 +153,7 @@ export default function AdminLoginPage() {
             {error && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Erro de autenticação</AlertTitle>
+                <AlertTitle>Authentication error</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
@@ -174,7 +171,7 @@ export default function AdminLoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
+              <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -203,7 +200,7 @@ export default function AdminLoginPage() {
               disabled={isLoading}
               className="w-full"
             >
-              {isLoading ? 'Entrando...' : 'Entrar'}
+              {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
 
             <button
@@ -211,7 +208,7 @@ export default function AdminLoginPage() {
               onClick={() => setIsForgotPassword(true)}
               className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              Esqueceu a senha?
+              Forgot password?
             </button>
           </form>
         </CardContent>

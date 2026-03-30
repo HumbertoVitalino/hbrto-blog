@@ -1,5 +1,5 @@
 import { BookRepository } from "@/infrastructure/repositories/BookRepository";
-import { 
+import {
     GetAllBooksUseCase,
     GetBookByIdUseCase,
     CreateBookUseCase,
@@ -13,21 +13,19 @@ import { supabase } from "@/infrastructure/supabase/client";
 async function isAdmin(request: NextRequest) {
     try {
         const authHeader = request.headers.get('authorization');
-        
+
         if (!authHeader?.startsWith('Bearer ')) {
             return false;
         }
 
         const token = authHeader.slice(7);
-        
-        // Verify token with Supabase
+
         const { data, error } = await supabase.auth.getUser(token);
-        
+
         if (error || !data.user) {
             return false;
         }
 
-        // Check if user is admin
         const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
         return data.user.email === adminEmail;
     } catch (error) {
@@ -70,10 +68,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
-        // Verify admin status
         if (!await isAdmin(request)) {
             return NextResponse.json(
-                { error: "Não autorizado. Apenas admin pode criar." },
+                { error: "Unauthorized. Only admin can create." },
                 { status: 401 }
             );
         }
@@ -101,10 +98,9 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
     try {
-        // Verify admin status
         if (!await isAdmin(request)) {
             return NextResponse.json(
-                { error: "Não autorizado. Apenas admin pode atualizar." },
+                { error: "Unauthorized. Only admin can update." },
                 { status: 401 }
             );
         }
@@ -148,10 +144,9 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
     try {
-        // Verify admin status
         if (!await isAdmin(request)) {
             return NextResponse.json(
-                { error: "Não autorizado. Apenas admin pode deletar." },
+                { error: "Unauthorized. Only admin can delete." },
                 { status: 401 }
             );
         }
