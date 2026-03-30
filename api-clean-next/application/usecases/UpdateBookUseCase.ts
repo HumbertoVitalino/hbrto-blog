@@ -1,5 +1,6 @@
 import { Book } from "@/domain/Book";
 import { BookGenre } from "@/domain/BookGenre";
+import { BookStatus } from "@/domain/BookStatus";
 import { BookRepository } from "@/infrastructure/repositories/BookRepository";
 
 export interface UpdateBookDTO {
@@ -7,6 +8,8 @@ export interface UpdateBookDTO {
     author?: string;
     pages?: number;
     genre?: BookGenre;
+    coverImageUrl?: string;
+    status?: BookStatus;
 }
 
 export class UpdateBookUseCase {
@@ -30,7 +33,9 @@ export class UpdateBookUseCase {
             title: dto.title ?? book.title,
             author: dto.author ?? book.author,
             pages: dto.pages ?? book.pages,
-            genre: dto.genre ?? book.genre
+            genre: dto.genre ?? book.genre,
+            coverImageUrl: dto.coverImageUrl ?? book.coverImageUrl,
+            status: dto.status ?? book.status
         });
     }
 }
