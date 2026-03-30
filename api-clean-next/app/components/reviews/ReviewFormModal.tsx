@@ -13,6 +13,7 @@ import {
 import { useBooks } from '@/app/hooks/useBooks'
 import { formatDate } from '@/lib/formatDate'
 import { MarkdownPreview } from './MarkdownPreview'
+import { Star, BookOpen, Info, ChevronLeft } from 'lucide-react'
 
 interface ReviewFormModalProps {
   open: boolean
@@ -32,15 +33,18 @@ export function ReviewFormModal({
   bookId
 }: ReviewFormModalProps) {
   const { books, isLoading: booksLoading } = useBooks()
+
   const [title, setTitle] = useState(initialValues?.title ?? '')
   const [rating, setRating] = useState(initialValues?.rating ?? 5)
   const [comment, setComment] = useState(initialValues?.comment ?? '')
   const [selectedBookId, setSelectedBookId] = useState<string | null>(bookId ?? null)
+
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [step, setStep] = useState(bookId ? 'form' : 'book')
-  const [showPreview, setShowPreview] = useState(false)
-  const [showMarkdownHelp, setShowMarkdownHelp] = useState(false)
+
+  const [step, setStep] = useState<'book' | 'form'>(bookId ? 'form' : (mode === 'create' ? 'book' : 'form'))
+  const [activeTab, setActiveTab] = useState<'write' | 'preview'>('write')
+  const [hoveredStar, setHoveredStar] = useState<number | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -49,12 +53,10 @@ export function ReviewFormModal({
       setError('Title is required')
       return
     }
-
     if (!comment.trim()) {
       setError('Comment is required')
       return
     }
-
     if (rating < 1 || rating > 5) {
       setError('Rating must be between 1 and 5')
       return
@@ -70,43 +72,78 @@ export function ReviewFormModal({
         await onSubmit({ title, rating, comment } as any)
       }
 
+      // Reset form states
       setTitle('')
       setRating(5)
       setComment('')
+      setActiveTab('write')
       if (!bookId) {
         setSelectedBookId(null)
         setStep('book')
       }
       onOpenChange(false)
     } catch (err: any) {
-      setError(err.message)
+      setError(err.message || 'An error occurred while saving the review.')
     } finally {
       setIsLoading(false)
     }
   }
 
-  if (mode === 'create' && step === 'book' && !bookId) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Select Book</DialogTitle>
-          </DialogHeader>
+  // Permite fechar e resetar estados caso o usuário cancele
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen && !isLoading) {
+      setError(null)
+      setActiveTab('write')
+    }
+    onOpenChange(isOpen)
+  }
 
-          <div>
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col">
+        <DialogHeader className="pb-4 border-b">
+          <DialogTitle className="flex items-center gap-2 text-xl">
+            {step === 'form' && !bookId && mode === 'create' && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 -ml-2"
+                onClick={() => setStep('book')}
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </Button>
+            )}
+            {mode === 'create'
+              ? (step === 'book' ? 'Select a Book' : 'Write a Review')
+              : 'Edit Review'}
+          </DialogTitle>
+        </DialogHeader>
+
+        {/* STEP 1: BOOK SELECTION */}
+        {step === 'book' && (
+          <div className="py-4 space-y-3">
             {booksLoading ? (
-              <p className="text-muted-foreground">Loading books...</p>
+              <div className="flex justify-center py-8">
+                <div className="h-6 w-6 rounded-full border-2 border-muted border-t-primary animate-spin" />
+              </div>
             ) : (
-              <div className="space-y-2 max-h-96 overflow-y-auto">
+              <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                 <button
                   onClick={() => {
                     setSelectedBookId('')
                     setStep('form')
                   }}
-                  className="w-full text-left p-3 rounded border border-dashed hover:bg-muted transition-colors"
+                  className="w-full flex items-center gap-4 text-left p-4 rounded-xl border border-dashed border-border/60 hover:border-primary/50 hover:bg-primary/5 transition-all group"
                 >
-                  <div className="font-medium">General Review (No specific book)</div>
+                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                    <BookOpen className="w-5 h-5 opacity-50 group-hover:opacity-100" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-foreground">General Review</div>
+                    <div className="text-sm text-muted-foreground">Not linked to a specific book</div>
+                  </div>
                 </button>
+
                 {books.map((book) => (
                   <button
                     key={book.id}
@@ -114,153 +151,177 @@ export function ReviewFormModal({
                       setSelectedBookId(book.id || null)
                       setStep('form')
                     }}
-                    className={`w-full text-left p-3 rounded border transition-colors ${selectedBookId === book.id
-                      ? 'bg-primary text-primary-foreground'
-                      : 'hover:bg-muted'
+                    className={`w-full flex items-center gap-4 text-left p-4 rounded-xl border transition-all ${selectedBookId === book.id
+                        ? 'bg-primary/5 border-primary shadow-sm'
+                        : 'hover:bg-muted/50 border-border/50 hover:border-border'
                       }`}
                   >
-                    <div className="font-medium">{book.title}</div>
-                    <div className="text-sm opacity-75">{book.author}</div>
+                    {/* Placeholder de capa reduzido se tiver imagem, senão ícone */}
+                    <div className="h-12 w-8 bg-muted rounded object-cover shrink-0 flex items-center justify-center overflow-hidden">
+                      {book.coverImageUrl ? (
+                        <img src={book.coverImageUrl} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <BookOpen className="w-4 h-4 text-muted-foreground/50" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-foreground line-clamp-1">{book.title}</div>
+                      <div className="text-sm text-muted-foreground line-clamp-1">{book.author}</div>
+                    </div>
                   </button>
                 ))}
               </div>
             )}
           </div>
-        </DialogContent>
-      </Dialog>
-    )
-  }
+        )}
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {mode === 'create' ? 'New Review' : 'Edit Review'}
-          </DialogTitle>
-        </DialogHeader>
+        {/* STEP 2: FORM */}
+        {step === 'form' && (
+          <form onSubmit={handleSubmit} className="py-4 space-y-6 flex-1">
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!bookId && selectedBookId && (
-            <div className="bg-muted p-3 rounded">
-              <p className="text-sm text-muted-foreground">
-                Selected book: {books.find(b => b.id === selectedBookId)?.title}
-              </p>
-            </div>
-          )}
-
-          {mode === 'edit' && initialValues?.createdAt && (
-            <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded">
-              <p className="text-xs text-muted-foreground">
-                Created: {formatDate(initialValues.createdAt)}
-              </p>
-            </div>
-          )}
-
-          <div>
-            <label className="text-sm font-medium">Title</label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Review title..."
-              className="mt-2"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Rating</label>
-            <div className="flex gap-2 mt-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => setRating(star)}
-                  className={`text-3xl transition-colors ${star <= rating ? 'text-yellow-400' : 'text-gray-300'
-                    }`}
-                >
-                  ★
-                </button>
-              ))}
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">{rating}/5</p>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium">Comment</label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowPreview(!showPreview)}
-                  className="text-xs text-primary hover:underline"
-                >
-                  {showPreview ? 'Hide' : 'Show'} Preview
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowMarkdownHelp(!showMarkdownHelp)}
-                  className="text-xs text-primary hover:underline"
-                >
-                  Markdown Help
-                </button>
-              </div>
-            </div>
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Write your review... (Markdown supported)"
-              className="w-full mt-2 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-              rows={4}
-            />
-            {showMarkdownHelp && (
-              <div className="mt-3 p-3 bg-muted rounded text-xs space-y-1">
-                <p className="font-medium">Markdown Syntax:</p>
-                <p><code>**bold**</code> or <code>__bold__</code></p>
-                <p><code>*italic*</code> or <code>_italic_</code></p>
-                <p><code># Heading 1</code> ... <code>### Heading 3</code></p>
-                <p><code>- List item</code> for bullet lists</p>
-                <p><code>1. Numbered item</code> for ordered lists</p>
-                <p><code>&gt; Blockquote</code></p>
-                <p><code>`code`</code> or triple backticks for code blocks</p>
-                <p><code>[Link text](url)</code></p>
+            {/* Info do Livro Selecionado (Apenas visualização no Form) */}
+            {!bookId && selectedBookId && (
+              <div className="bg-muted/50 p-3 rounded-lg border border-border/50 flex items-center gap-3">
+                <div className="p-2 bg-background rounded shadow-sm">
+                  <BookOpen className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Linked Book</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {books.find(b => b.id === selectedBookId)?.title}
+                  </p>
+                </div>
               </div>
             )}
-          </div>
 
-          {showPreview && <MarkdownPreview text={comment} showPreview={true} />}
+            {mode === 'edit' && initialValues?.createdAt && (
+              <div className="bg-muted/30 p-3 rounded-lg border border-border/50 flex items-center gap-2">
+                <Info className="w-4 h-4 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">
+                  Original review published on <span className="font-medium">{formatDate(initialValues.createdAt)}</span>
+                </p>
+              </div>
+            )}
 
-          {error && (
-            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded">
-              {error}
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-start">
+              {/* Title Input */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold tracking-tight">Title</label>
+                <Input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g., A masterpiece of system design..."
+                  className="font-medium placeholder:font-normal"
+                />
+              </div>
+
+              {/* Rating Input */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold tracking-tight">Rating</label>
+                <div className="flex items-center gap-1 bg-muted/30 p-2 rounded-lg border border-border/50 w-fit">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setRating(star)}
+                      onMouseEnter={() => setHoveredStar(star)}
+                      onMouseLeave={() => setHoveredStar(null)}
+                      className="p-1 transition-transform hover:scale-110 focus:outline-none"
+                    >
+                      <Star
+                        className={`w-6 h-6 transition-colors ${star <= (hoveredStar ?? rating)
+                            ? 'fill-yellow-400 text-yellow-400'
+                            : 'fill-muted text-muted-foreground/30'
+                          }`}
+                      />
+                    </button>
+                  ))}
+                  <span className="ml-2 text-sm font-medium text-muted-foreground w-4 text-center">
+                    {hoveredStar ?? rating}
+                  </span>
+                </div>
+              </div>
             </div>
-          )}
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                if (!bookId && step === 'form') {
-                  setStep('book')
-                } else {
-                  onOpenChange(false)
+            {/* Markdown Editor Area */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between border-b border-border/50 pb-2">
+
+                {/* Tabs */}
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('write')}
+                    className={`text-sm font-medium pb-2 border-b-2 transition-colors -mb-2.25 ${activeTab === 'write'
+                        ? 'border-primary text-foreground'
+                        : 'border-transparent text-muted-foreground hover:text-foreground'
+                      }`}
+                  >
+                    Write
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('preview')}
+                    className={`text-sm font-medium pb-2 border-b-2 transition-colors -mb-2.25 ${activeTab === 'preview'
+                        ? 'border-primary text-foreground'
+                        : 'border-transparent text-muted-foreground hover:text-foreground'
+                      }`}
+                  >
+                    Preview
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded">
+                  <Info className="w-3 h-3" />
+                  Markdown supported
+                </div>
+              </div>
+
+              {activeTab === 'write' ? (
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Share your thoughts, notes, and takeaways..."
+                  className="w-full min-h-62.5 p-4 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y leading-relaxed"
+                />
+              ) : (
+                <div className="min-h-62.5 p-4 bg-muted/20 border border-border rounded-lg overflow-y-auto">
+                  {comment.trim() ? (
+                    <MarkdownPreview text={comment} showPreview={true} />
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic text-center mt-10">
+                      Nothing to preview yet.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {error && (
+              <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm p-3 rounded-lg flex items-center gap-2">
+                <Info className="w-4 h-4 shrink-0" />
+                <p>{error}</p>
+              </div>
+            )}
+
+            <DialogFooter className="pt-4 border-t">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => handleOpenChange(false)}
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isLoading} className="min-w-30">
+                {isLoading
+                  ? (mode === 'create' ? 'Publishing...' : 'Saving...')
+                  : (mode === 'create' ? 'Publish Review' : 'Save Changes')
                 }
-              }}
-            >
-              {!bookId && step === 'form' ? 'Back' : 'Cancel'}
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading
-                ? mode === 'create'
-                  ? 'Adding...'
-                  : 'Updating...'
-                : mode === 'create'
-                  ? 'Add Review'
-                  : 'Update Review'
-              }
-            </Button>
-          </DialogFooter>
-        </form>
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   )
