@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Trash2, Edit2 } from 'lucide-react'
 import { useState } from 'react'
 import { ReviewFormModal } from './ReviewFormModal'
+import { formatDate } from '@/lib/formatDate'
 
 interface ReviewCardProps {
     review: Review
@@ -62,6 +63,9 @@ export function ReviewCard({ review, isAdmin, bookId, onDelete, onUpdate }: Revi
                                 {review.rating}/5
                             </span>
                         </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                            {formatDate(review.createdAt)}
+                        </p>
                     </div>
 
                     {isAdmin && (

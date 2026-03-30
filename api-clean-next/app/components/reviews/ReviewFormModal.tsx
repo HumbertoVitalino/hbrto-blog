@@ -11,12 +11,13 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog'
 import { useBooks } from '@/app/hooks/useBooks'
+import { formatDate } from '@/lib/formatDate'
 
 interface ReviewFormModalProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     onSubmit: (data: { title: string; bookId: string | null; rating: number; comment: string }) => Promise<void>
-    initialValues?: { title?: string; rating: number; comment: string }
+    initialValues?: { title?: string; rating: number; comment: string; createdAt?: Date }
     mode?: 'create' | 'edit'
     bookId?: string | null
 }
@@ -60,7 +61,7 @@ export function ReviewFormModal({
             setError(null)
             setIsLoading(true)
             
-            // Em modo create, passa bookId; em modo edit, não passa
+            // In create mode, passes bookId; in edit mode, does not pass
             if (mode === 'create') {
                 await onSubmit({ title, bookId: selectedBookId, rating, comment })
             } else {
@@ -88,7 +89,7 @@ export function ReviewFormModal({
             <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Select a Book</DialogTitle>
+                        <DialogTitle>Select Book</DialogTitle>
                     </DialogHeader>
 
                     <div>
@@ -135,9 +136,7 @@ export function ReviewFormModal({
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>
-                        {mode === 'create' ? (
-                            selectedBookId || !bookId ? 'Add Review' : 'Add Review'
-                        ) : 'Edit Review'}
+                        {mode === 'create' ? 'New Review' : 'Edit Review'}
                     </DialogTitle>
                 </DialogHeader>
 
@@ -146,6 +145,14 @@ export function ReviewFormModal({
                         <div className="bg-muted p-3 rounded">
                             <p className="text-sm text-muted-foreground">
                                 Selected book: {books.find(b => b.id === selectedBookId)?.title}
+                            </p>
+                        </div>
+                    )}
+
+                    {mode === 'edit' && initialValues?.createdAt && (
+                        <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded">
+                            <p className="text-xs text-muted-foreground">
+                                Created: {formatDate(initialValues.createdAt)}
                             </p>
                         </div>
                     )}

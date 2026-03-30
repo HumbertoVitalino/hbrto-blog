@@ -46,7 +46,7 @@ function BookCardComponent({
             <CardContent className="flex-1">
                 <div className="space-y-3">
                     <div className="inline-block bg-primary/10 text-primary text-sm px-3 py-1 rounded-full">
-                        {book.pages} páginas
+                        {book.pages} pages
                     </div>
                     {book.genre && (
                         <div className="inline-block ml-2 bg-secondary/10 text-secondary text-sm px-3 py-1 rounded-full capitalize">
@@ -59,7 +59,7 @@ function BookCardComponent({
             {/* Actions */}
             <div className="border-t p-4">
                 <div className="flex flex-col gap-2">
-                    {/* Reviews - sempre visível */}
+                    {/* Reviews - always visible */}
                     <Link href={`/library/${book.id}`} className="w-full">
                         <Button
                             variant="outline"
@@ -71,7 +71,7 @@ function BookCardComponent({
                         </Button>
                     </Link>
 
-                    {/* Ações autenticadas */}
+                    {/* Authenticated actions */}
                     {!isPublic && (
                         <>
                             <Button
