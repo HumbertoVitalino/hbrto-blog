@@ -9,6 +9,7 @@ export interface UpdateBookDTO {
     pages?: number;
     genre?: BookGenre;
     coverImageUrl?: string;
+    affiliateUrl?: string;
     status?: BookStatus;
 }
 
@@ -35,6 +36,7 @@ export class UpdateBookUseCase {
             pages: dto.pages ?? book.pages,
             genre: dto.genre ?? book.genre,
             coverImageUrl: dto.coverImageUrl ?? book.coverImageUrl,
+            affiliateUrl: dto.affiliateUrl !== undefined ? dto.affiliateUrl : book.affiliateUrl,
             status: dto.status ?? book.status
         });
     }

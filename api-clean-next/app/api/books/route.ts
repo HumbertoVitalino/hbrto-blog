@@ -85,6 +85,7 @@ export async function POST(request: NextRequest) {
             pages: body.pages,
             genre: body.genre,
             coverImageUrl: body.coverImageUrl,
+            affiliateUrl: body.affiliateUrl,
             status: body.status
         });
 
@@ -127,6 +128,7 @@ export async function PUT(request: NextRequest) {
             pages: body.pages,
             genre: body.genre,
             coverImageUrl: body.coverImageUrl,
+            affiliateUrl: body.affiliateUrl,
             status: body.status
         });
 
