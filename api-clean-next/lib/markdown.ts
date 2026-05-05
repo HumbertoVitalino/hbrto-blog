@@ -1,42 +1,33 @@
 import MarkdownIt from 'markdown-it'
+import hljs from 'highlight.js'
+
+function highlight(str: string, lang: string): string {
+    const language = lang && hljs.getLanguage(lang) ? lang : 'plaintext'
+    try {
+        const highlighted = hljs.highlight(str, { language, ignoreIllegals: true }).value
+        return `<pre class="hljs-block"><code class="hljs language-${language}">${highlighted}</code></pre>`
+    } catch {
+        return `<pre class="hljs-block"><code class="hljs">${MarkdownIt().utils.escapeHtml(str)}</code></pre>`
+    }
+}
 
 const md = new MarkdownIt({
-    html: false, // Don't allow raw HTML for security
-    linkify: true, // Auto-detect URLs
-    typographer: true, // Nice typography
-    breaks: true, // Convert line breaks to <br>
+    html: false,
+    linkify: true,
+    typographer: true,
+    breaks: true,
+    highlight,
 })
 
-/**
- * Parse markdown text to HTML
- * Supports all standard markdown features:
- * - Headings: # H1, ## H2, ### H3
- * - Lists: - bullet, 1. numbered
- * - Code: `inline` or ```blocks```
- * - Bold: **text** or __text__
- * - Italic: *text* or _text_
- * - Links: [text](url)
- * - Blockquotes: > text
- * - Horizontal rules: ---, ***, ___
- */
 export function parseMarkdown(markdown: string): string {
-    if (!markdown || typeof markdown !== 'string') {
-        return ''
-    }
-
+    if (!markdown || typeof markdown !== 'string') return ''
     try {
-        const html = md.render(markdown)
-        return html.trim()
-    } catch (error) {
-        console.error('Markdown parsing error:', error)
+        return md.render(markdown).trim()
+    } catch {
         return markdown
     }
 }
 
-/**
- * Sanitize markdown output
- * Safe because markdown-it has html: false
- */
 export function sanitizeMarkdown(markdown: string): string {
     return parseMarkdown(markdown)
 }

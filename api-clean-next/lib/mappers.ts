@@ -1,5 +1,6 @@
 import { Book } from "@/domain/Book";
 import { Review } from "@/domain/Review";
+import { ReleaseNote } from "@/domain/ReleaseNote";
 
 export function bookToPlain(book: Book) {
     return {
@@ -30,4 +31,18 @@ export function reviewToPlain(review: Review) {
 
 export function reviewsToPlain(reviews: Review[]) {
     return reviews.map(reviewToPlain);
+}
+
+export function releaseNoteToPlain(note: ReleaseNote) {
+    return {
+        id: note.id,
+        version: note.version,
+        title: note.title,
+        description: note.description,
+        publishedAt: note.publishedAt,
+    };
+}
+
+export function releaseNotesToPlain(notes: ReleaseNote[]) {
+    return notes.map(releaseNoteToPlain);
 }
