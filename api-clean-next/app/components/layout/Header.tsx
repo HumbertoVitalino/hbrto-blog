@@ -40,6 +40,9 @@ export default function Header() {
             <Link href="/reviews" className="text-sm font-medium hover:text-primary transition-colors">
               Reviews
             </Link>
+            <Link href="/music" className="text-sm font-medium hover:text-primary transition-colors">
+              Music
+            </Link>
           </nav>
 
           {/* RIGHT - Auth + Mobile Button */}
@@ -97,6 +100,13 @@ export default function Header() {
               onClick={() => setIsOpen(false)}
             >
               Reviews
+            </Link>
+            <Link
+              href="/music"
+              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              Music
             </Link>
 
             {user && (

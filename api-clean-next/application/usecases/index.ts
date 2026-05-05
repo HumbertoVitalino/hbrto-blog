@@ -10,3 +10,8 @@ export { GetReviewsByBookIdUseCase } from "./GetReviewsByBookIdUseCase";
 export { CreateReviewUseCase, type CreateReviewDTO } from "./CreateReviewUseCase";
 export { UpdateReviewUseCase, type UpdateReviewDTO } from "./UpdateReviewUseCase";
 export { DeleteReviewUseCase } from "./DeleteReviewUseCase";
+
+export { GetNowPlayingUseCase } from "./GetNowPlayingUseCase";
+export { GetRecentlyPlayedUseCase } from "./GetRecentlyPlayedUseCase";
+export { GetTopTracksUseCase } from "./GetTopTracksUseCase";
+export { GetTopArtistsUseCase } from "./GetTopArtistsUseCase";
