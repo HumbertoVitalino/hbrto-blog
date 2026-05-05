@@ -12,7 +12,7 @@ import {
   CardTitle
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Trash2, Edit2, MessageSquare } from 'lucide-react'
+import { Trash2, Edit2, MessageSquare, ShoppingCart } from 'lucide-react'
 
 interface BookCardProps {
   book: BookData
@@ -121,6 +121,20 @@ function BookCardComponent({
               Reviews
             </Button>
           </Link>
+
+          {/* Amazon affiliate link */}
+          {book.affiliateUrl && (
+            <a href={book.affiliateUrl} target="_blank" rel="noopener noreferrer" className="w-full">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full justify-center gap-2 bg-background hover:bg-amber-50 hover:border-amber-300 hover:text-amber-700 dark:hover:bg-amber-950/30 dark:hover:border-amber-700 dark:hover:text-amber-400 transition-colors"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                Buy on Amazon
+              </Button>
+            </a>
+          )}
 
           {/* Authenticated actions */}
           {!isPublic && (

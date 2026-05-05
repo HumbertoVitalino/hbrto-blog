@@ -39,6 +39,7 @@ export function BookFormModal({
         pages: 0,
         genre: undefined,
         coverImageUrl: undefined,
+        affiliateUrl: undefined,
         status: BookStatus.NotStarted,
     })
 
@@ -55,6 +56,7 @@ export function BookFormModal({
                 pages: book.pages,
                 genre: book.genre,
                 coverImageUrl: book.coverImageUrl,
+                affiliateUrl: book.affiliateUrl,
                 status: book.status || BookStatus.NotStarted,
             })
             setPreview(book.coverImageUrl || null)
@@ -264,6 +266,19 @@ export function BookFormModal({
                             <option value={BookStatus.InProgress}>In Progress</option>
                             <option value={BookStatus.Completed}>Completed</option>
                         </select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="affiliateUrl">Amazon Affiliate Link <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                        <Input
+                            id="affiliateUrl"
+                            placeholder="https://www.amazon.com.br/dp/ASIN?tag=yourtag-20"
+                            value={formData.affiliateUrl || ''}
+                            onChange={(e) =>
+                                setFormData({ ...formData, affiliateUrl: e.target.value || undefined })
+                            }
+                            disabled={isLoading}
+                        />
                     </div>
 
                     <div className="space-y-2">
