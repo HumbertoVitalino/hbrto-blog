@@ -12,6 +12,7 @@ export interface BookData {
     pages: number
     genre?: BookGenre
     coverImageUrl?: string
+    affiliateUrl?: string
     status?: BookStatus
 }
 
@@ -72,6 +73,7 @@ export function useBooks() {
                     pages: book.pages,
                     genre: book.genre,
                     coverImageUrl: book.coverImageUrl,
+                    affiliateUrl: book.affiliateUrl,
                     status: book.status
                 })
             })
@@ -107,6 +109,7 @@ export function useBooks() {
                     pages: updates.pages,
                     genre: updates.genre,
                     coverImageUrl: updates.coverImageUrl,
+                    affiliateUrl: updates.affiliateUrl,
                     status: updates.status
                 })
             })
