@@ -47,6 +47,7 @@ export class BookRepository {
             pages: data.pages,
             genre: data.genre,
             coverImageUrl: data.cover_image_url,
+            affiliateUrl: data.affiliate_url,
             status: data.status
         });
     }
@@ -77,6 +78,7 @@ export class BookRepository {
             pages: data.pages,
             genre: data.genre,
             coverImageUrl: data.cover_image_url,
+            affiliateUrl: data.affiliate_url,
             status: data.status
         });
     }
@@ -108,6 +110,7 @@ export class BookRepository {
             pages: data.pages,
             genre: data.genre,
             coverImageUrl: data.cover_image_url,
+            affiliateUrl: data.affiliate_url,
             status: data.status
         });
     }

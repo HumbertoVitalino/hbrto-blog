@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/app/context/AuthContext'
 import { Button } from '@/components/ui/button'
+import { ThemeToggle } from '@/app/components/layout/ThemeToggle'
 import { Menu, X, LogOut } from 'lucide-react'
 
 export default function Header() {
@@ -48,12 +49,12 @@ export default function Header() {
             </Link>
           </nav>
 
-          {/* RIGHT - Auth + Mobile Button */}
-          <div className="flex flex-1 items-center justify-end gap-4">
+          {/* RIGHT - Auth + Theme + Mobile Button */}
+          <div className="flex flex-1 items-center justify-end gap-2">
 
             {/* Desktop Auth */}
             {user && (
-              <div className="hidden md:flex items-center gap-4">
+              <div className="hidden md:flex items-center gap-3">
                 <span className="text-sm text-muted-foreground">
                   {user.email}
                 </span>
@@ -68,6 +69,8 @@ export default function Header() {
                 </Button>
               </div>
             )}
+
+            <ThemeToggle />
 
             {/* Mobile Menu Button */}
             <button
