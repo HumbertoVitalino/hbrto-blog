@@ -9,6 +9,7 @@ export interface CreateBookDTO {
     pages: number;
     genre?: BookGenre;
     coverImageUrl?: string;
+    affiliateUrl?: string;
     status?: BookStatus;
 }
 
@@ -31,6 +32,7 @@ export class CreateBookUseCase {
             pages: dto.pages,
             genre: dto.genre,
             coverImageUrl: dto.coverImageUrl,
+            affiliateUrl: dto.affiliateUrl,
             status: dto.status || BookStatus.NotStarted
         });
 
