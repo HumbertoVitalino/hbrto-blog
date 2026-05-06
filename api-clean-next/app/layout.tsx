@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ReactNode } from "react";
 import { AuthProvider } from "@/app/context/AuthContext";
 import Header from "@/app/components/layout/Header";
+import { ThemeProvider } from "@/app/components/layout/ThemeProvider";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -33,13 +34,15 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <AuthProvider>
-          <Header />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Toaster />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <Header />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Toaster />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

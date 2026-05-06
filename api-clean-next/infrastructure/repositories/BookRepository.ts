@@ -20,6 +20,7 @@ export class BookRepository {
                     pages: item.pages,
                     genre: item.genre,
                     coverImageUrl: item.cover_image_url,
+                    affiliateUrl: item.affiliate_url,
                     status: item.status
                 })
         )
@@ -46,6 +47,7 @@ export class BookRepository {
             pages: data.pages,
             genre: data.genre,
             coverImageUrl: data.cover_image_url,
+            affiliateUrl: data.affiliate_url,
             status: data.status
         });
     }
@@ -59,6 +61,7 @@ export class BookRepository {
                 pages: book.pages,
                 genre: book.genre,
                 cover_image_url: book.coverImageUrl,
+                affiliate_url: book.affiliateUrl,
                 status: book.status
             })
             .select()
@@ -75,6 +78,7 @@ export class BookRepository {
             pages: data.pages,
             genre: data.genre,
             coverImageUrl: data.cover_image_url,
+            affiliateUrl: data.affiliate_url,
             status: data.status
         });
     }
@@ -88,6 +92,7 @@ export class BookRepository {
                 ...(updates.pages !== undefined && { pages: updates.pages }),
                 ...(updates.genre && { genre: updates.genre }),
                 ...(updates.coverImageUrl && { cover_image_url: updates.coverImageUrl }),
+                ...(updates.affiliateUrl !== undefined && { affiliate_url: updates.affiliateUrl || null }),
                 ...(updates.status && { status: updates.status })
             })
             .eq("id", id)
@@ -105,6 +110,7 @@ export class BookRepository {
             pages: data.pages,
             genre: data.genre,
             coverImageUrl: data.cover_image_url,
+            affiliateUrl: data.affiliate_url,
             status: data.status
         });
     }

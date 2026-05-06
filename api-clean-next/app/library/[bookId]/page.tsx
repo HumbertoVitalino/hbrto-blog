@@ -8,7 +8,7 @@ import { ReviewsGrid } from '@/app/components/reviews/ReviewsGrid'
 import { ReviewFormModal } from '@/app/components/reviews/ReviewFormModal'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle, ArrowLeft, Plus } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Plus, ShoppingCart } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Book } from '@/domain/Book'
 import { BookStatus } from '@/domain/BookStatus'
@@ -74,7 +74,8 @@ export default function BookDetailPage() {
         pages: found.pages,
         genre: found.genre,
         status: found.status,
-        coverImageUrl: found.coverImageUrl
+        coverImageUrl: found.coverImageUrl,
+        affiliateUrl: found.affiliateUrl,
       }) as Book : null)
     }
   }, [books, bookId, booksLoading])
@@ -191,6 +192,21 @@ export default function BookDetailPage() {
                 </div>
               )}
             </div>
+
+            {/* Amazon affiliate button */}
+            {book.affiliateUrl && (
+              <div className="flex justify-center md:justify-start">
+                <a href={book.affiliateUrl} target="_blank" rel="noopener noreferrer">
+                  <Button
+                    variant="outline"
+                    className="gap-2 border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/30 transition-colors"
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    Buy on Amazon
+                  </Button>
+                </a>
+              </div>
+            )}
           </div>
         </div>
 

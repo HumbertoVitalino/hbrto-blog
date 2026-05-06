@@ -8,6 +8,7 @@ export class Book {
     private _pages: number
     private _genre?: BookGenre
     private _coverImageUrl?: string
+    private _affiliateUrl?: string
     private _status: BookStatus
 
     constructor(props: {
@@ -17,6 +18,7 @@ export class Book {
         pages: number
         genre?: BookGenre
         coverImageUrl?: string
+        affiliateUrl?: string
         status?: BookStatus
     }) {
         this._id = props.id
@@ -25,6 +27,7 @@ export class Book {
         this._pages = props.pages
         this._genre = props.genre
         this._coverImageUrl = props.coverImageUrl
+        this._affiliateUrl = props.affiliateUrl
         this._status = props.status || BookStatus.NotStarted
     }
 
@@ -50,6 +53,10 @@ export class Book {
 
     get coverImageUrl() {
         return this._coverImageUrl
+    }
+
+    get affiliateUrl() {
+        return this._affiliateUrl
     }
 
     get status() {
