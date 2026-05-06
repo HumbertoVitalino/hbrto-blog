@@ -10,6 +10,7 @@ export function bookToPlain(book: Book) {
         pages: book.pages,
         genre: book.genre,
         coverImageUrl: book.coverImageUrl,
+        affiliateUrl: book.affiliateUrl,
         status: book.status
     };
 }
