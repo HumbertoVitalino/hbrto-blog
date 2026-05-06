@@ -6,9 +6,8 @@ import { useAuth } from '@/app/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle, Eye, EyeOff } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function AdminLoginPage() {
@@ -23,15 +22,13 @@ export default function AdminLoginPage() {
   const [resetEmail, setResetEmail] = useState('')
 
   useEffect(() => {
-    if (user && !authLoading) {
-      router.push('/admin')
-    }
+    if (user && !authLoading) router.push('/admin')
   }, [user, authLoading, router])
 
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
       </div>
     )
   }
@@ -39,20 +36,14 @@ export default function AdminLoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-
-    if (!email || !password) {
-      setError('Email and password are required')
-      return
-    }
-
+    if (!email || !password) { setError('Email and password are required'); return }
     try {
       setIsLoading(true)
       await login(email, password)
-      toast.success('Login successful!')
+      toast.success('Signed in')
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error logging in'
-      setError(message)
-      toast.error(message)
+      const msg = err instanceof Error ? err.message : 'Error signing in'
+      setError(msg)
     } finally {
       setIsLoading(false)
     }
@@ -61,158 +52,129 @@ export default function AdminLoginPage() {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-
-    if (!resetEmail) {
-      setError('Enter your email')
-      return
-    }
-
+    if (!resetEmail) { setError('Enter your email'); return }
     try {
       setIsLoading(true)
       await resetPassword(resetEmail)
-      toast.success('Recovery email sent!')
+      toast.success('Recovery email sent')
       setIsForgotPassword(false)
       setResetEmail('')
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error sending email'
-      setError(message)
-      toast.error(message)
+      const msg = err instanceof Error ? err.message : 'Error sending email'
+      setError(msg)
     } finally {
       setIsLoading(false)
     }
   }
 
-  if (isForgotPassword) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Reset Password</CardTitle>
-            <CardDescription>
-              Enter your email to receive a recovery link
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleResetPassword} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4 bg-muted/10">
+      <div className="w-full max-w-sm">
 
-              <div className="space-y-2">
+        {/* Brand */}
+        <div className="text-center mb-8">
+          <div className="inline-flex w-10 h-10 rounded-xl bg-foreground items-center justify-center mb-4">
+            <span className="text-background font-bold text-sm">HV</span>
+          </div>
+          <h1 className="text-xl font-semibold tracking-tight">
+            {isForgotPassword ? 'Reset password' : 'Admin access'}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {isForgotPassword
+              ? 'Enter your email to receive a recovery link'
+              : 'Sign in to manage your blog'}
+          </p>
+        </div>
+
+        {/* Form */}
+        <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm space-y-4">
+          {error && (
+            <Alert variant="destructive" className="py-2">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {isForgotPassword ? (
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div className="space-y-1.5">
                 <Label htmlFor="reset-email">Email</Label>
                 <Input
                   id="reset-email"
                   type="email"
-                  placeholder="seu@email.com"
+                  placeholder="your@email.com"
                   value={resetEmail}
                   onChange={(e) => setResetEmail(e.target.value)}
                   disabled={isLoading}
+                  autoFocus
                 />
               </div>
-
-              <div className="flex gap-2">
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-1"
-                >
-                  {isLoading ? 'Sending...' : 'Send Link'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsForgotPassword(false)}
-                  disabled={isLoading}
-                  className="flex-1"
-                >
-                  Back
-                </Button>
-              </div>
+              <Button type="submit" disabled={isLoading} className="w-full">
+                {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Send recovery link
+              </Button>
+              <button
+                type="button"
+                onClick={() => { setIsForgotPassword(false); setError(null) }}
+                className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Back to sign in
+              </button>
             </form>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-linear-to-b from-background to-muted/20">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Admin Access</CardTitle>
-          <CardDescription>
-            Sign in to manage your blog
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Authentication error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
+          ) : (
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   disabled={isLoading}
+                  autoFocus
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
               </div>
-            </div>
 
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full"
-            >
-              {isLoading ? 'Signing in...' : 'Sign In'}
-            </Button>
+              <div className="space-y-1.5">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={isLoading}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
 
-            <button
-              type="button"
-              onClick={() => setIsForgotPassword(true)}
-              className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Forgot password?
-            </button>
-          </form>
-        </CardContent>
-      </Card>
+              <Button type="submit" disabled={isLoading} className="w-full">
+                {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Sign in
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => { setIsForgotPassword(true); setError(null) }}
+                className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Forgot password?
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

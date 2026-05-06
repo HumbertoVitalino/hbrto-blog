@@ -34,56 +34,60 @@ export function ReleaseNoteCard({ note, isAdmin, onDelete, onUpdate }: ReleaseNo
 
     return (
         <>
-            <article className="group relative rounded-2xl border bg-card/50 p-6 shadow-sm hover:shadow-md hover:bg-card transition-all duration-300">
-                <header className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 pb-4 border-b border-border/50">
-                    <div className="space-y-1.5 flex-1">
-                        <div className="flex items-center gap-2.5 flex-wrap">
-                            <span className="inline-flex items-center text-xs font-mono font-medium bg-muted px-2.5 py-1 rounded-full border border-border/50">
-                                {note.version}
-                            </span>
-                            <time className="text-xs text-muted-foreground" dateTime={new Date(note.publishedAt).toISOString()}>
-                                {formatDate(note.publishedAt)}
-                            </time>
-                        </div>
-                        <h3 className="text-xl font-semibold tracking-tight leading-tight text-foreground">
-                            {note.title}
-                        </h3>
+            <article className="group relative py-8 border-b border-border/50 last:border-0">
+
+                {/* ADMIN ACTIONS */}
+                {isAdmin && (
+                    <div className="absolute top-8 right-0 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button size="sm" variant="outline" className="h-7 w-7 p-0" onClick={() => setIsEditOpen(true)}>
+                            <Edit2 className="w-3 h-3" />
+                            <span className="sr-only">Edit</span>
+                        </Button>
+                        <Button size="sm" variant="destructive" className="h-7 w-7 p-0" onClick={handleDelete} disabled={isDeleting}>
+                            <Trash2 className="w-3 h-3" />
+                            <span className="sr-only">Delete</span>
+                        </Button>
                     </div>
+                )}
 
-                    {isAdmin && (
-                        <div className="flex gap-2 sm:opacity-50 sm:group-hover:opacity-100 transition-opacity">
-                            <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => setIsEditOpen(true)}>
-                                <Edit2 className="w-3.5 h-3.5" />
-                                <span className="sr-only">Edit</span>
-                            </Button>
-                            <Button size="sm" variant="destructive" className="h-8 w-8 p-0" onClick={handleDelete} disabled={isDeleting}>
-                                <Trash2 className="w-3.5 h-3.5" />
-                                <span className="sr-only">Delete</span>
-                            </Button>
-                        </div>
-                    )}
-                </header>
+                {/* META */}
+                <div className="flex items-center gap-3 mb-3">
+                    <span className="text-xs font-mono font-medium bg-muted px-2.5 py-1 rounded-full border border-border/50">
+                        {note.version}
+                    </span>
+                    <span className="text-muted-foreground/40 text-xs">·</span>
+                    <time className="text-xs text-muted-foreground" dateTime={new Date(note.publishedAt).toISOString()}>
+                        {formatDate(note.publishedAt)}
+                    </time>
+                </div>
 
+                {/* TITLE */}
+                <h2 className="text-xl font-semibold tracking-tight text-foreground mb-4 leading-snug pr-16">
+                    {note.title}
+                </h2>
+
+                {/* CONTENT */}
                 <div className="relative">
-                    <div className={`transition-all duration-500 ease-in-out overflow-hidden ${!isExpanded && isLong ? 'max-h-64' : 'max-h-[5000px]'}`}>
+                    <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                        !isExpanded && isLong ? 'max-h-48' : 'max-h-1250'
+                    }`}>
                         <MarkdownRenderer content={note.description} />
                     </div>
                     {!isExpanded && isLong && (
-                        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-card/90 via-card/50 to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 h-20 bg-linear-to-t from-background to-transparent pointer-events-none" />
                     )}
                 </div>
 
+                {/* EXPAND TOGGLE */}
                 {isLong && (
-                    <div className="mt-4 flex justify-center border-t border-border/30 pt-4">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-muted-foreground hover:text-foreground text-xs gap-1.5"
-                            onClick={() => setIsExpanded(!isExpanded)}
-                        >
-                            {isExpanded ? <><ChevronUp className="w-3 h-3" /> Show less</> : <><ChevronDown className="w-3 h-3" /> Read more</>}
-                        </Button>
-                    </div>
+                    <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="mt-4 flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        {isExpanded
+                            ? <><ChevronUp className="w-3.5 h-3.5" /> Show less</>
+                            : <><ChevronDown className="w-3.5 h-3.5" /> Read more</>}
+                    </button>
                 )}
             </article>
 
