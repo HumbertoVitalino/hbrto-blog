@@ -5,7 +5,7 @@ import { BookData } from '@/app/hooks/useBooks'
 import { BookStatus } from '@/domain/BookStatus'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Trash2, Edit2, MessageSquare, ShoppingCart } from 'lucide-react'
+import { Trash2, Edit2, MessageSquare, ShoppingCart, BookOpen } from 'lucide-react'
 
 interface BookCardProps {
   book: BookData
@@ -104,33 +104,8 @@ function BookCardComponent({ book, onEdit, onDelete, isDeleting, isPublic = fals
             </Button>
           </Link>
 
-          {/* Amazon affiliate link */}
           {book.affiliateUrl && (
             <a href={book.affiliateUrl} target="_blank" rel="noopener noreferrer" className="w-full">
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-center gap-2 bg-background hover:bg-amber-50 hover:border-amber-300 hover:text-amber-700 dark:hover:bg-amber-950/30 dark:hover:border-amber-700 dark:hover:text-amber-400 transition-colors"
-              >
-                <ShoppingCart className="w-4 h-4" />
-                Buy on Amazon
-              </Button>
-            </a>
-          )}
-
-          {/* Authenticated actions */}
-          {!isPublic && (
-            <div className="flex gap-2">
-              <Button
-                onClick={() => onEdit(book)}
-                variant="secondary"
-                size="sm"
-                className="flex-1 justify-center gap-2"
-              >
-                <Edit2 className="w-4 h-4" />
-                Edit
-              </Button>
-
               <Button
                 variant="outline"
                 size="sm"
