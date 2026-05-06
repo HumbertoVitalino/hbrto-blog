@@ -55,11 +55,6 @@ export class Book {
         return this._coverImageUrl
     }
 
-    get affiliateUrl() {
-        return this._affiliateUrl
-    }
-
-    get status() {
-        return this._status
-    }
+    get affiliateUrl() { return this._affiliateUrl }
+    get status() { return this._status }
 }

@@ -195,7 +195,7 @@ export default function BookDetailPage() {
 
             {/* Amazon affiliate button */}
             {book.affiliateUrl && (
-              <div className="flex justify-center md:justify-start">
+              <div className="flex justify-center md:justify-start pt-2">
                 <a href={book.affiliateUrl} target="_blank" rel="noopener noreferrer">
                   <Button
                     variant="outline"
