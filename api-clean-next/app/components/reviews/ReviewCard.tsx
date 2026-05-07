@@ -100,7 +100,7 @@ export function ReviewCard({ review, isAdmin, bookId, onDelete, onUpdate }: Revi
         {/* CONTENT */}
         <div className="relative">
           <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-            !isExpanded && isLong ? 'max-h-48' : 'max-h-1250'
+            !isExpanded && isLong ? 'max-h-48' : 'max-h-none'
           }`}>
             <MarkdownRenderer content={review.comment} />
           </div>
