@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { SocialFooter } from '@/app/components/layout/Footer'
+import { NewsletterBanner } from '@/app/components/newsletter/NewsletterBanner'
 import { FiArrowRight, FiGithub } from 'react-icons/fi'
 import {
   Server, Layout, Cloud, Database, Activity,
@@ -398,6 +399,7 @@ export default function HomePage() {
       </section>
 
       <SocialFooter />
+      <NewsletterBanner />
     </div>
   )
 }
