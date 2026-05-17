@@ -2,13 +2,14 @@
 
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/app/context/AuthContext'
-import { useEffect } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useBooks } from '@/app/hooks/useBooks'
 import { useReviews } from '@/app/hooks/useReviews'
 import { useReleaseNotes } from '@/app/hooks/useReleaseNotes'
+import { useSubscribers } from '@/app/hooks/useSubscribers'
 import { BookStatus } from '@/domain/BookStatus'
 import Link from 'next/link'
-import { Loader2, BookOpen, Star, Zap, Plus, ArrowUpRight, CheckCircle, Clock, Library } from 'lucide-react'
+import { Loader2, BookOpen, Star, Zap, Plus, ArrowUpRight, CheckCircle, Clock, Library, Mail, Trash2 } from 'lucide-react'
 
 export default function AdminPage() {
   const router = useRouter()
@@ -16,6 +17,18 @@ export default function AdminPage() {
   const { books, isLoading: booksLoading } = useBooks()
   const { reviews, isLoading: reviewsLoading } = useReviews()
   const { notes, isLoading: notesLoading } = useReleaseNotes()
+  const { subscribers, isLoading: subscribersLoading, removeSubscriber } = useSubscribers()
+
+  const [removingEmail, setRemovingEmail] = useState<string | null>(null)
+
+  const handleRemove = useCallback(async (email: string) => {
+    setRemovingEmail(email)
+    try {
+      await removeSubscriber(email)
+    } finally {
+      setRemovingEmail(null)
+    }
+  }, [removeSubscriber])
 
   useEffect(() => {
     if (!authLoading && !user) router.push('/admin/login')
@@ -40,12 +53,14 @@ export default function AdminPage() {
     { label: 'Completed', value: booksLoading ? '—' : completed, icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-500/10' },
     { label: 'Reviews', value: reviewsLoading ? '—' : reviews.length, icon: Star, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
     { label: 'Releases', value: notesLoading ? '—' : notes.length, icon: Zap, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { label: 'Subscribers', value: subscribersLoading ? '—' : subscribers.length, icon: Mail, color: 'text-pink-500', bg: 'bg-pink-500/10' },
   ]
 
   const quickActions = [
     { href: '/library', icon: Library, label: 'Manage Library', description: 'Add, edit or remove books from your library.', color: 'text-primary', bg: 'bg-primary/10' },
     { href: '/reviews', icon: Star, label: 'Manage Reviews', description: 'Write and manage book reviews.', color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-500/10' },
     { href: '/release-notes', icon: Zap, label: 'Manage Releases', description: 'Publish and update release notes.', color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-500/10' },
+    { href: '#newsletter', icon: Mail, label: 'Newsletter', description: 'View and manage newsletter subscribers.', color: 'text-pink-600 dark:text-pink-400', bg: 'bg-pink-500/10' },
   ]
 
   const recentBooks = books.slice(0, 5)
@@ -68,7 +83,7 @@ export default function AdminPage() {
           </div>
 
           {/* STATS */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-8 pt-8 border-t border-border/50">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mt-8 pt-8 border-t border-border/50">
             {stats.map(({ label, value, icon: Icon, color, bg }) => (
               <div key={label} className="flex items-center gap-3">
                 <div className={`w-9 h-9 rounded-lg ${bg} flex items-center justify-center shrink-0`}>
@@ -92,7 +107,7 @@ export default function AdminPage() {
             <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">Manage content</h2>
             <div className="flex-1 h-px bg-border/50" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {quickActions.map(({ href, icon: Icon, label, description, color, bg }) => (
               <Link
                 key={href}
@@ -200,6 +215,59 @@ export default function AdminPage() {
             </div>
           )}
         </div>
+
+        {/* NEWSLETTER SUBSCRIBERS */}
+        <div id="newsletter">
+          <div className="flex items-center gap-3 mb-6">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">Newsletter subscribers</h2>
+            <div className="flex-1 h-px bg-border/50" />
+            {!subscribersLoading && (
+              <span className="text-xs text-muted-foreground">
+                {subscribers.length} active
+              </span>
+            )}
+          </div>
+
+          {subscribersLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            </div>
+          ) : subscribers.length === 0 ? (
+            <div className="text-center py-10 border border-dashed border-border/50 rounded-2xl">
+              <p className="text-sm text-muted-foreground">No subscribers yet.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-border/50 border border-border/60 rounded-2xl overflow-hidden bg-card">
+              {subscribers.map((sub) => (
+                <div key={sub.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-7 h-7 rounded-full bg-pink-500/10 flex items-center justify-center shrink-0">
+                      <Mail className="w-3.5 h-3.5 text-pink-500" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{sub.email}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(sub.subscribedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleRemove(sub.email)}
+                    disabled={removingEmail === sub.email}
+                    className="shrink-0 ml-4 text-muted-foreground hover:text-red-500 transition-colors disabled:opacity-40"
+                    aria-label="Remove subscriber"
+                  >
+                    {removingEmail === sub.email
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <Trash2 className="w-4 h-4" />
+                    }
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
     </main>
   )
