@@ -1,8 +1,10 @@
 import { ReviewRepository } from "@/infrastructure/repositories/ReviewRepository";
+import { SubscriberRepository } from "@/infrastructure/repositories/SubscriberRepository";
 import {
     GetAllReviewsUseCase,
     CreateReviewUseCase,
 } from "@/application/usecases";
+import { EmailService } from "@/infrastructure/email/EmailService";
 import { reviewsToPlain, reviewToPlain } from "@/lib/mappers";
 import { NextResponse, NextRequest } from "next/server";
 import { supabase } from "@/infrastructure/supabase/client";
@@ -68,6 +70,10 @@ export async function POST(request: NextRequest) {
             rating: body.rating,
             comment: body.comment
         });
+
+        const subscribers = await new SubscriberRepository().findAll();
+        const emails = subscribers.map(s => s.email);
+        await new EmailService().sendNewReview(emails, review.title, review.id);
 
         return NextResponse.json(reviewToPlain(review), { status: 201 });
     }
