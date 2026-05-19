@@ -24,7 +24,7 @@ export function NewsletterBanner() {
         setVisible(false)
     }
 
-    async function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(e: { preventDefault(): void }) {
         e.preventDefault()
         setStatus('loading')
 
@@ -50,7 +50,7 @@ export function NewsletterBanner() {
     if (!visible) return null
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 w-96 rounded-2xl border border-border/60 bg-card shadow-lg p-6 animate-in slide-in-from-bottom-4 fade-in duration-300">
+        <div className="fixed bottom-0 right-0 left-0 z-50 sm:bottom-6 sm:right-6 sm:left-auto sm:w-96 rounded-none sm:rounded-2xl border-t sm:border border-border/60 bg-card shadow-lg p-6 animate-in slide-in-from-bottom-4 fade-in duration-300">
             <button
                 onClick={dismiss}
                 className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
