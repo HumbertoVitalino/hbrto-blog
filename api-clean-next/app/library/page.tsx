@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useBooks, BookData } from '@/app/hooks/useBooks'
 import { BookStatus } from '@/domain/BookStatus'
+import { BookGenre } from '@/domain/BookGenre'
 import { useAuth } from '@/app/context/AuthContext'
 import { BookFormModal } from '@/app/components/books/BookFormModal'
 import { BooksGrid } from '@/app/components/books/BooksGrid'
@@ -11,13 +12,31 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle, Plus, BookOpen, CheckCircle, Clock } from 'lucide-react'
 
 type FilterStatus = BookStatus | 'all'
+type FilterGenre = BookGenre | 'all'
 
-const statusFilters: { value: FilterStatus; label: string; color?: string }[] = [
+const statusFilters: { value: FilterStatus; label: string }[] = [
   { value: 'all', label: 'All' },
   { value: BookStatus.InProgress, label: 'Reading' },
   { value: BookStatus.NotStarted, label: 'To read' },
   { value: BookStatus.Completed, label: 'Completed' },
 ]
+
+const genreLabels: Record<BookGenre, string> = {
+  [BookGenre.Fiction]: 'Fiction',
+  [BookGenre.NonFiction]: 'Non-Fiction',
+  [BookGenre.Fantasy]: 'Fantasy',
+  [BookGenre.ScienceFiction]: 'Sci-Fi',
+  [BookGenre.Mystery]: 'Mystery',
+  [BookGenre.Thriller]: 'Thriller',
+  [BookGenre.Romance]: 'Romance',
+  [BookGenre.Horror]: 'Horror',
+  [BookGenre.Biography]: 'Biography',
+  [BookGenre.History]: 'History',
+  [BookGenre.SelfHelp]: 'Self-Help',
+  [BookGenre.Business]: 'Business',
+  [BookGenre.Technology]: 'Technology',
+  [BookGenre.Philosophy]: 'Philosophy',
+}
 
 const sectionOrder: { status: BookStatus; label: string }[] = [
   { status: BookStatus.InProgress, label: 'Currently reading' },
@@ -35,12 +54,48 @@ export default function LibraryPage() {
   const [deletingId, setDeletingId] = useState<string | undefined>()
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all')
+  const [genreFilter, setGenreFilter] = useState<FilterGenre>('all')
 
   const booksByStatus = useMemo(() => ({
     [BookStatus.NotStarted]: books.filter(b => b.status === BookStatus.NotStarted),
     [BookStatus.InProgress]: books.filter(b => b.status === BookStatus.InProgress),
     [BookStatus.Completed]: books.filter(b => b.status === BookStatus.Completed),
   }), [books])
+
+  // books visible under the current status filter — used to derive available genres
+  const booksInStatusView = useMemo(() =>
+    statusFilter === 'all' ? books : booksByStatus[statusFilter]
+  , [books, booksByStatus, statusFilter])
+
+  // unique genres present in the current status view, sorted by frequency
+  const availableGenres = useMemo(() => {
+    const counts = new Map<BookGenre, number>()
+    for (const book of booksInStatusView) {
+      if (book.genre) {
+        const g = book.genre as BookGenre
+        counts.set(g, (counts.get(g) ?? 0) + 1)
+      }
+    }
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([genre, count]) => ({ genre, count }))
+  }, [booksInStatusView])
+
+  // final books per section after applying both filters
+  const booksByStatusAndGenre = useMemo(() => {
+    const applyGenre = (list: BookData[]) =>
+      genreFilter === 'all' ? list : list.filter(b => b.genre === genreFilter)
+    return {
+      [BookStatus.NotStarted]: applyGenre(booksByStatus[BookStatus.NotStarted]),
+      [BookStatus.InProgress]: applyGenre(booksByStatus[BookStatus.InProgress]),
+      [BookStatus.Completed]: applyGenre(booksByStatus[BookStatus.Completed]),
+    }
+  }, [booksByStatus, genreFilter])
+
+  const handleStatusFilter = useCallback((value: FilterStatus) => {
+    setStatusFilter(value)
+    setGenreFilter('all')
+  }, [])
 
   const handleEdit = useCallback((book: BookData) => {
     setSelectedBook(book)
@@ -82,10 +137,12 @@ export default function LibraryPage() {
     }
   }, [deleteBook])
 
-  const hasVisibleBooks = useMemo(() => {
-    if (statusFilter === 'all') return books.length > 0
-    return booksByStatus[statusFilter].length > 0
-  }, [books.length, booksByStatus, statusFilter])
+  const hasVisibleBooks = useMemo(() =>
+    sectionOrder.some(({ status }) => {
+      if (statusFilter !== 'all' && statusFilter !== status) return false
+      return booksByStatusAndGenre[status].length > 0
+    })
+  , [booksByStatusAndGenre, statusFilter])
 
   return (
     <main className="min-h-screen bg-background">
@@ -161,25 +218,64 @@ export default function LibraryPage() {
         {/* CONTENT */}
         {!isLoading && (
           <>
-            {/* FILTER PILLS */}
+            {/* FILTERS */}
             {books.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap">
-                {statusFilters.map(({ value, label }) => {
-                  const count = value === 'all' ? books.length : booksByStatus[value].length
-                  return (
-                    <button
-                      key={value}
-                      onClick={() => setStatusFilter(value)}
-                      className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-                        statusFilter === value
-                          ? 'bg-foreground text-background'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-                      }`}
+              <div className="space-y-2">
+                {/* Status — primary filter */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {statusFilters.map(({ value, label }) => {
+                    const count = value === 'all' ? books.length : booksByStatus[value].length
+                    return (
+                      <button
+                        key={value}
+                        onClick={() => handleStatusFilter(value)}
+                        className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
+                          statusFilter === value
+                            ? 'bg-foreground text-background'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                        }`}
+                      >
+                        {label} <span className="opacity-60 ml-1">{count}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Genre — secondary filter, only when genres exist */}
+                {availableGenres.length > 0 && (
+                  <div className="relative">
+                    <div
+                      className="flex items-center gap-1.5 overflow-x-auto pb-0.5"
+                      style={{ scrollbarWidth: 'none' }}
                     >
-                      {label} <span className="opacity-60 ml-1">{count}</span>
-                    </button>
-                  )
-                })}
+                      <button
+                        onClick={() => setGenreFilter('all')}
+                        className={`shrink-0 text-xs px-3 py-1 rounded-full border transition-colors ${
+                          genreFilter === 'all'
+                            ? 'border-border bg-muted text-foreground'
+                            : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                        }`}
+                      >
+                        All genres
+                      </button>
+                      {availableGenres.map(({ genre, count }) => (
+                        <button
+                          key={genre}
+                          onClick={() => setGenreFilter(genre)}
+                          className={`shrink-0 text-xs px-3 py-1 rounded-full border transition-colors ${
+                            genreFilter === genre
+                              ? 'border-border bg-muted text-foreground'
+                              : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                          }`}
+                        >
+                          {genreLabels[genre]}
+                          <span className="opacity-50 ml-1">{count}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="pointer-events-none absolute right-0 top-0 bottom-0.5 w-8 bg-linear-to-l from-background to-transparent" />
+                  </div>
+                )}
               </div>
             )}
 
@@ -187,12 +283,24 @@ export default function LibraryPage() {
             {!hasVisibleBooks && (
               <div className="text-center py-20 border border-dashed border-border/50 rounded-2xl">
                 <p className="text-sm text-muted-foreground">
-                  {statusFilter === 'all' ? 'No books yet.' : 'No books with this status.'}
+                  {books.length === 0
+                    ? 'No books yet.'
+                    : genreFilter !== 'all'
+                    ? `No ${genreLabels[genreFilter as BookGenre]} books${statusFilter !== 'all' ? ' with this status' : ''}.`
+                    : 'No books with this status.'}
                 </p>
-                {isAdmin && statusFilter === 'all' && (
+                {isAdmin && books.length === 0 && (
                   <Button variant="ghost" onClick={handleNew} className="mt-4">
                     Add your first book
                   </Button>
+                )}
+                {genreFilter !== 'all' && (
+                  <button
+                    onClick={() => setGenreFilter('all')}
+                    className="mt-3 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors"
+                  >
+                    Clear genre filter
+                  </button>
                 )}
               </div>
             )}
@@ -201,7 +309,7 @@ export default function LibraryPage() {
             {hasVisibleBooks && (
               <div className="space-y-14">
                 {sectionOrder.map(({ status, label }) => {
-                  const sectionBooks = booksByStatus[status]
+                  const sectionBooks = booksByStatusAndGenre[status]
                   if (!sectionBooks.length) return null
                   if (statusFilter !== 'all' && statusFilter !== status) return null
 
