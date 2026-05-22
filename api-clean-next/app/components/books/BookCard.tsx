@@ -4,7 +4,6 @@ import { memo } from 'react'
 import { BookData } from '@/app/hooks/useBooks'
 import { BookStatus } from '@/domain/BookStatus'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
 import { Trash2, Edit2, MessageSquare, ShoppingCart, BookOpen } from 'lucide-react'
 
 interface BookCardProps {
@@ -46,13 +45,13 @@ function BookCardComponent({ book, onEdit, onDelete, isDeleting, isPublic = fals
           </div>
         )}
 
-        {/* Status badge */}
-        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-background/90 backdrop-blur-sm border border-border/50 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
+        {/* Status badge — bottom left */}
+        <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 bg-background/90 backdrop-blur-sm border border-border/50 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
           <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
           {status.label}
         </div>
 
-        {/* Admin overlay */}
+        {/* Admin overlay — top right */}
         {!isPublic && (
           <div className="absolute top-2.5 right-2.5 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
@@ -73,49 +72,48 @@ function BookCardComponent({ book, onEdit, onDelete, isDeleting, isPublic = fals
       </div>
 
       {/* INFO */}
-      <div className="flex flex-col flex-1 p-4 gap-3">
-        <div>
-          <h3 className="font-semibold text-base leading-snug line-clamp-2 text-foreground">
+      <div className="flex flex-col flex-1 p-4 gap-2">
+        <div className="flex-1">
+          <h3 className="font-semibold text-[15px] leading-snug line-clamp-2 text-foreground">
             {book.title}
           </h3>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">
             {book.author}
           </p>
         </div>
 
-        {/* Tags */}
-        <div className="flex flex-wrap gap-1.5">
-          <span className="text-xs text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md">
-            {book.pages} pages
-          </span>
-          {book.genre && (
-            <span className="text-xs text-primary bg-primary/8 px-2 py-0.5 rounded-md capitalize">
-              {book.genre.replace('-', ' ')}
-            </span>
-          )}
-        </div>
+        {/* Footer: metadata + icon actions */}
+        <div className="flex items-center justify-between gap-2 mt-auto pt-3 border-t border-border/40">
+          <div className="flex items-center gap-1.5 min-w-0 text-xs text-muted-foreground">
+            {book.genre && (
+              <>
+                <span className="truncate capitalize">{book.genre.replaceAll('-', ' ')}</span>
+                <span className="opacity-40 shrink-0">·</span>
+              </>
+            )}
+            <span className="whitespace-nowrap shrink-0">{book.pages}p</span>
+          </div>
 
-        {/* Actions */}
-        <div className="flex flex-col gap-2 mt-auto pt-1">
-          <Link href={`/library/${book.id}`} className="w-full">
-            <Button variant="outline" size="sm" className="w-full gap-2 justify-center text-xs">
-              <MessageSquare className="w-3.5 h-3.5" />
-              Reviews
-            </Button>
-          </Link>
-
-          {book.affiliateUrl && (
-            <a href={book.affiliateUrl} target="_blank" rel="noopener noreferrer" className="w-full">
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full gap-2 justify-center text-xs hover:bg-amber-50 hover:border-amber-300 hover:text-amber-700 dark:hover:bg-amber-950/30 dark:hover:border-amber-700 dark:hover:text-amber-400 transition-colors"
+          <div className="flex items-center gap-0.5 shrink-0">
+            {book.affiliateUrl && (
+              <a href={book.affiliateUrl} target="_blank" rel="noopener noreferrer">
+                <button
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                  title="Buy on Amazon"
+                >
+                  <ShoppingCart className="w-3.5 h-3.5" />
+                </button>
+              </a>
+            )}
+            <Link href={`/library/${book.id}`}>
+              <button
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                title="Reviews"
               >
-                <ShoppingCart className="w-3.5 h-3.5" />
-                Buy on Amazon
-              </Button>
-            </a>
-          )}
+                <MessageSquare className="w-3.5 h-3.5" />
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

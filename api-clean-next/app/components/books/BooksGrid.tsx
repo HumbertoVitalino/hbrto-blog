@@ -16,12 +16,12 @@ function EmptyState({ isPublic }: { isPublic: boolean }) {
     return (
         <div className="flex flex-col items-center justify-center py-12 text-center">
             <h3 className="text-xl font-semibold text-muted-foreground mb-2">
-                No articles added
+                No books added
             </h3>
             <p className="text-muted-foreground">
                 {isPublic
-                    ? 'Check back soon for new articles'
-                    : 'Start by adding your first article'}
+                    ? 'Check back soon for new books'
+                    : 'Start by adding your first book'}
             </p>
         </div>
     )

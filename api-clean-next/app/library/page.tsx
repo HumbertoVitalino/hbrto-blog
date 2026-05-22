@@ -9,7 +9,7 @@ import { BookFormModal } from '@/app/components/books/BookFormModal'
 import { BooksGrid } from '@/app/components/books/BooksGrid'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle, Plus, BookOpen, CheckCircle, Clock } from 'lucide-react'
+import { AlertCircle, Plus } from 'lucide-react'
 
 type FilterStatus = BookStatus | 'all'
 type FilterGenre = BookGenre | 'all'
@@ -38,10 +38,10 @@ const genreLabels: Record<BookGenre, string> = {
   [BookGenre.Philosophy]: 'Philosophy',
 }
 
-const sectionOrder: { status: BookStatus; label: string }[] = [
-  { status: BookStatus.InProgress, label: 'Currently reading' },
-  { status: BookStatus.NotStarted, label: 'To read' },
-  { status: BookStatus.Completed, label: 'Completed' },
+const sectionOrder: { status: BookStatus; label: string; accent: string }[] = [
+  { status: BookStatus.InProgress, label: 'Currently reading', accent: 'bg-blue-500' },
+  { status: BookStatus.NotStarted, label: 'To read', accent: 'bg-slate-400' },
+  { status: BookStatus.Completed, label: 'Completed', accent: 'bg-green-500' },
 ]
 
 export default function LibraryPage() {
@@ -149,55 +149,46 @@ export default function LibraryPage() {
 
       {/* HERO */}
       <section className="border-b bg-muted/10">
-        <div className="max-w-5xl mx-auto px-6 py-16">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Library</p>
-          <div className="flex items-end justify-between gap-4 flex-wrap">
+        <div className="max-w-5xl mx-auto px-6 py-14">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Library</p>
               <h1 className="text-4xl font-bold tracking-tight">My reading list</h1>
-              <p className="text-muted-foreground mt-2 leading-relaxed">
+              <p className="text-muted-foreground mt-2 max-w-md">
                 Books I've read, I'm reading, and plan to read.
               </p>
             </div>
             {isAdmin && (
-              <Button size="sm" onClick={handleNew} className="gap-2 shrink-0">
+              <Button size="sm" onClick={handleNew} className="gap-2 shrink-0 mt-1">
                 <Plus className="w-4 h-4" />
                 Add book
               </Button>
             )}
           </div>
 
-          {/* STATS */}
+          {/* STATS — inline, editorial */}
           {!isLoading && books.length > 0 && (
-            <div className="flex items-center gap-6 mt-8 pt-8 border-t border-border/50 flex-wrap">
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-muted-foreground" />
-                <div>
-                  <span className="text-2xl font-bold">{books.length}</span>
-                  <p className="text-xs text-muted-foreground">Total books</p>
-                </div>
-              </div>
-              <div className="w-px h-8 bg-border" />
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-blue-500" />
-                <div>
-                  <span className="text-2xl font-bold">{booksByStatus[BookStatus.InProgress].length}</span>
-                  <p className="text-xs text-muted-foreground">Reading now</p>
-                </div>
-              </div>
-              <div className="w-px h-8 bg-border" />
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-500" />
-                <div>
-                  <span className="text-2xl font-bold">{booksByStatus[BookStatus.Completed].length}</span>
-                  <p className="text-xs text-muted-foreground">Completed</p>
-                </div>
-              </div>
+            <div className="flex items-center gap-2 mt-8 pt-6 border-t border-border/50 text-sm flex-wrap">
+              <span>
+                <span className="font-semibold text-foreground tabular-nums">{books.length}</span>
+                <span className="text-muted-foreground ml-1">books</span>
+              </span>
+              <span className="text-border select-none">·</span>
+              <span>
+                <span className="font-semibold text-foreground tabular-nums">{booksByStatus[BookStatus.InProgress].length}</span>
+                <span className="text-muted-foreground ml-1">reading</span>
+              </span>
+              <span className="text-border select-none">·</span>
+              <span>
+                <span className="font-semibold text-foreground tabular-nums">{booksByStatus[BookStatus.Completed].length}</span>
+                <span className="text-muted-foreground ml-1">completed</span>
+              </span>
             </div>
           )}
         </div>
       </section>
 
-      <div className="max-w-5xl mx-auto px-6 py-12 space-y-10">
+      <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
 
         {/* ERRORS */}
         {(error || submitError) && (
@@ -220,60 +211,72 @@ export default function LibraryPage() {
           <>
             {/* FILTERS */}
             {books.length > 0 && (
-              <div className="space-y-2">
-                {/* Status — primary filter */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  {statusFilters.map(({ value, label }) => {
-                    const count = value === 'all' ? books.length : booksByStatus[value].length
-                    return (
-                      <button
-                        key={value}
-                        onClick={() => handleStatusFilter(value)}
-                        className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-                          statusFilter === value
-                            ? 'bg-foreground text-background'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-                        }`}
-                      >
-                        {label} <span className="opacity-60 ml-1">{count}</span>
-                      </button>
-                    )
-                  })}
-                </div>
+              <div className="rounded-xl border border-border/50 bg-card p-4 space-y-3">
 
-                {/* Genre — secondary filter, only when genres exist */}
-                {availableGenres.length > 0 && (
-                  <div className="relative">
-                    <div
-                      className="flex items-center gap-1.5 overflow-x-auto pb-0.5"
-                      style={{ scrollbarWidth: 'none' }}
-                    >
-                      <button
-                        onClick={() => setGenreFilter('all')}
-                        className={`shrink-0 text-xs px-3 py-1 rounded-full border transition-colors ${
-                          genreFilter === 'all'
-                            ? 'border-border bg-muted text-foreground'
-                            : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/40'
-                        }`}
-                      >
-                        All genres
-                      </button>
-                      {availableGenres.map(({ genre, count }) => (
+                {/* Status row */}
+                <div className="flex items-start gap-3">
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50 pt-1.5 w-14 shrink-0 select-none">
+                    Status
+                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {statusFilters.map(({ value, label }) => {
+                      const count = value === 'all' ? books.length : booksByStatus[value].length
+                      return (
                         <button
-                          key={genre}
-                          onClick={() => setGenreFilter(genre)}
-                          className={`shrink-0 text-xs px-3 py-1 rounded-full border transition-colors ${
-                            genreFilter === genre
-                              ? 'border-border bg-muted text-foreground'
-                              : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                          key={value}
+                          onClick={() => handleStatusFilter(value)}
+                          className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
+                            statusFilter === value
+                              ? 'bg-foreground text-background'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                           }`}
                         >
-                          {genreLabels[genre]}
-                          <span className="opacity-50 ml-1">{count}</span>
+                          {label}
+                          <span className="opacity-60 ml-1.5 tabular-nums">{count}</span>
                         </button>
-                      ))}
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Genre row */}
+                {availableGenres.length > 0 && (
+                  <div className="flex items-start gap-3">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50 pt-1.5 w-14 shrink-0 select-none">
+                      Genre
+                    </span>
+                    <div className="relative flex-1 min-w-0">
+                      <div
+                        className="flex items-center gap-1.5 overflow-x-auto"
+                        style={{ scrollbarWidth: 'none' }}
+                      >
+                        <button
+                          onClick={() => setGenreFilter('all')}
+                          className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
+                            genreFilter === 'all'
+                              ? 'bg-foreground text-background'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                          }`}
+                        >
+                          All
+                        </button>
+                        {availableGenres.map(({ genre, count }) => (
+                          <button
+                            key={genre}
+                            onClick={() => setGenreFilter(genre)}
+                            className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
+                              genreFilter === genre
+                                ? 'bg-foreground text-background'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                            }`}
+                          >
+                            {genreLabels[genre]}
+                            <span className="opacity-60 ml-1.5 tabular-nums">{count}</span>
+                          </button>
+                        ))}
+                      </div>
+                      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-10 bg-linear-to-l from-card to-transparent" />
                     </div>
-                    <div className="pointer-events-none absolute right-0 top-0 bottom-0.5 w-8 bg-linear-to-l from-background to-transparent" />
                   </div>
                 )}
               </div>
@@ -308,7 +311,7 @@ export default function LibraryPage() {
             {/* SECTIONS */}
             {hasVisibleBooks && (
               <div className="space-y-14">
-                {sectionOrder.map(({ status, label }) => {
+                {sectionOrder.map(({ status, label, accent }) => {
                   const sectionBooks = booksByStatusAndGenre[status]
                   if (!sectionBooks.length) return null
                   if (statusFilter !== 'all' && statusFilter !== status) return null
@@ -316,11 +319,12 @@ export default function LibraryPage() {
                   return (
                     <div key={status} className="space-y-6">
                       <div className="flex items-center gap-3">
-                        <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+                        <div className={`w-1 h-4 rounded-full shrink-0 ${accent}`} />
+                        <h2 className="text-sm font-semibold text-foreground">
                           {label}
                         </h2>
-                        <div className="flex-1 h-px bg-border/50" />
-                        <span className="text-xs text-muted-foreground">{sectionBooks.length}</span>
+                        <div className="flex-1 h-px bg-border/40" />
+                        <span className="text-xs tabular-nums text-muted-foreground">{sectionBooks.length}</span>
                       </div>
                       <BooksGrid
                         books={sectionBooks}
