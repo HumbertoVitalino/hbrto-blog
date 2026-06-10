@@ -27,7 +27,8 @@ export function reviewToPlain(review: Review) {
         bookId: review.bookId,
         rating: review.rating,
         comment: review.comment,
-        createdAt: review.createdAt
+        createdAt: review.createdAt,
+        language: review.language,
     };
 }
 

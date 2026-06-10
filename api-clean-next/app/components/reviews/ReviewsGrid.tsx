@@ -1,6 +1,6 @@
 'use client'
 
-import { Review } from '@/domain/Review'
+import { Review, ReviewLanguage } from '@/domain/Review'
 import { ReviewCard } from './ReviewCard'
 
 interface ReviewsGridProps {
@@ -8,7 +8,7 @@ interface ReviewsGridProps {
   bookId?: string
   isAdmin?: boolean
   onDelete?: (id: string, bookId?: string) => Promise<void>
-  onUpdate?: (id: string, bookId: string | null, title: string, rating: number, comment: string) => Promise<void>
+  onUpdate?: (id: string, bookId: string | null, title: string, rating: number, comment: string, language?: ReviewLanguage) => Promise<void>
 }
 
 export function ReviewsGrid({

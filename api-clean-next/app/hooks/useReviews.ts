@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Review } from '@/domain/Review'
+import { Review, ReviewLanguage } from '@/domain/Review'
 import { supabase } from '@/infrastructure/supabase/client'
 
 export function useReviews(bookId?: string) {
@@ -43,7 +43,8 @@ export function useReviews(bookId?: string) {
     title: string,
     bookId: string | null,
     rating: number,
-    comment: string
+    comment: string,
+    language: ReviewLanguage = 'en',
   ) => {
     try {
       const token = await getAuthHeader()
@@ -59,7 +60,7 @@ export function useReviews(bookId?: string) {
           'Content-Type': 'application/json',
           ...(token && { Authorization: token })
         },
-        body: JSON.stringify({ title, bookId: normalizedBookId, rating, comment })
+        body: JSON.stringify({ title, bookId: normalizedBookId, rating, comment, language })
       })
 
       if (!response.ok) {
@@ -84,7 +85,8 @@ export function useReviews(bookId?: string) {
     bookId: string | null,
     title?: string,
     rating?: number,
-    comment?: string
+    comment?: string,
+    language?: ReviewLanguage,
   ) => {
     try {
       const token = await getAuthHeader()
@@ -100,7 +102,7 @@ export function useReviews(bookId?: string) {
           'Content-Type': 'application/json',
           ...(token && { Authorization: token })
         },
-        body: JSON.stringify({ title, rating, comment })
+        body: JSON.stringify({ title, rating, comment, language })
       })
 
       if (!response.ok) {

@@ -68,7 +68,8 @@ export async function POST(request: NextRequest) {
             title: body.title,
             bookId: body.bookId || null,
             rating: body.rating,
-            comment: body.comment
+            comment: body.comment,
+            language: body.language ?? 'en',
         });
 
         const subscribers = await new SubscriberRepository().findAll();

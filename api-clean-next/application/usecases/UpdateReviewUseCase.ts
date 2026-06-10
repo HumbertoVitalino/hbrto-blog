@@ -1,10 +1,11 @@
-import { Review } from "@/domain/Review";
+import { Review, ReviewLanguage } from "@/domain/Review";
 import { ReviewRepository } from "@/infrastructure/repositories/ReviewRepository";
 
 export interface UpdateReviewDTO {
     title?: string;
     rating?: number;
     comment?: string;
+    language?: ReviewLanguage;
 }
 
 export class UpdateReviewUseCase {
@@ -28,7 +29,8 @@ export class UpdateReviewUseCase {
             title: dto.title ?? review.title,
             rating: dto.rating ?? review.rating,
             comment: dto.comment ?? review.comment,
-            bookId: review.bookId
+            language: dto.language ?? review.language,
+            bookId: review.bookId,
         });
     }
 }

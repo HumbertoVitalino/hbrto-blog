@@ -22,7 +22,7 @@ export default function ReviewsPage() {
   const handleSubmit = useCallback(async (data: any) => {
     try {
       setSubmitError(null)
-      await createReview(data.title, data.bookId, data.rating, data.comment)
+      await createReview(data.title, data.bookId, data.rating, data.comment, data.language)
       setIsFormOpen(false)
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Failed to publish')
@@ -33,8 +33,8 @@ export default function ReviewsPage() {
     await deleteReview(id, null)
   }, [deleteReview])
 
-  const handleUpdate = useCallback(async (id: string, bookId: string | null, title: string, rating: number, comment: string) => {
-    await updateReview(id, bookId, title, rating, comment)
+  const handleUpdate = useCallback(async (id: string, bookId: string | null, title: string, rating: number, comment: string, language?: any) => {
+    await updateReview(id, bookId, title, rating, comment, language)
   }, [updateReview])
 
   const avgRating = useMemo(() => {
