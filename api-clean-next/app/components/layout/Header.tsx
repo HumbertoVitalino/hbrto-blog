@@ -44,6 +44,9 @@ export default function Header() {
             <Link href="/music" className="text-sm font-medium hover:text-primary transition-colors">
               Music
             </Link>
+            <Link href="/games" className="text-sm font-medium hover:text-primary transition-colors">
+              Games
+            </Link>
             <Link href="/release-notes" className="text-sm font-medium hover:text-primary transition-colors">
               Releases
             </Link>
@@ -113,6 +116,13 @@ export default function Header() {
               onClick={() => setIsOpen(false)}
             >
               Music
+            </Link>
+            <Link
+              href="/games"
+              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              Games
             </Link>
             <Link
               href="/release-notes"
