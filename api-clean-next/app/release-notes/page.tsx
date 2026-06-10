@@ -7,7 +7,7 @@ import { ReleaseNoteCard } from '@/app/components/release-notes/ReleaseNoteCard'
 import { ReleaseNoteFormModal } from '@/app/components/release-notes/ReleaseNoteFormModal'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle, Plus, Zap } from 'lucide-react'
+import { AlertCircle, Plus } from 'lucide-react'
 
 export default function ReleaseNotesPage() {
     const { notes, isLoading, error, createNote, updateNote, deleteNote } = useReleaseNotes()
@@ -31,9 +31,9 @@ export default function ReleaseNotesPage() {
 
             {/* HERO */}
             <section className="border-b bg-muted/10">
-                <div className="max-w-3xl mx-auto px-6 py-16">
+                <div className="max-w-5xl mx-auto px-6 py-14">
                     <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Changelog</p>
-                    <div className="flex items-end justify-between gap-4 flex-wrap">
+                    <div className="flex items-start justify-between gap-4 flex-wrap">
                         <div>
                             <h1 className="text-4xl font-bold tracking-tight">Release Notes</h1>
                             <p className="text-muted-foreground mt-2 leading-relaxed">
@@ -49,20 +49,17 @@ export default function ReleaseNotesPage() {
                     </div>
 
                     {!isLoading && notes.length > 0 && (
-                        <div className="flex items-center gap-2 mt-8 pt-8 border-t border-border/50">
-                            <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                                <Zap className="w-4 h-4 text-purple-500" />
-                            </div>
-                            <div>
-                                <span className="text-2xl font-bold">{notes.length}</span>
-                                <p className="text-xs text-muted-foreground">Releases published</p>
-                            </div>
+                        <div className="flex items-center gap-2 mt-8 pt-6 border-t border-border/50 text-sm flex-wrap">
+                            <span>
+                                <span className="font-semibold text-foreground tabular-nums">{notes.length}</span>
+                                <span className="text-muted-foreground ml-1">releases published</span>
+                            </span>
                         </div>
                     )}
                 </div>
             </section>
 
-            <div className="max-w-3xl mx-auto px-6 py-12 space-y-8">
+            <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
 
                 {error && (
                     <Alert variant="destructive">
