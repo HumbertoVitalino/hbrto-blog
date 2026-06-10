@@ -2,6 +2,7 @@ import { Book } from "@/domain/Book";
 import { Review } from "@/domain/Review";
 import { ReleaseNote } from "@/domain/ReleaseNote";
 import { Subscriber } from "@/domain/Subscriber";
+import { Game } from "@/domain/Game";
 
 export function bookToPlain(book: Book) {
     return {
@@ -27,7 +28,8 @@ export function reviewToPlain(review: Review) {
         bookId: review.bookId,
         rating: review.rating,
         comment: review.comment,
-        createdAt: review.createdAt
+        createdAt: review.createdAt,
+        language: review.language,
     };
 }
 
@@ -60,4 +62,20 @@ export function subscriberToPlain(subscriber: Subscriber) {
 
 export function subscribersToPlain(subscribers: Subscriber[]) {
     return subscribers.map(subscriberToPlain);
+}
+
+export function gameToPlain(game: Game) {
+    return {
+        id: game.id,
+        title: game.title,
+        platform: game.platform,
+        genre: game.genre,
+        status: game.status,
+        coverImageUrl: game.coverImageUrl,
+        totalHours: game.totalHours,
+    };
+}
+
+export function gamesToPlain(games: Game[]) {
+    return games.map(gameToPlain);
 }

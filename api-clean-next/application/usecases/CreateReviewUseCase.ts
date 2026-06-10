@@ -1,4 +1,4 @@
-import { Review } from "@/domain/Review";
+import { Review, ReviewLanguage } from "@/domain/Review";
 import { ReviewRepository } from "@/infrastructure/repositories/ReviewRepository";
 
 export interface CreateReviewDTO {
@@ -6,6 +6,7 @@ export interface CreateReviewDTO {
     bookId?: string | null;
     rating: number;
     comment: string;
+    language?: ReviewLanguage;
 }
 
 export class CreateReviewUseCase {
@@ -24,15 +25,15 @@ export class CreateReviewUseCase {
             throw new Error("Rating must be between 1 and 5");
         }
 
-        // Handle bookId: convert empty string or whitespace to null
         const bookId = dto.bookId?.trim() || null;
 
         const review = new Review({
             id: crypto.randomUUID(),
             title: dto.title,
-            bookId: bookId,
+            bookId,
             rating: dto.rating,
-            comment: dto.comment
+            comment: dto.comment,
+            language: dto.language ?? 'en',
         });
 
         return await this.reviewRepository.create(review);

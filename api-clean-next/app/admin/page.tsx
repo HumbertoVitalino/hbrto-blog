@@ -11,10 +11,13 @@ import { BookStatus } from '@/domain/BookStatus'
 import Link from 'next/link'
 import {
   Loader2, BookOpen, Star, Zap, CheckCircle, Clock,
-  Library, Mail, Trash2, Send, ArrowUpRight, Users, FileText
+  Library, Mail, Trash2, Send, ArrowUpRight, Users, FileText, Gamepad2
 } from 'lucide-react'
+import { useGames } from '@/app/hooks/useGames'
+import { GameStatus } from '@/domain/GameStatus'
+import { GamePlatform } from '@/domain/GamePlatform'
 
-type Tab = 'overview' | 'books' | 'reviews' | 'newsletter'
+type Tab = 'overview' | 'books' | 'reviews' | 'games' | 'newsletter'
 
 export default function AdminPage() {
   const router = useRouter()
@@ -23,6 +26,7 @@ export default function AdminPage() {
   const { reviews, isLoading: reviewsLoading } = useReviews()
   const { notes, isLoading: notesLoading } = useReleaseNotes()
   const { subscribers, isLoading: subscribersLoading, removeSubscriber } = useSubscribers()
+  const { games, isLoading: gamesLoading } = useGames()
 
   const [tab, setTab] = useState<Tab>('overview')
   const [removingEmail, setRemovingEmail] = useState<string | null>(null)
@@ -86,6 +90,7 @@ export default function AdminPage() {
     { id: 'overview',   label: 'Overview'   },
     { id: 'books',      label: 'Books'      },
     { id: 'reviews',    label: 'Reviews'    },
+    { id: 'games',      label: 'Games'      },
     { id: 'newsletter', label: 'Newsletter' },
   ]
 
@@ -135,6 +140,7 @@ export default function AdminPage() {
                 { label: 'Reading now',  value: booksLoading ? null : reading,                 icon: Clock,       color: 'text-blue-500',   bg: 'bg-blue-500/10',   border: 'border-blue-500/20'   },
                 { label: 'Completed',    value: booksLoading ? null : completed,               icon: CheckCircle, color: 'text-green-500',  bg: 'bg-green-500/10',  border: 'border-green-500/20'  },
                 { label: 'Reviews',      value: reviewsLoading ? null : reviews.length,        icon: Star,        color: 'text-yellow-500', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20' },
+                { label: 'Games',        value: gamesLoading ? null : games.length,            icon: Gamepad2,    color: 'text-orange-500', bg: 'bg-orange-500/10', border: 'border-orange-500/20' },
                 { label: 'Releases',     value: notesLoading ? null : notes.length,            icon: Zap,         color: 'text-purple-500', bg: 'bg-purple-500/10', border: 'border-purple-500/20' },
                 { label: 'Subscribers',  value: subscribersLoading ? null : subscribers.length, icon: Users,      color: 'text-pink-500',   bg: 'bg-pink-500/10',   border: 'border-pink-500/20'   },
               ].map(({ label, value, icon: Icon, color, bg, border }) => (
@@ -157,10 +163,10 @@ export default function AdminPage() {
               <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Go to</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                  { label: 'Library',    icon: Library,  href: '/library',       targetTab: null             as Tab | null },
-                  { label: 'Reviews',    icon: FileText, href: '/reviews',       targetTab: null             as Tab | null },
-                  { label: 'Releases',   icon: Zap,      href: '/release-notes', targetTab: null             as Tab | null },
-                  { label: 'Newsletter', icon: Mail,     href: null,             targetTab: 'newsletter'     as Tab | null },
+                  { label: 'Library',    icon: Library,   href: '/library',       targetTab: null             as Tab | null },
+                  { label: 'Reviews',    icon: FileText,  href: '/reviews',       targetTab: null             as Tab | null },
+                  { label: 'Games',      icon: Gamepad2,  href: '/games',         targetTab: null             as Tab | null },
+                  { label: 'Newsletter', icon: Mail,      href: null,             targetTab: 'newsletter'     as Tab | null },
                 ].map(({ label, icon: Icon, href, targetTab }) =>
                   href ? (
                     <Link
@@ -293,6 +299,53 @@ export default function AdminPage() {
                         <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-border'}`} />
                       ))}
                     </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── GAMES ── */}
+        {tab === 'games' && (
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <p className="text-sm text-muted-foreground">
+                {gamesLoading ? '—' : `${games.length} games total`}
+              </p>
+              <Link href="/games" className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                <Gamepad2 className="w-3.5 h-3.5" /> Manage in Games
+              </Link>
+            </div>
+
+            {gamesLoading ? <Spinner /> : games.length === 0 ? (
+              <Empty message="No games yet." />
+            ) : (
+              <div className="divide-y divide-border/50 border border-border/60 rounded-2xl overflow-hidden bg-card">
+                {games.map((game) => (
+                  <div key={game.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-muted/30 transition-colors">
+                    {game.coverImageUrl ? (
+                      <img src={game.coverImageUrl} alt="" className="w-12 h-8 object-cover rounded shrink-0" />
+                    ) : (
+                      <div className="w-12 h-8 bg-muted rounded shrink-0 flex items-center justify-center">
+                        <Gamepad2 className="w-3.5 h-3.5 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium truncate">{game.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {game.platform === GamePlatform.PSN ? 'PlayStation' : 'Nintendo Switch'}
+                        {game.genre ? ` · ${game.genre}` : ''}
+                      </p>
+                    </div>
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${
+                      game.status === GameStatus.Completed ? 'bg-green-500/10 text-green-600 dark:text-green-400' :
+                      game.status === GameStatus.Playing   ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'   :
+                      'bg-muted text-muted-foreground'
+                    }`}>
+                      {game.status === GameStatus.Completed ? 'Completed' :
+                       game.status === GameStatus.Playing   ? 'Playing'   : 'Backlog'}
+                    </span>
                   </div>
                 ))}
               </div>

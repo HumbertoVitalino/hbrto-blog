@@ -81,7 +81,8 @@ export async function PUT(
         const review = await useCase.execute(reviewId, {
             title: body.title,
             rating: body.rating,
-            comment: body.comment
+            comment: body.comment,
+            language: body.language,
         });
 
         return NextResponse.json(reviewToPlain(review));

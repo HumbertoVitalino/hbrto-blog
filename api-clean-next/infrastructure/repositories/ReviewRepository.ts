@@ -1,4 +1,4 @@
-import { Review } from "@/domain/Review";
+import { Review, ReviewLanguage } from "@/domain/Review";
 import { supabase } from "../supabase/client";
 
 export class ReviewRepository {
@@ -12,16 +12,15 @@ export class ReviewRepository {
             throw new Error(error.message);
         }
 
-        return data.map(
-            (item) =>
-                new Review({
-                    id: item.id,
-                    title: item.title,
-                    bookId: item.book_id,
-                    rating: item.rating,
-                    comment: item.comment,
-                    createdAt: item.created_at ? new Date(item.created_at) : new Date()
-                }))
+        return data.map((item) => new Review({
+            id: item.id,
+            title: item.title,
+            bookId: item.book_id,
+            rating: item.rating,
+            comment: item.comment,
+            createdAt: item.created_at ? new Date(item.created_at) : new Date(),
+            language: (item.language as ReviewLanguage) ?? 'en',
+        }))
     }
 
     async findById(id: string): Promise<Review | null> {
@@ -31,11 +30,8 @@ export class ReviewRepository {
             .eq("id", id)
             .single();
 
-
         if (error) {
-            if (error.code === "PGRST116") {
-                return null;
-            }
+            if (error.code === "PGRST116") return null;
             throw new Error(error.message);
         }
 
@@ -44,7 +40,9 @@ export class ReviewRepository {
             title: data.title,
             bookId: data.book_id,
             rating: data.rating,
-            comment: data.comment
+            comment: data.comment,
+            createdAt: data.created_at ? new Date(data.created_at) : new Date(),
+            language: (data.language as ReviewLanguage) ?? 'en',
         });
     }
 
@@ -59,16 +57,15 @@ export class ReviewRepository {
             throw new Error(error.message);
         }
 
-        return data.map(
-            (item) =>
-                new Review({
-                    id: item.id,
-                    title: item.title,
-                    bookId: item.book_id,
-                    rating: item.rating,
-                    comment: item.comment,
-                    createdAt: item.created_at ? new Date(item.created_at) : new Date()
-                }))
+        return data.map((item) => new Review({
+            id: item.id,
+            title: item.title,
+            bookId: item.book_id,
+            rating: item.rating,
+            comment: item.comment,
+            createdAt: item.created_at ? new Date(item.created_at) : new Date(),
+            language: (item.language as ReviewLanguage) ?? 'en',
+        }))
     }
 
     async create(review: Omit<Review, "id">): Promise<Review> {
@@ -78,7 +75,8 @@ export class ReviewRepository {
                 title: review.title,
                 book_id: review.bookId,
                 rating: review.rating,
-                comment: review.comment
+                comment: review.comment,
+                language: review.language,
             })
             .select()
             .single();
@@ -93,7 +91,8 @@ export class ReviewRepository {
             bookId: data.book_id,
             rating: data.rating,
             comment: data.comment,
-            createdAt: data.created_at ? new Date(data.created_at) : new Date()
+            createdAt: data.created_at ? new Date(data.created_at) : new Date(),
+            language: (data.language as ReviewLanguage) ?? 'en',
         });
     }
 
@@ -103,7 +102,8 @@ export class ReviewRepository {
             .update({
                 ...(updates.title && { title: updates.title }),
                 ...(updates.rating !== undefined && { rating: updates.rating }),
-                ...(updates.comment && { comment: updates.comment })
+                ...(updates.comment && { comment: updates.comment }),
+                ...(updates.language && { language: updates.language }),
             })
             .eq("id", id)
             .select()
@@ -119,7 +119,8 @@ export class ReviewRepository {
             bookId: data.book_id,
             rating: data.rating,
             comment: data.comment,
-            createdAt: data.created_at ? new Date(data.created_at) : new Date()
+            createdAt: data.created_at ? new Date(data.created_at) : new Date(),
+            language: (data.language as ReviewLanguage) ?? 'en',
         });
     }
 

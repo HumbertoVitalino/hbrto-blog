@@ -150,9 +150,9 @@ export default function LibraryPage() {
       {/* HERO */}
       <section className="border-b bg-muted/10">
         <div className="max-w-5xl mx-auto px-6 py-14">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Library</p>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Library</p>
               <h1 className="text-4xl font-bold tracking-tight">My reading list</h1>
               <p className="text-muted-foreground mt-2 max-w-md">
                 Books I've read, I'm reading, and plan to read.
@@ -211,72 +211,68 @@ export default function LibraryPage() {
           <>
             {/* FILTERS */}
             {books.length > 0 && (
-              <div className="rounded-xl border border-border/50 bg-card p-4 space-y-3">
+              <div className="space-y-3">
 
-                {/* Status row */}
-                <div className="flex items-start gap-3">
-                  <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50 pt-1.5 w-14 shrink-0 select-none">
-                    Status
-                  </span>
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {statusFilters.map(({ value, label }) => {
-                      const count = value === 'all' ? books.length : booksByStatus[value].length
-                      return (
-                        <button
-                          key={value}
-                          onClick={() => handleStatusFilter(value)}
-                          className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-                            statusFilter === value
-                              ? 'bg-foreground text-background'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-                          }`}
-                        >
-                          {label}
-                          <span className="opacity-60 ml-1.5 tabular-nums">{count}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
+                {/* Status — underline tabs */}
+                <div
+                  className="flex items-center border-b border-border/50 overflow-x-auto"
+                  style={{ scrollbarWidth: 'none' }}
+                >
+                  {statusFilters.map(({ value, label }) => {
+                    const count = value === 'all' ? books.length : booksByStatus[value].length
+                    const isActive = statusFilter === value
+                    return (
+                      <button
+                        key={value}
+                        onClick={() => handleStatusFilter(value)}
+                        className={`relative shrink-0 px-4 py-2.5 text-sm font-medium transition-colors ${
+                          isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        {label}
+                        <span className={`ml-1.5 text-xs tabular-nums ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/40'}`}>
+                          {count}
+                        </span>
+                        {isActive && (
+                          <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-foreground rounded-full" />
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
 
-                {/* Genre row */}
+                {/* Genre — outline chips */}
                 {availableGenres.length > 0 && (
-                  <div className="flex items-start gap-3">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50 pt-1.5 w-14 shrink-0 select-none">
-                      Genre
-                    </span>
-                    <div className="relative flex-1 min-w-0">
-                      <div
-                        className="flex items-center gap-1.5 overflow-x-auto"
-                        style={{ scrollbarWidth: 'none' }}
+                  <div className="relative">
+                    <div
+                      className="flex items-center gap-1.5 overflow-x-auto pb-0.5"
+                      style={{ scrollbarWidth: 'none' }}
+                    >
+                      <button
+                        onClick={() => setGenreFilter('all')}
+                        className={`shrink-0 text-xs font-medium px-3 py-1 rounded-full border transition-colors ${
+                          genreFilter === 'all'
+                            ? 'border-foreground text-foreground'
+                            : 'border-border text-muted-foreground hover:border-foreground/50 hover:text-foreground'
+                        }`}
                       >
+                        All
+                      </button>
+                      {availableGenres.map(({ genre }) => (
                         <button
-                          onClick={() => setGenreFilter('all')}
-                          className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-                            genreFilter === 'all'
-                              ? 'bg-foreground text-background'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                          key={genre}
+                          onClick={() => setGenreFilter(genre)}
+                          className={`shrink-0 text-xs font-medium px-3 py-1 rounded-full border transition-colors ${
+                            genreFilter === genre
+                              ? 'border-foreground text-foreground'
+                              : 'border-border text-muted-foreground hover:border-foreground/50 hover:text-foreground'
                           }`}
                         >
-                          All
+                          {genreLabels[genre]}
                         </button>
-                        {availableGenres.map(({ genre, count }) => (
-                          <button
-                            key={genre}
-                            onClick={() => setGenreFilter(genre)}
-                            className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-                              genreFilter === genre
-                                ? 'bg-foreground text-background'
-                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-                            }`}
-                          >
-                            {genreLabels[genre]}
-                            <span className="opacity-60 ml-1.5 tabular-nums">{count}</span>
-                          </button>
-                        ))}
-                      </div>
-                      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-10 bg-linear-to-l from-card to-transparent" />
+                      ))}
                     </div>
+                    <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-10 bg-linear-to-l from-background to-transparent" />
                   </div>
                 )}
               </div>

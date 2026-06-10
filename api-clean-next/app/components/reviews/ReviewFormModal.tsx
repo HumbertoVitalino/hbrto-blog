@@ -14,12 +14,18 @@ import { useBooks } from '@/app/hooks/useBooks'
 import { formatDate } from '@/lib/formatDate'
 import { MarkdownPreview } from './MarkdownPreview'
 import { Star, BookOpen, Info, ChevronLeft } from 'lucide-react'
+import { ReviewLanguage } from '@/domain/Review'
+
+const LANGUAGES: { value: ReviewLanguage; flag: string; label: string }[] = [
+  { value: 'en', flag: '🇺🇸', label: 'EN' },
+  { value: 'pt-BR', flag: '🇧🇷', label: 'PT' },
+]
 
 interface ReviewFormModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (data: { title: string; bookId: string | null; rating: number; comment: string }) => Promise<void>
-  initialValues?: { title?: string; rating: number; comment: string; createdAt?: Date }
+  onSubmit: (data: { title: string; bookId: string | null; rating: number; comment: string; language: ReviewLanguage }) => Promise<void>
+  initialValues?: { title?: string; rating: number; comment: string; createdAt?: Date; language?: ReviewLanguage }
   mode?: 'create' | 'edit'
   bookId?: string | null
 }
@@ -37,6 +43,7 @@ export function ReviewFormModal({
   const [title, setTitle] = useState(initialValues?.title ?? '')
   const [rating, setRating] = useState(initialValues?.rating ?? 5)
   const [comment, setComment] = useState(initialValues?.comment ?? '')
+  const [language, setLanguage] = useState<ReviewLanguage>(initialValues?.language ?? 'en')
   const [selectedBookId, setSelectedBookId] = useState<string | null>(bookId ?? null)
 
   const [isLoading, setIsLoading] = useState(false)
@@ -67,15 +74,16 @@ export function ReviewFormModal({
       setIsLoading(true)
 
       if (mode === 'create') {
-        await onSubmit({ title, bookId: selectedBookId, rating, comment })
+        await onSubmit({ title, bookId: selectedBookId, rating, comment, language })
       } else {
-        await onSubmit({ title, rating, comment } as any)
+        await onSubmit({ title, bookId: selectedBookId, rating, comment, language })
       }
 
       // Reset form states
       setTitle('')
       setRating(5)
       setComment('')
+      setLanguage('en')
       setActiveTab('write')
       if (!bookId) {
         setSelectedBookId(null)
@@ -215,30 +223,54 @@ export function ReviewFormModal({
                 />
               </div>
 
-              {/* Rating Input */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold tracking-tight">Rating</label>
-                <div className="flex items-center gap-1 bg-muted/30 p-2 rounded-lg border border-border/50 w-fit">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setRating(star)}
-                      onMouseEnter={() => setHoveredStar(star)}
-                      onMouseLeave={() => setHoveredStar(null)}
-                      className="p-1 transition-transform hover:scale-110 focus:outline-none"
-                    >
-                      <Star
-                        className={`w-6 h-6 transition-colors ${star <= (hoveredStar ?? rating)
-                            ? 'fill-yellow-400 text-yellow-400'
-                            : 'fill-muted text-muted-foreground/30'
-                          }`}
-                      />
-                    </button>
-                  ))}
-                  <span className="ml-2 text-sm font-medium text-muted-foreground w-4 text-center">
-                    {hoveredStar ?? rating}
-                  </span>
+              {/* Rating + Language */}
+              <div className="flex items-end gap-3">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold tracking-tight">Rating</label>
+                  <div className="flex items-center gap-1 bg-muted/30 p-2 rounded-lg border border-border/50 w-fit">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setRating(star)}
+                        onMouseEnter={() => setHoveredStar(star)}
+                        onMouseLeave={() => setHoveredStar(null)}
+                        className="p-1 transition-transform hover:scale-110 focus:outline-none"
+                      >
+                        <Star
+                          className={`w-6 h-6 transition-colors ${star <= (hoveredStar ?? rating)
+                              ? 'fill-yellow-400 text-yellow-400'
+                              : 'fill-muted text-muted-foreground/30'
+                            }`}
+                        />
+                      </button>
+                    ))}
+                    <span className="ml-2 text-sm font-medium text-muted-foreground w-4 text-center">
+                      {hoveredStar ?? rating}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Language toggle */}
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold tracking-tight">Language</label>
+                  <div className="flex items-center gap-1 bg-muted/30 p-1.5 rounded-lg border border-border/50">
+                    {LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.value}
+                        type="button"
+                        onClick={() => setLanguage(lang.value)}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                          language === lang.value
+                            ? 'bg-background text-foreground shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        <span>{lang.flag}</span>
+                        <span>{lang.label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

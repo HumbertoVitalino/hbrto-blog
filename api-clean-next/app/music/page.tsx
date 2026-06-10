@@ -49,15 +49,23 @@ export default function MusicPage() {
 
     return (
         <main className="min-h-screen bg-background">
-            <div className="max-w-5xl mx-auto px-4 py-16 space-y-8">
 
-                {/* HEADER */}
-                <div>
-                    <h1 className="text-2xl font-semibold tracking-tight">Music</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
-                        What I'm currently listening to on Spotify.
-                    </p>
+            {/* HERO */}
+            <section className="border-b bg-muted/10">
+                <div className="max-w-5xl mx-auto px-6 py-14">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Music</p>
+                    <div className="flex items-start justify-between gap-4 flex-wrap">
+                        <div>
+                            <h1 className="text-4xl font-bold tracking-tight">What I'm listening to</h1>
+                            <p className="text-muted-foreground mt-2">
+                                My Spotify activity — live data updated every 30 seconds.
+                            </p>
+                        </div>
+                    </div>
                 </div>
+            </section>
+
+            <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
 
                 {error && (
                     <Alert variant="destructive">

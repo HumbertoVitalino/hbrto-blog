@@ -25,3 +25,12 @@ export { DeleteReleaseNoteUseCase } from "./DeleteReleaseNoteUseCase";
 export { SubscribeUseCase, type SubscribeDTO } from "./SubscribeUseCase";
 export { UnsubscribeUseCase, type UnsubscribeDTO } from "./UnsubscribeUseCase";
 export { GetAllSubscribersUseCase } from "./GetAllSubscribersUseCase";
+
+export { GetAllGamesUseCase } from "./GetAllGamesUseCase";
+export { GetGameByIdUseCase } from "./GetGameByIdUseCase";
+export { CreateGameUseCase, type CreateGameDTO } from "./CreateGameUseCase";
+export { UpdateGameUseCase, type UpdateGameDTO } from "./UpdateGameUseCase";
+export { DeleteGameUseCase } from "./DeleteGameUseCase";
+
+export { GetSteamRecentGamesUseCase } from "./GetSteamRecentGamesUseCase";
+export { GetChessStatsUseCase } from "./GetChessStatsUseCase";

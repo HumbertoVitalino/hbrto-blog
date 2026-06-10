@@ -7,7 +7,7 @@ import { ReviewFormModal } from '@/app/components/reviews/ReviewFormModal'
 import { ReviewsGrid } from '@/app/components/reviews/ReviewsGrid'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle, Plus, Star } from 'lucide-react'
+import { AlertCircle, Plus } from 'lucide-react'
 
 type SortOption = 'newest' | 'highest' | 'lowest'
 
@@ -22,7 +22,7 @@ export default function ReviewsPage() {
   const handleSubmit = useCallback(async (data: any) => {
     try {
       setSubmitError(null)
-      await createReview(data.title, data.bookId, data.rating, data.comment)
+      await createReview(data.title, data.bookId, data.rating, data.comment, data.language)
       setIsFormOpen(false)
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Failed to publish')
@@ -33,8 +33,8 @@ export default function ReviewsPage() {
     await deleteReview(id, null)
   }, [deleteReview])
 
-  const handleUpdate = useCallback(async (id: string, bookId: string | null, title: string, rating: number, comment: string) => {
-    await updateReview(id, bookId, title, rating, comment)
+  const handleUpdate = useCallback(async (id: string, bookId: string | null, title: string, rating: number, comment: string, language?: any) => {
+    await updateReview(id, bookId, title, rating, comment, language)
   }, [updateReview])
 
   const avgRating = useMemo(() => {
@@ -61,9 +61,9 @@ export default function ReviewsPage() {
 
       {/* HERO */}
       <section className="border-b bg-muted/10">
-        <div className="max-w-3xl mx-auto px-6 py-16">
+        <div className="max-w-5xl mx-auto px-6 py-14">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Reviews</p>
-          <div className="flex items-end justify-between gap-4 flex-wrap">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <h1 className="text-4xl font-bold tracking-tight">Writing</h1>
               <p className="text-muted-foreground mt-2 leading-relaxed">
@@ -80,25 +80,22 @@ export default function ReviewsPage() {
 
           {/* STATS */}
           {!isLoading && reviews.length > 0 && (
-            <div className="flex items-center gap-6 mt-8 pt-8 border-t border-border/50">
-              <div>
-                <p className="text-2xl font-bold">{reviews.length}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Total reviews</p>
-              </div>
-              <div className="w-px h-8 bg-border" />
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <p className="text-2xl font-bold">{avgRating.toFixed(1)}</p>
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                </div>
-                <p className="text-xs text-muted-foreground mt-0.5">Average rating</p>
-              </div>
+            <div className="flex items-center gap-2 mt-8 pt-6 border-t border-border/50 text-sm flex-wrap">
+              <span>
+                <span className="font-semibold text-foreground tabular-nums">{reviews.length}</span>
+                <span className="text-muted-foreground ml-1">reviews</span>
+              </span>
+              <span className="text-border select-none">·</span>
+              <span>
+                <span className="font-semibold text-foreground tabular-nums">{avgRating.toFixed(1)}</span>
+                <span className="text-muted-foreground ml-1">avg rating</span>
+              </span>
             </div>
           )}
         </div>
       </section>
 
-      <div className="max-w-3xl mx-auto px-6 py-12 space-y-8">
+      <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
 
         {/* ERROR */}
         {(error || submitError) && (

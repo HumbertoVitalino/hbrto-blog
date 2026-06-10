@@ -1,6 +1,6 @@
 'use client'
 
-import { Review } from '@/domain/Review'
+import { Review, ReviewLanguage } from '@/domain/Review'
 import { Button } from '@/components/ui/button'
 import { Trash2, Edit2, Star, ChevronDown, ChevronUp } from 'lucide-react'
 import { useState } from 'react'
@@ -13,7 +13,12 @@ interface ReviewCardProps {
   isAdmin?: boolean
   bookId?: string
   onDelete?: (id: string, bookId?: string) => Promise<void>
-  onUpdate?: (id: string, bookId: string | null, title: string, rating: number, comment: string) => Promise<void>
+  onUpdate?: (id: string, bookId: string | null, title: string, rating: number, comment: string, language?: ReviewLanguage) => Promise<void>
+}
+
+const languageFlag: Record<ReviewLanguage, string> = {
+  'en': '🇺🇸',
+  'pt-BR': '🇧🇷',
 }
 
 function RatingStars({ rating }: { rating: number }) {
@@ -90,6 +95,17 @@ export function ReviewCard({ review, isAdmin, bookId, onDelete, onUpdate }: Revi
           >
             {formatDate(review.createdAt)}
           </time>
+          {review.language && review.language !== 'en' && (
+            <>
+              <span className="text-muted-foreground/40 text-xs">·</span>
+              <span
+                className="text-sm leading-none"
+                title={review.language === 'pt-BR' ? 'Português (BR)' : 'English'}
+              >
+                {languageFlag[review.language as ReviewLanguage] ?? review.language}
+              </span>
+            </>
+          )}
         </div>
 
         {/* TITLE */}
@@ -129,9 +145,9 @@ export function ReviewCard({ review, isAdmin, bookId, onDelete, onUpdate }: Revi
         <ReviewFormModal
           open={isEditOpen}
           onOpenChange={setIsEditOpen}
-          initialValues={{ title: review.title, rating: review.rating, comment: review.comment }}
+          initialValues={{ title: review.title, rating: review.rating, comment: review.comment, language: review.language }}
           onSubmit={async (data) => {
-            if (onUpdate) await onUpdate(review.id, review.bookId, data.title, data.rating, data.comment)
+            if (onUpdate) await onUpdate(review.id, review.bookId, data.title, data.rating, data.comment, data.language)
           }}
           mode="edit"
         />
