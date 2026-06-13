@@ -100,10 +100,10 @@ export class ReviewRepository {
         const { data, error } = await supabase
             .from("reviews")
             .update({
-                ...(updates.title && { title: updates.title }),
+                ...(updates.title !== undefined && { title: updates.title }),
                 ...(updates.rating !== undefined && { rating: updates.rating }),
-                ...(updates.comment && { comment: updates.comment }),
-                ...(updates.language && { language: updates.language }),
+                ...(updates.comment !== undefined && { comment: updates.comment }),
+                ...(updates.language !== undefined && { language: updates.language }),
             })
             .eq("id", id)
             .select()

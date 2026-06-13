@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { Review, ReviewLanguage } from '@/domain/Review'
 import { ReviewCard } from './ReviewCard'
 
@@ -11,19 +12,26 @@ interface ReviewsGridProps {
   onUpdate?: (id: string, bookId: string | null, title: string, rating: number, comment: string, language?: ReviewLanguage) => Promise<void>
 }
 
-export function ReviewsGrid({
-  reviews,
-  bookId,
-  isAdmin = false,
-  onDelete,
-  onUpdate
-}: ReviewsGridProps) {
+export function ReviewsGrid({ reviews, bookId, isAdmin = false, onDelete, onUpdate }: ReviewsGridProps) {
+  // Group reviews with the same title as language variants of the same entry.
+  // Map preserves insertion order, so sort priority from the parent is maintained.
+  const grouped = useMemo(() => {
+    const map = new Map<string, Review[]>()
+    for (const r of reviews) {
+      const key = r.title.trim().toLowerCase()
+      if (!map.has(key)) map.set(key, [])
+      map.get(key)!.push(r)
+    }
+    return Array.from(map.values())
+  }, [reviews])
+
   return (
     <div className="space-y-6">
-      {reviews.map((review, index) => (
+      {grouped.map(([primary, ...variants]) => (
         <ReviewCard
-          key={review.id || `review-${index}`}
-          review={review}
+          key={primary.id}
+          review={primary}
+          variants={variants}
           bookId={bookId}
           isAdmin={isAdmin}
           onDelete={onDelete}

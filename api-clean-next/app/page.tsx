@@ -8,7 +8,7 @@ import { FiArrowRight, FiGithub } from 'react-icons/fi'
 import {
   Server, Layout, Cloud, Database, Activity,
   BookOpen, Star, Music, Zap, ArrowUpRight,
-  Layers, GitBranch, Cpu
+  Layers, GitBranch, Cpu, GraduationCap
 } from 'lucide-react'
 
 const techStack = {
@@ -117,9 +117,9 @@ const experience = [
     period: 'Aug 2025 – Present',
     active: false,
     bullets: [
-      'Designing scalable backend services',
-      'Applying Clean Architecture and DDD',
-      'Improving production reliability',
+      'Building backend services with C# and .NET on AWS',
+      'Applying Clean Architecture and DDD to financial domain problems',
+      'Delivering frontend features with React and TypeScript when needed',
     ],
   },
   {
@@ -128,9 +128,9 @@ const experience = [
     period: 'Sep 2024 – Aug 2025',
     active: false,
     bullets: [
-      'Built production apps with React + TypeScript',
-      'Worked in cross-functional teams',
-      'Focused on maintainability',
+      'Developed backend services with C# and .NET on Azure',
+      'Worked with event-driven patterns and message brokers',
+      'Contributed to frontend features with React and TypeScript',
     ],
   },
 ]
@@ -178,7 +178,7 @@ export default function HomePage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Button size="lg" className="gap-2 shadow-sm hover:shadow-md transition-all">
+                <Button size="lg" className="gap-2 shadow-sm hover:ring-2 hover:ring-primary/20 transition-all">
                   <FiGithub className="w-4 h-4" />
                   GitHub
                   <FiArrowRight className="w-4 h-4" />
@@ -359,22 +359,56 @@ export default function HomePage() {
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Education</p>
             <h2 className="text-3xl font-bold tracking-tight">Degrees</h2>
           </div>
-
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-6 rounded-2xl border border-border/60 bg-card hover:shadow-sm transition-shadow gap-4">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                  <BookOpen className="w-5 h-5 text-primary" />
+            {[
+              {
+                type: 'Postgraduate',
+                icon: GraduationCap,
+                title: 'Software Architecture',
+                institution: 'FIAP',
+                period: '2026 – 2027',
+                active: true,
+                description: 'Specialization in system design, microservices, distributed systems, and architectural patterns for large-scale software.',
+              },
+              {
+                type: "Bachelor's",
+                icon: BookOpen,
+                title: 'Systems Analysis and Development',
+                institution: 'FIAP',
+                period: '2023 – 2025',
+                active: false,
+                description: 'Foundation in software development, databases, algorithms, and systems engineering.',
+              },
+            ].map(({ type, icon: Icon, title, institution, period, active, description }) => (
+              <div
+                key={title}
+                className="flex flex-col sm:flex-row sm:items-start justify-between p-6 rounded-2xl border border-border/60 bg-card hover:shadow-sm transition-shadow gap-4"
+              >
+                <div className="flex items-start gap-4">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${active ? 'bg-primary/10' : 'bg-muted/60'}`}>
+                    <Icon className={`w-5 h-5 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${active ? 'text-primary bg-primary/10' : 'text-muted-foreground bg-muted/50'}`}>
+                        {type}
+                      </span>
+                      {active && (
+                        <span className="text-xs font-medium text-green-600 dark:text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">
+                          In Progress
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="font-semibold text-foreground">{title}</h3>
+                    <p className="text-sm text-muted-foreground mt-0.5">{institution}</p>
+                    <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{description}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Systems Analysis and Development</h3>
-                  <p className="text-sm text-muted-foreground mt-0.5">FIAP</p>
-                </div>
+                <span className="text-xs font-medium text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full w-fit whitespace-nowrap shrink-0">
+                  {period}
+                </span>
               </div>
-              <span className="text-xs font-medium text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full w-fit whitespace-nowrap">
-                2023 – 2025
-              </span>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -390,7 +424,7 @@ export default function HomePage() {
             I'm always open to it.
           </p>
           <a href="mailto:humbertovitalino01@gmail.com">
-            <Button size="lg" className="gap-2 shadow-sm hover:shadow-md transition-all">
+            <Button size="lg" className="gap-2 shadow-sm hover:ring-2 hover:ring-primary/20 transition-all">
               Get in touch
               <FiArrowRight className="w-4 h-4" />
             </Button>
