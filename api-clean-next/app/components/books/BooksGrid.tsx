@@ -3,6 +3,7 @@
 import { memo, useMemo } from 'react'
 import { BookData } from '@/app/hooks/useBooks'
 import { BookCard } from './BookCard'
+import { RevealGroup, RevealItem } from '@/app/components/motion/Reveal'
 
 interface BooksGridProps {
     books: BookData[]
@@ -39,14 +40,15 @@ function BooksGridComponent({
 
     const renderedBooks = useMemo(() => {
         return books.map((book) => (
-            <BookCard
-                key={book.id}
-                book={book}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                isDeleting={deletingId === book.id}
-                isPublic={isPublic}
-            />
+            <RevealItem key={book.id}>
+                <BookCard
+                    book={book}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    isDeleting={deletingId === book.id}
+                    isPublic={isPublic}
+                />
+            </RevealItem>
         ))
     }, [books, onEdit, onDelete, deletingId, isPublic])
 
@@ -55,9 +57,9 @@ function BooksGridComponent({
     }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <RevealGroup className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {renderedBooks}
-        </div>
+        </RevealGroup>
     )
 }
 

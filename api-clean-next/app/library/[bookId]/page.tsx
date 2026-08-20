@@ -8,7 +8,7 @@ import { ReviewsGrid } from '@/app/components/reviews/ReviewsGrid'
 import { ReviewFormModal } from '@/app/components/reviews/ReviewFormModal'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle, ArrowLeft, Plus, ShoppingCart } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Plus, ShoppingCart, Star } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Book } from '@/domain/Book'
 import { BookStatus } from '@/domain/BookStatus'
@@ -18,27 +18,27 @@ function getStatusConfig(status?: BookStatus) {
     case BookStatus.Completed:
       return {
         label: 'Completed',
-        dotColor: 'bg-green-500',
-        bgColor: 'bg-green-500/10',
-        textColor: 'text-green-700 dark:text-green-400',
-        borderColor: 'border-green-500/20'
+        dotColor: 'bg-success',
+        bgColor: 'bg-success/10',
+        textColor: 'text-success',
+        borderColor: 'border-success/20'
       }
     case BookStatus.InProgress:
       return {
         label: 'In Progress',
-        dotColor: 'bg-blue-500',
-        bgColor: 'bg-blue-500/10',
-        textColor: 'text-blue-700 dark:text-blue-400',
-        borderColor: 'border-blue-500/20'
+        dotColor: 'bg-info',
+        bgColor: 'bg-info/10',
+        textColor: 'text-info',
+        borderColor: 'border-info/20'
       }
     case BookStatus.NotStarted:
     default:
       return {
         label: 'Not Started',
-        dotColor: 'bg-slate-500',
-        bgColor: 'bg-slate-500/10',
-        textColor: 'text-slate-700 dark:text-slate-400',
-        borderColor: 'border-slate-500/20'
+        dotColor: 'bg-muted-foreground/50',
+        bgColor: 'bg-muted',
+        textColor: 'text-muted-foreground',
+        borderColor: 'border-border'
       }
   }
 }
@@ -127,6 +127,9 @@ export default function BookDetailPage() {
   }
 
   const statusConfig = getStatusConfig(book.status)
+  const avgRating = reviews.length > 0
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    : null
 
   return (
     <main className="min-h-screen bg-background">
@@ -165,7 +168,7 @@ export default function BookDetailPage() {
           {/* Book Info Section */}
           <div className="flex-1 space-y-6 text-center md:text-left">
             <div className="space-y-2">
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+              <h1 className="font-display text-3xl sm:text-4xl font-medium tracking-tight text-foreground">
                 {book.title}
               </h1>
               <p className="text-xl text-muted-foreground font-medium">
@@ -191,16 +194,22 @@ export default function BookDetailPage() {
                   {book.genre.replace('-', ' ')}
                 </div>
               )}
+
+              {/* Rating — derived from reviews already loaded below */}
+              {avgRating !== null && (
+                <div className="bg-warning/10 text-warning text-sm font-medium px-3 py-1.5 rounded-full border border-warning/20 flex items-center gap-1.5">
+                  <Star className="w-3.5 h-3.5 fill-warning" />
+                  {avgRating.toFixed(1)}
+                  <span className="opacity-70">({reviews.length})</span>
+                </div>
+              )}
             </div>
 
             {/* Amazon affiliate button */}
             {book.affiliateUrl && (
               <div className="flex justify-center md:justify-start pt-2">
                 <a href={book.affiliateUrl} target="_blank" rel="noopener noreferrer">
-                  <Button
-                    variant="outline"
-                    className="gap-2 border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/30 transition-colors"
-                  >
+                  <Button variant="outline" className="gap-2">
                     <ShoppingCart className="w-4 h-4" />
                     Buy on Amazon
                   </Button>

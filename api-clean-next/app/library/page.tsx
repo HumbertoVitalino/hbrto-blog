@@ -7,19 +7,13 @@ import { BookGenre } from '@/domain/BookGenre'
 import { useAuth } from '@/app/context/AuthContext'
 import { BookFormModal } from '@/app/components/books/BookFormModal'
 import { BooksGrid } from '@/app/components/books/BooksGrid'
+import { LibraryFilterBento } from '@/app/components/books/LibraryFilterBento'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle, Plus } from 'lucide-react'
 
 type FilterStatus = BookStatus | 'all'
 type FilterGenre = BookGenre | 'all'
-
-const statusFilters: { value: FilterStatus; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: BookStatus.InProgress, label: 'Reading' },
-  { value: BookStatus.NotStarted, label: 'To read' },
-  { value: BookStatus.Completed, label: 'Completed' },
-]
 
 const genreLabels: Record<BookGenre, string> = {
   [BookGenre.Fiction]: 'Fiction',
@@ -39,9 +33,9 @@ const genreLabels: Record<BookGenre, string> = {
 }
 
 const sectionOrder: { status: BookStatus; label: string; accent: string }[] = [
-  { status: BookStatus.InProgress, label: 'Currently reading', accent: 'bg-blue-500' },
-  { status: BookStatus.NotStarted, label: 'To read', accent: 'bg-slate-400' },
-  { status: BookStatus.Completed, label: 'Completed', accent: 'bg-green-500' },
+  { status: BookStatus.InProgress, label: 'Currently reading', accent: 'bg-info' },
+  { status: BookStatus.NotStarted, label: 'To read', accent: 'bg-muted-foreground/50' },
+  { status: BookStatus.Completed, label: 'Completed', accent: 'bg-success' },
 ]
 
 export default function LibraryPage() {
@@ -147,48 +141,25 @@ export default function LibraryPage() {
   return (
     <main className="min-h-screen bg-background">
 
-      {/* HERO */}
-      <section className="border-b bg-muted/10">
-        <div className="max-w-5xl mx-auto px-6 py-14">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Library</p>
+      <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
+
+        {/* TITLE BAR */}
+        <div>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-4xl font-bold tracking-tight">My reading list</h1>
-              <p className="text-muted-foreground mt-2 max-w-md">
-                Books I've read, I'm reading, and plan to read.
+              <h1 className="font-display text-3xl font-medium tracking-tight">Library</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Books I&apos;ve read, I&apos;m reading, and plan to read.
               </p>
             </div>
             {isAdmin && (
-              <Button size="sm" onClick={handleNew} className="gap-2 shrink-0 mt-1">
+              <Button size="sm" onClick={handleNew} className="gap-2 shrink-0">
                 <Plus className="w-4 h-4" />
                 Add book
               </Button>
             )}
           </div>
-
-          {/* STATS — inline, editorial */}
-          {!isLoading && books.length > 0 && (
-            <div className="flex items-center gap-2 mt-8 pt-6 border-t border-border/50 text-sm flex-wrap">
-              <span>
-                <span className="font-semibold text-foreground tabular-nums">{books.length}</span>
-                <span className="text-muted-foreground ml-1">books</span>
-              </span>
-              <span className="text-border select-none">·</span>
-              <span>
-                <span className="font-semibold text-foreground tabular-nums">{booksByStatus[BookStatus.InProgress].length}</span>
-                <span className="text-muted-foreground ml-1">reading</span>
-              </span>
-              <span className="text-border select-none">·</span>
-              <span>
-                <span className="font-semibold text-foreground tabular-nums">{booksByStatus[BookStatus.Completed].length}</span>
-                <span className="text-muted-foreground ml-1">completed</span>
-              </span>
-            </div>
-          )}
         </div>
-      </section>
-
-      <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
 
         {/* ERRORS */}
         {(error || submitError) && (
@@ -211,35 +182,14 @@ export default function LibraryPage() {
           <>
             {/* FILTERS */}
             {books.length > 0 && (
-              <div className="space-y-3">
+              <div className="space-y-4">
 
-                {/* Status — underline tabs */}
-                <div
-                  className="flex items-center border-b border-border/50 overflow-x-auto"
-                  style={{ scrollbarWidth: 'none' }}
-                >
-                  {statusFilters.map(({ value, label }) => {
-                    const count = value === 'all' ? books.length : booksByStatus[value].length
-                    const isActive = statusFilter === value
-                    return (
-                      <button
-                        key={value}
-                        onClick={() => handleStatusFilter(value)}
-                        className={`relative shrink-0 px-4 py-2.5 text-sm font-medium transition-colors ${
-                          isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                      >
-                        {label}
-                        <span className={`ml-1.5 text-xs tabular-nums ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/40'}`}>
-                          {count}
-                        </span>
-                        {isActive && (
-                          <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-foreground rounded-full" />
-                        )}
-                      </button>
-                    )
-                  })}
-                </div>
+                {/* Status — bento */}
+                <LibraryFilterBento
+                  books={books}
+                  statusFilter={statusFilter}
+                  onStatusFilter={handleStatusFilter}
+                />
 
                 {/* Genre — outline chips */}
                 {availableGenres.length > 0 && (

@@ -13,27 +13,40 @@ const MODE_LABEL: Record<string, string> = {
 }
 
 function RatingRow({ mode, rating }: { mode: string; rating: ChessRatingData }) {
-    const total = rating.record.win + rating.record.loss + rating.record.draw
-    const winRate = total > 0 ? Math.round((rating.record.win / total) * 100) : 0
+    const { win, loss, draw } = rating.record
+    const total = win + loss + draw
+    const winRate = total > 0 ? Math.round((win / total) * 100) : 0
+    const winPct = total > 0 ? (win / total) * 100 : 0
+    const drawPct = total > 0 ? (draw / total) * 100 : 0
+    const lossPct = total > 0 ? (loss / total) * 100 : 0
 
     return (
-        <div className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
-            <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground w-12">
+        <div className="py-3 border-b border-border/50 last:border-0">
+            <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {MODE_LABEL[mode] ?? mode}
                 </span>
-                <div className="flex gap-1.5 text-xs text-muted-foreground/60">
-                    <span className="text-green-600 dark:text-green-400">{rating.record.win}W</span>
-                    <span>{rating.record.draw}D</span>
-                    <span className="text-red-500 dark:text-red-400">{rating.record.loss}L</span>
+                <div className="text-right">
+                    <span className="text-sm font-bold tabular-nums">{rating.last}</span>
+                    <span className="text-xs text-muted-foreground ml-1.5">best {rating.best}</span>
                 </div>
             </div>
-            <div className="text-right">
-                <span className="text-sm font-bold">{rating.last}</span>
-                <span className="text-xs text-muted-foreground ml-1.5">
-                    best {rating.best} · {winRate}%
-                </span>
-            </div>
+
+            {total > 0 && (
+                <>
+                    <div className="flex h-1.5 rounded-full overflow-hidden bg-muted">
+                        {win > 0 && <div className="bg-success" style={{ width: `${winPct}%` }} />}
+                        {draw > 0 && <div className="bg-muted-foreground/40" style={{ width: `${drawPct}%` }} />}
+                        {loss > 0 && <div className="bg-destructive" style={{ width: `${lossPct}%` }} />}
+                    </div>
+                    <div className="flex items-center gap-3 mt-1.5 text-[11px] text-muted-foreground">
+                        <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />{win}W</span>
+                        <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 shrink-0" />{draw}D</span>
+                        <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0" />{loss}L</span>
+                        <span className="ml-auto tabular-nums">{winRate}% win rate</span>
+                    </div>
+                </>
+            )}
         </div>
     )
 }
@@ -43,8 +56,8 @@ export function ChessStatsCard({ data }: ChessStatsCardProps) {
     const modes = ['bullet', 'blitz', 'rapid', 'daily'] as const
 
     return (
-        <div className="rounded-xl border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
+        <div className="rounded-2xl border border-border/60 bg-card p-5 h-full">
+            <div className="flex items-center justify-between mb-2">
                 <div>
                     <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Chess.com</p>
                     <p className="font-semibold mt-0.5">{data.username}</p>

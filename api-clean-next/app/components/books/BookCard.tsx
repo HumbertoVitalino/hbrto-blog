@@ -1,6 +1,7 @@
 'use client'
 
 import { memo } from 'react'
+import { motion } from 'motion/react'
 import { BookData } from '@/app/hooks/useBooks'
 import { BookStatus } from '@/domain/BookStatus'
 import Link from 'next/link'
@@ -17,11 +18,11 @@ interface BookCardProps {
 function getStatusConfig(status?: BookStatus) {
   switch (status) {
     case BookStatus.Completed:
-      return { label: 'Completed', dot: 'bg-green-500' }
+      return { label: 'Completed', dot: 'bg-success' }
     case BookStatus.InProgress:
-      return { label: 'Reading', dot: 'bg-blue-500' }
+      return { label: 'Reading', dot: 'bg-info' }
     default:
-      return { label: 'To read', dot: 'bg-slate-400' }
+      return { label: 'To read', dot: 'bg-muted-foreground/50' }
   }
 }
 
@@ -29,10 +30,17 @@ function BookCardComponent({ book, onEdit, onDelete, isDeleting, isPublic = fals
   const status = getStatusConfig(book.status)
 
   return (
-    <div className="group flex flex-col h-full rounded-2xl border border-border/60 bg-card overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+    <motion.div
+      className="group flex flex-col h-full rounded-2xl border border-border/60 bg-card overflow-hidden hover:shadow-lg hover:border-primary/30 transition-shadow duration-300"
+      whileHover={{ y: -4 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+    >
 
       {/* COVER */}
-      <div className="relative w-full aspect-2/3 bg-muted/40 overflow-hidden">
+      <div className={`relative w-full aspect-2/3 bg-muted/40 overflow-hidden ${
+        book.status === BookStatus.InProgress ? 'ring-2 ring-inset ring-info/40' : ''
+      }`}>
         {book.coverImageUrl ? (
           <img
             src={book.coverImageUrl}
@@ -116,7 +124,7 @@ function BookCardComponent({ book, onEdit, onDelete, isDeleting, isPublic = fals
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 

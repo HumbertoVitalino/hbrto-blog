@@ -31,7 +31,7 @@ export function SteamGameItem({ game, rank }: SteamGameItemProps) {
                 <p className="text-xs text-muted-foreground truncate mt-0.5">
                     {formatHours(game.playtimeForever)} total
                     {game.playtime2weeks > 0 && (
-                        <span className="text-green-600 dark:text-green-400">
+                        <span className="text-success">
                             {' '}· {formatHours(game.playtime2weeks)} recently
                         </span>
                     )}

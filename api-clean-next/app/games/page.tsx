@@ -9,10 +9,10 @@ import { GameCard } from '@/app/components/games/GameCard'
 import { GameFormModal } from '@/app/components/games/GameFormModal'
 import { SteamGameItem } from '@/app/components/games/SteamGameItem'
 import { ChessStatsCard } from '@/app/components/games/ChessStatsCard'
-import { Card } from '@/components/ui/card'
+import { RevealGroup, RevealItem } from '@/app/components/motion/Reveal'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle, Plus } from 'lucide-react'
+import { AlertCircle, Plus, Gamepad2, PlayCircle, CheckCircle2, Bookmark } from 'lucide-react'
 import { GamePlatform } from '@/domain/GamePlatform'
 import { GameStatus } from '@/domain/GameStatus'
 
@@ -22,12 +22,26 @@ const PLATFORM_FILTERS: { label: string; value: GamePlatform | 'all' }[] = [
     { label: 'Switch', value: GamePlatform.NintendoSwitch },
 ]
 
-const STATUS_FILTERS: { label: string; value: GameStatus | 'all' }[] = [
-    { label: 'All', value: 'all' },
-    { label: 'Playing', value: GameStatus.Playing },
-    { label: 'Completed', value: GameStatus.Completed },
-    { label: 'Backlog', value: GameStatus.NotStarted },
+type StatusToken = 'primary' | 'info' | 'success' | 'muted'
+
+const STATUS_FILTERS: { label: string; value: GameStatus | 'all'; icon: typeof Gamepad2; token: StatusToken }[] = [
+    { label: 'All', value: 'all', icon: Gamepad2, token: 'primary' },
+    { label: 'Playing', value: GameStatus.Playing, icon: PlayCircle, token: 'info' },
+    { label: 'Completed', value: GameStatus.Completed, icon: CheckCircle2, token: 'success' },
+    { label: 'Backlog', value: GameStatus.NotStarted, icon: Bookmark, token: 'muted' },
 ]
+
+const STATUS_ACTIVE: Record<StatusToken, string> = {
+    primary: 'border-primary/40 bg-primary/10 text-primary',
+    info: 'border-info/40 bg-info/10 text-info',
+    success: 'border-success/40 bg-success/10 text-success',
+    muted: 'border-foreground/30 bg-muted text-foreground',
+}
+
+function formatHours(minutes: number): string {
+    const hours = Math.round(minutes / 60)
+    return hours < 1 ? `${minutes}m` : `${hours}h`
+}
 
 function Spinner() {
     return (
@@ -37,39 +51,11 @@ function Spinner() {
     )
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function PanelLabel({ children }: { children: React.ReactNode }) {
     return (
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
             {children}
         </p>
-    )
-}
-
-function FilterPill({
-    active,
-    onClick,
-    children,
-    count,
-}: {
-    active: boolean
-    onClick: () => void
-    children: React.ReactNode
-    count?: number
-}) {
-    return (
-        <button
-            onClick={onClick}
-            className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-                active
-                    ? 'bg-foreground text-background'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-            }`}
-        >
-            {children}
-            {count !== undefined && (
-                <span className="opacity-60 ml-1.5 tabular-nums">{count}</span>
-            )}
-        </button>
     )
 }
 
@@ -122,71 +108,35 @@ export default function GamesPage() {
         return true
     })
 
-    const countFor = (platform: GamePlatform | 'all', status: GameStatus | 'all') =>
-        games.filter((g) => {
-            if (platform !== 'all' && g.platform !== platform) return false
-            if (status !== 'all' && g.status !== status) return false
-            return true
-        }).length
+    const countForStatus = (status: GameStatus | 'all') =>
+        status === 'all' ? games.length : games.filter((g) => g.status === status).length
+
+    const spotlightGame = steamGames[0]
+    const restSteamGames = steamGames.slice(1, 5)
+    const spotlightRatio = spotlightGame && spotlightGame.playtimeForever > 0
+        ? Math.min((spotlightGame.playtime2weeks / spotlightGame.playtimeForever) * 100, 100)
+        : 0
 
     return (
     <>
         <main className="min-h-screen bg-background">
+            <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
 
-            {/* HERO */}
-            <section className="border-b bg-muted/10">
-                <div className="max-w-5xl mx-auto px-6 py-14">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Games</p>
-                    <div className="flex items-start justify-between gap-4 flex-wrap">
-                        <div>
-                            <h1 className="text-4xl font-bold tracking-tight">What I'm playing</h1>
-                            <p className="text-muted-foreground mt-2">
-                                Steam activity, Chess.com ratings, and my PlayStation & Switch library.
-                            </p>
-                        </div>
-                        {isAdmin && (
-                            <Button size="sm" onClick={handleNew} className="gap-2 shrink-0 mt-1">
-                                <Plus className="w-4 h-4" />
-                                Add game
-                            </Button>
-                        )}
+                {/* TITLE BAR */}
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <div>
+                        <h1 className="font-display text-3xl font-medium tracking-tight">Games</h1>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Steam activity, Chess.com ratings, and my PlayStation &amp; Switch library.
+                        </p>
                     </div>
-
-                    {/* STATS */}
-                    {!loadingGames && (games.length > 0 || steamGames.length > 0) && (
-                        <div className="flex items-center gap-2 mt-8 pt-6 border-t border-border/50 text-sm flex-wrap">
-                            {steamGames.length > 0 && (
-                                <>
-                                    <span>
-                                        <span className="font-semibold text-foreground tabular-nums">{steamGames.length}</span>
-                                        <span className="text-muted-foreground ml-1">Steam games</span>
-                                    </span>
-                                    <span className="text-border select-none">·</span>
-                                </>
-                            )}
-                            {games.length > 0 && (
-                                <>
-                                    <span>
-                                        <span className="font-semibold text-foreground tabular-nums">
-                                            {games.filter((g) => g.status === GameStatus.Playing).length}
-                                        </span>
-                                        <span className="text-muted-foreground ml-1">playing</span>
-                                    </span>
-                                    <span className="text-border select-none">·</span>
-                                    <span>
-                                        <span className="font-semibold text-foreground tabular-nums">
-                                            {games.filter((g) => g.status === GameStatus.Completed).length}
-                                        </span>
-                                        <span className="text-muted-foreground ml-1">completed</span>
-                                    </span>
-                                </>
-                            )}
-                        </div>
+                    {isAdmin && (
+                        <Button size="sm" onClick={handleNew} className="gap-2 shrink-0">
+                            <Plus className="w-4 h-4" />
+                            Add game
+                        </Button>
                     )}
                 </div>
-            </section>
-
-            <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
 
                 {errorGames && (
                     <Alert variant="destructive">
@@ -196,12 +146,12 @@ export default function GamesPage() {
                     </Alert>
                 )}
 
-                {/* LIVE — Steam + Chess */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                {/* RIGHT NOW — Steam + Chess */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
 
-                    {/* Steam recently played */}
-                    <Card className="p-5">
-                        <SectionLabel>Recently played on Steam</SectionLabel>
+                    {/* Steam */}
+                    <div className="rounded-2xl border border-border/60 bg-card p-5 h-full">
+                        <PanelLabel>Recently played on Steam</PanelLabel>
                         {loadingSteam ? (
                             <Spinner />
                         ) : errorSteam ? (
@@ -209,25 +159,62 @@ export default function GamesPage() {
                         ) : steamGames.length === 0 ? (
                             <p className="text-sm text-muted-foreground py-4 text-center">No recent games.</p>
                         ) : (
-                            <div>
-                                {steamGames.map((game, i) => (
-                                    <SteamGameItem key={game.appId} game={game} rank={i + 1} />
-                                ))}
-                            </div>
+                            <>
+                                {spotlightGame && (
+                                    <div className="rounded-xl border border-border/50 bg-muted/20 p-4 mb-2">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <span className="relative flex h-2 w-2 shrink-0">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-accent opacity-75" />
+                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-accent" />
+                                            </span>
+                                            <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                                                Most played recently
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <img
+                                                src={spotlightGame.headerImageUrl}
+                                                alt={spotlightGame.name}
+                                                className="w-28 h-16 rounded-lg object-cover shrink-0 shadow-sm"
+                                            />
+                                            <div className="min-w-0 flex-1">
+                                                <p className="font-semibold text-base leading-snug line-clamp-1">{spotlightGame.name}</p>
+                                                <p className="text-xs text-muted-foreground mt-0.5">
+                                                    {formatHours(spotlightGame.playtimeForever)} total
+                                                    {spotlightGame.playtime2weeks > 0 && ` · ${formatHours(spotlightGame.playtime2weeks)} this week`}
+                                                </p>
+                                                <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-2 max-w-50">
+                                                    <div
+                                                        className="h-full bg-brand-accent rounded-full transition-[width] duration-500"
+                                                        style={{ width: `${spotlightRatio}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                {restSteamGames.length > 0 && (
+                                    <div>
+                                        {restSteamGames.map((game, i) => (
+                                            <SteamGameItem key={game.appId} game={game} rank={i + 2} />
+                                        ))}
+                                    </div>
+                                )}
+                            </>
                         )}
-                    </Card>
+                    </div>
 
-                    {/* Chess.com stats */}
+                    {/* Chess.com */}
                     {loadingChess ? (
-                        <Card className="p-5">
-                            <SectionLabel>Chess.com</SectionLabel>
+                        <div className="rounded-2xl border border-border/60 bg-card p-5 h-full">
+                            <PanelLabel>Chess.com</PanelLabel>
                             <Spinner />
-                        </Card>
+                        </div>
                     ) : errorChess || !chessStats ? (
-                        <Card className="p-5">
-                            <SectionLabel>Chess.com</SectionLabel>
+                        <div className="rounded-2xl border border-border/60 bg-card p-5 h-full">
+                            <PanelLabel>Chess.com</PanelLabel>
                             <p className="text-sm text-muted-foreground py-4 text-center">Could not load Chess.com data.</p>
-                        </Card>
+                        </div>
                     ) : (
                         <ChessStatsCard data={chessStats} />
                     )}
@@ -235,46 +222,40 @@ export default function GamesPage() {
 
                 {/* CATALOG — PSN + Switch */}
                 <div>
-                    <div className="flex items-start justify-between gap-4 flex-wrap mb-5">
-                        <SectionLabel>Library — PlayStation & Switch</SectionLabel>
-                    </div>
+                    <PanelLabel>Library — PlayStation &amp; Switch</PanelLabel>
 
-                    {/* FILTERS */}
                     {!loadingGames && games.length > 0 && (
-                        <div className="rounded-xl border border-border/50 bg-card p-4 space-y-3 mb-6">
-                            <div className="flex items-start gap-3">
-                                <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50 pt-1.5 w-14 shrink-0 select-none">
-                                    Platform
-                                </span>
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                    {PLATFORM_FILTERS.map(({ label, value }) => (
-                                        <FilterPill
-                                            key={value}
-                                            active={platformFilter === value}
-                                            onClick={() => setPlatformFilter(value)}
-                                            count={countFor(value, statusFilter)}
-                                        >
-                                            {label}
-                                        </FilterPill>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50 pt-1.5 w-14 shrink-0 select-none">
-                                    Status
-                                </span>
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                    {STATUS_FILTERS.map(({ label, value }) => (
-                                        <FilterPill
-                                            key={value}
-                                            active={statusFilter === value}
-                                            onClick={() => setStatusFilter(value)}
-                                            count={countFor(platformFilter, value)}
-                                        >
-                                            {label}
-                                        </FilterPill>
-                                    ))}
-                                </div>
+                        <div className="flex items-center gap-2 flex-wrap mb-6">
+                            {STATUS_FILTERS.map(({ label, value, icon: Icon, token }) => (
+                                <button
+                                    key={value}
+                                    onClick={() => setStatusFilter(value)}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                                        statusFilter === value
+                                            ? STATUS_ACTIVE[token]
+                                            : 'border-border/60 text-muted-foreground hover:text-foreground hover:border-border'
+                                    }`}
+                                >
+                                    <Icon className="w-3.5 h-3.5" />
+                                    {label}
+                                    <span className="opacity-70 tabular-nums">{countForStatus(value)}</span>
+                                </button>
+                            ))}
+
+                            <div className="ml-auto flex items-center gap-0.5 rounded-full border border-border/60 p-0.5">
+                                {PLATFORM_FILTERS.map(({ label, value }) => (
+                                    <button
+                                        key={value}
+                                        onClick={() => setPlatformFilter(value)}
+                                        className={`text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${
+                                            platformFilter === value
+                                                ? 'bg-primary text-primary-foreground'
+                                                : 'text-muted-foreground hover:text-foreground'
+                                        }`}
+                                    >
+                                        {label}
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     )}
@@ -288,18 +269,19 @@ export default function GamesPage() {
                             </p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        <RevealGroup className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                             {filteredGames.map((game) => (
-                                <GameCard
-                                    key={game.id}
-                                    game={game}
-                                    isAdmin={isAdmin}
-                                    isDeleting={deletingId === game.id}
-                                    onEdit={handleEdit}
-                                    onDelete={handleDelete}
-                                />
+                                <RevealItem key={game.id}>
+                                    <GameCard
+                                        game={game}
+                                        isAdmin={isAdmin}
+                                        isDeleting={deletingId === game.id}
+                                        onEdit={handleEdit}
+                                        onDelete={handleDelete}
+                                    />
+                                </RevealItem>
                             ))}
-                        </div>
+                        </RevealGroup>
                     )}
                 </div>
 

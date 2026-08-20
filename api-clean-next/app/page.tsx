@@ -5,10 +5,17 @@ import { Button } from '@/components/ui/button'
 import { SocialFooter } from '@/app/components/layout/Footer'
 import { NewsletterBanner } from '@/app/components/newsletter/NewsletterBanner'
 import { FiArrowRight, FiGithub } from 'react-icons/fi'
+import { motion, type Variants } from 'motion/react'
+import { RevealGroup, RevealItem } from '@/app/components/motion/Reveal'
+import { useBooks } from '@/app/hooks/useBooks'
+import { useReviews } from '@/app/hooks/useReviews'
+import { useNowPlaying } from '@/app/hooks/useNowPlaying'
+import { useReleaseNotes } from '@/app/hooks/useReleaseNotes'
+import { BookStatus } from '@/domain/BookStatus'
 import {
   Server, Layout, Cloud, Database, Activity,
   BookOpen, Star, Music, Zap, ArrowUpRight,
-  Layers, GitBranch, Cpu, GraduationCap
+  Layers, GitBranch, Cpu, GraduationCap, Briefcase
 } from 'lucide-react'
 
 const techStack = {
@@ -20,26 +27,26 @@ const techStack = {
   },
   Frontend: {
     icon: Layout,
-    color: 'text-blue-500',
-    bg: 'bg-blue-500/10',
+    color: 'text-chart-5',
+    bg: 'bg-chart-5/10',
     items: ['React', 'Next.js', 'TypeScript', 'Tailwind CSS'],
   },
   'Cloud & Infra': {
     icon: Cloud,
-    color: 'text-orange-500',
-    bg: 'bg-orange-500/10',
+    color: 'text-chart-4',
+    bg: 'bg-chart-4/10',
     items: ['AWS', 'Azure', 'Docker', 'YARP', 'CI/CD'],
   },
   Data: {
     icon: Database,
-    color: 'text-green-500',
-    bg: 'bg-green-500/10',
+    color: 'text-chart-3',
+    bg: 'bg-chart-3/10',
     items: ['MySQL', 'SQL Server', 'Entity Framework', 'Relational Modeling'],
   },
   Messaging: {
     icon: Activity,
-    color: 'text-purple-500',
-    bg: 'bg-purple-500/10',
+    color: 'text-chart-2',
+    bg: 'bg-chart-2/10',
     items: ['Kafka', 'RabbitMQ', 'Event-driven Architecture'],
   },
 }
@@ -68,32 +75,32 @@ const blogSections = [
     icon: BookOpen,
     label: 'Library',
     description: 'Books I\'ve read — annotated and reviewed.',
-    color: 'text-amber-600 dark:text-amber-400',
-    bg: 'bg-amber-500/10',
+    color: 'text-chart-4',
+    bg: 'bg-chart-4/10',
   },
   {
     href: '/reviews',
     icon: Star,
     label: 'Reviews',
     description: 'Honest takes on what I\'ve been reading.',
-    color: 'text-blue-600 dark:text-blue-400',
-    bg: 'bg-blue-500/10',
+    color: 'text-chart-5',
+    bg: 'bg-chart-5/10',
   },
   {
     href: '/music',
     icon: Music,
     label: 'Music',
     description: 'What\'s playing while I write and build.',
-    color: 'text-green-600 dark:text-green-400',
-    bg: 'bg-green-500/10',
+    color: 'text-chart-3',
+    bg: 'bg-chart-3/10',
   },
   {
     href: '/release-notes',
     icon: Zap,
     label: 'Releases',
     description: 'Changelog of what\'s new on this blog.',
-    color: 'text-purple-600 dark:text-purple-400',
-    bg: 'bg-purple-500/10',
+    color: 'text-chart-2',
+    bg: 'bg-chart-2/10',
   },
 ]
 
@@ -102,6 +109,7 @@ const experience = [
     role: 'Founder / Engineer',
     company: 'Tegy',
     period: 'Jan 2026 – Present',
+    sortKey: 202601,
     active: true,
     description: 'Intelligent pricing engine designed to optimize decision-making based on real-world data and business rules.',
     bullets: [
@@ -115,6 +123,7 @@ const experience = [
     role: 'Software Engineer',
     company: 'Itaú Unibanco',
     period: 'Aug 2025 – Present',
+    sortKey: 202508,
     active: false,
     bullets: [
       'Building backend services with C# and .NET on AWS',
@@ -126,6 +135,7 @@ const experience = [
     role: 'Software Engineer',
     company: 'XP Inc.',
     period: 'Sep 2024 – Aug 2025',
+    sortKey: 202409,
     active: false,
     bullets: [
       'Developed backend services with C# and .NET on Azure',
@@ -135,7 +145,72 @@ const experience = [
   },
 ]
 
+const education = [
+  {
+    role: 'Software Architecture',
+    company: 'FIAP · Postgraduate',
+    period: '2026 – 2027',
+    sortKey: 202601,
+    active: true,
+    description: 'Specialization in system design, microservices, distributed systems, and architectural patterns for large-scale software.',
+  },
+  {
+    role: 'Systems Analysis and Development',
+    company: 'FIAP · Bachelor\'s',
+    period: '2023 – 2025',
+    sortKey: 202301,
+    active: false,
+    description: 'Foundation in software development, databases, algorithms, and systems engineering.',
+  },
+]
+
+interface JourneyItem {
+  kind: 'work' | 'education'
+  role: string
+  company: string
+  period: string
+  sortKey: number
+  active: boolean
+  description?: string
+  bullets?: string[]
+  link?: { href: string; label: string }
+}
+
+// reverse-chronological by actual start date (YYYYMM), work and education interleaved as one timeline
+const journey: JourneyItem[] = [
+  ...experience.map((item): JourneyItem => ({ ...item, kind: 'work' })),
+  ...education.map((item): JourneyItem => ({ ...item, kind: 'education' })),
+].sort((a, b) => b.sortKey - a.sortKey)
+
+const heroContainer: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.12, delayChildren: 0.05 } },
+}
+
+const heroItem: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 260, damping: 26 } },
+}
+
 export default function HomePage() {
+  const { books } = useBooks()
+  const { reviews } = useReviews()
+  const { data: nowPlaying } = useNowPlaying()
+  const { notes } = useReleaseNotes()
+
+  const readingBook = books.find(b => b.status === BookStatus.InProgress)
+  const latestReview = reviews[0]
+  const latestNote = notes[0]
+
+  const blogPreviews: Record<string, string | undefined> = {
+    '/library': readingBook ? `Reading "${readingBook.title}"` : undefined,
+    '/reviews': latestReview ? `★ ${latestReview.rating}/5 — "${latestReview.title}"` : undefined,
+    '/music': nowPlaying?.title
+      ? `${nowPlaying.isPlaying ? 'Now playing' : 'Last played'} — ${nowPlaying.title}`
+      : undefined,
+    '/release-notes': latestNote ? `v${latestNote.version} — ${latestNote.title}` : undefined,
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
 
@@ -149,30 +224,40 @@ export default function HomePage() {
             backgroundSize: '28px 28px',
           }}
         />
-        {/* glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-150 h-75 bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
+        {/* layered twilight glow */}
+        <div className="absolute top-0 left-1/3 -translate-x-1/2 w-125 h-100 bg-primary/10 blur-[110px] rounded-full pointer-events-none" />
+        <div className="absolute top-10 right-0 w-100 h-100 bg-brand-accent/10 blur-[100px] rounded-full pointer-events-none" />
 
-        <div className="max-w-6xl mx-auto px-6 relative z-10">
+        <motion.div
+          className="max-w-6xl mx-auto px-6 relative z-10"
+          initial="hidden"
+          animate="show"
+          variants={heroContainer}
+        >
           <div className="max-w-3xl">
-            <span className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground border border-border/60 bg-muted/30 rounded-full px-3 py-1 mb-8 backdrop-blur-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            <motion.span
+              variants={heroItem}
+              className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground border border-border/60 bg-muted/30 rounded-full px-3 py-1 mb-8 backdrop-blur-sm"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-pulse" />
               Software Engineer · Brazil
-            </span>
+            </motion.span>
 
-            <h1 className="text-5xl md:text-[4.5rem] font-bold tracking-tight leading-[1.08] mb-6">
+            <motion.h1
+              variants={heroItem}
+              className="font-display text-5xl md:text-[4.5rem] font-medium tracking-tight leading-[1.08] mb-6"
+            >
               I build backend systems
               <br />
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-foreground/60 to-foreground/90">
-                that hold under pressure.
-              </span>
-            </h1>
+              <span className="italic text-primary">that hold under pressure.</span>
+            </motion.h1>
 
-            <p className="text-lg text-muted-foreground mb-10 max-w-xl leading-relaxed">
+            <motion.p variants={heroItem} className="text-lg text-muted-foreground mb-10 max-w-xl leading-relaxed">
               Specialized in .NET and distributed systems — I design APIs and
               architectures that stay reliable in production, not just in theory.
-            </p>
+            </motion.p>
 
-            <div className="flex gap-3 flex-wrap">
+            <motion.div variants={heroItem} className="flex gap-3 flex-wrap">
               <a
                 href="https://github.com/humbertovitalino"
                 target="_blank"
@@ -189,11 +274,11 @@ export default function HomePage() {
                   Contact Me
                 </Button>
               </a>
-            </div>
+            </motion.div>
           </div>
 
           {/* stats bar */}
-          <div className="mt-16 pt-10 border-t border-border/50 grid grid-cols-2 md:grid-cols-4 gap-8">
+          <motion.div variants={heroItem} className="mt-16 pt-10 border-t border-border/50 grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
               { value: '4+', label: 'Years of experience' },
               { value: '2', label: 'Companies in production' },
@@ -201,50 +286,66 @@ export default function HomePage() {
               { value: '∞', label: 'Distributed problems solved' },
             ].map(({ value, label }) => (
               <div key={label}>
-                <p className="text-3xl font-bold tracking-tight">{value}</p>
+                <p className="font-display text-3xl font-medium tracking-tight">{value}</p>
                 <p className="text-sm text-muted-foreground mt-1">{label}</p>
               </div>
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
-      {/* ── SPECIALTIES ── */}
+      {/* ── SPECIALTIES — editorial list, no cards ── */}
       <section className="py-24 border-t bg-muted/10">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-12 max-w-xl">
+          <div className="mb-4 max-w-xl">
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">What I do</p>
-            <h2 className="text-3xl font-bold tracking-tight">
+            <h2 className="font-display text-3xl font-medium tracking-tight">
               Engineering that scales with the problem
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {specialties.map(({ icon: Icon, title, description }) => (
-              <div key={title} className="p-6 rounded-2xl border border-border/60 bg-card hover:shadow-md transition-shadow group">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/15 transition-colors">
-                  <Icon className="w-5 h-5 text-primary" />
+          <div className="divide-y divide-border/50 border-t border-border/50">
+            {specialties.map(({ icon: Icon, title, description }, i) => (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ type: 'spring', stiffness: 280, damping: 26, delay: i * 0.08 }}
+                className="grid grid-cols-1 md:grid-cols-[16rem_1fr] md:items-center gap-4 md:gap-10 py-8"
+              >
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <Icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-lg text-foreground">{title}</h3>
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">{title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-              </div>
+                <p className="text-muted-foreground leading-relaxed md:max-w-lg">{description}</p>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── TECHNOLOGIES ── */}
+      {/* ── TECHNOLOGIES — one unified panel ── */}
       <section className="py-24 border-t">
         <div className="max-w-6xl mx-auto px-6">
           <div className="mb-12">
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Stack</p>
-            <h2 className="text-3xl font-bold tracking-tight">Technologies</h2>
+            <h2 className="font-display text-3xl font-medium tracking-tight">Technologies</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {Object.entries(techStack).map(([name, { icon: Icon, color, bg, items }]) => (
-              <div key={name} className="p-6 rounded-2xl border border-border/60 bg-card hover:shadow-sm transition-shadow">
-                <div className="flex items-center gap-3 mb-4">
+          <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
+            {Object.entries(techStack).map(([name, { icon: Icon, color, bg, items }], i) => (
+              <motion.div
+                key={name}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.4, delay: i * 0.06 }}
+                className={`flex flex-col sm:flex-row sm:items-center gap-4 p-5 sm:p-6 ${i > 0 ? 'border-t border-border/50' : ''}`}
+              >
+                <div className="flex items-center gap-3 sm:w-48 shrink-0">
                   <div className={`p-2 ${bg} rounded-lg ${color}`}>
                     <Icon className="w-4 h-4" />
                   </div>
@@ -260,7 +361,7 @@ export default function HomePage() {
                     </span>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -271,157 +372,125 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="mb-12">
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Beyond code</p>
-            <h2 className="text-3xl font-bold tracking-tight">From the blog</h2>
+            <h2 className="font-display text-3xl font-medium tracking-tight">From the blog</h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {blogSections.map(({ href, icon: Icon, label, description, color, bg }) => (
-              <Link
-                key={href}
-                href={href}
-                className="group p-6 rounded-2xl border border-border/60 bg-card hover:shadow-md transition-all hover:-translate-y-0.5"
-              >
-                <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center mb-4`}>
-                  <Icon className={`w-5 h-5 ${color}`} />
-                </div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold">{label}</h3>
-                  <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-              </Link>
-            ))}
-          </div>
+          <RevealGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {blogSections.map(({ href, icon: Icon, label, description, color, bg }) => {
+              const preview = blogPreviews[href]
+              return (
+                <RevealItem key={href}>
+                  <Link
+                    href={href}
+                    className="group relative block overflow-hidden p-6 rounded-2xl border border-border/60 bg-card hover:shadow-md hover:border-primary/30 transition-all hover:-translate-y-0.5"
+                  >
+                    <div className="pointer-events-none absolute -top-8 -right-8 w-32 h-32 rounded-full bg-brand-accent/0 group-hover:bg-brand-accent/10 blur-2xl transition-colors duration-500" />
+                    <div className="relative">
+                      <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center mb-4`}>
+                        <Icon className={`w-5 h-5 ${color}`} />
+                      </div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-semibold">{label}</h3>
+                        <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      {preview ? (
+                        <p className="text-sm text-muted-foreground leading-relaxed flex items-start gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-brand-accent shrink-0 mt-1.5" />
+                          <span className="line-clamp-2">{preview}</span>
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+                      )}
+                    </div>
+                  </Link>
+                </RevealItem>
+              )
+            })}
+          </RevealGroup>
         </div>
       </section>
 
-      {/* ── EXPERIENCE ── */}
+      {/* ── JOURNEY — work + education, one timeline ── */}
       <section className="py-24 border-t">
         <div className="max-w-3xl mx-auto px-6">
           <div className="mb-12">
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Career</p>
-            <h2 className="text-3xl font-bold tracking-tight">Experience</h2>
+            <h2 className="font-display text-3xl font-medium tracking-tight">Journey</h2>
           </div>
 
           <div className="space-y-10 border-l-2 border-border ml-3 pl-8 relative">
-            {experience.map(({ role, company, period, active, description, bullets, link }) => (
-              <div key={`${role}-${company}`} className="relative">
+            {journey.map((item, i) => (
+              <motion.div
+                key={`${item.kind}-${item.role}-${item.company}`}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ type: 'spring', stiffness: 280, damping: 28, delay: (i % 3) * 0.06 }}
+                className="relative"
+              >
                 <span
-                  className={`absolute -left-10.5 top-1.5 h-4 w-4 rounded-full ring-4 ring-background ${
-                    active ? 'bg-primary' : 'bg-muted-foreground/40'
+                  className={`absolute -left-11.5 top-0 h-7 w-7 rounded-full ring-4 ring-background flex items-center justify-center ${
+                    item.active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                   }`}
-                />
+                >
+                  {item.kind === 'work'
+                    ? <Briefcase className="w-3.5 h-3.5" />
+                    : <GraduationCap className="w-3.5 h-3.5" />
+                  }
+                </span>
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-3">
                   <h3 className="text-lg font-semibold">
-                    {role}{' '}
-                    <span className="text-muted-foreground font-normal">— {company}</span>
+                    {item.role}{' '}
+                    <span className="text-muted-foreground font-normal">— {item.company}</span>
                   </h3>
                   <span className={`text-xs font-medium px-2.5 py-1 rounded-full w-fit whitespace-nowrap ${
-                    active
+                    item.active
                       ? 'text-primary bg-primary/10'
                       : 'text-muted-foreground bg-muted/50'
                   }`}>
-                    {period}
+                    {item.period}
                   </span>
                 </div>
-                {description && (
-                  <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{description}</p>
+                {item.description && (
+                  <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{item.description}</p>
                 )}
-                <ul className="space-y-1.5">
-                  {bullets.map((b) => (
-                    <li key={b} className="text-sm text-muted-foreground flex items-start gap-2">
-                      <span className="mt-1.5 w-1 h-1 rounded-full bg-muted-foreground/50 shrink-0" />
-                      {b}
-                    </li>
-                  ))}
-                </ul>
-                {link && (
+                {item.bullets && (
+                  <ul className="space-y-1.5">
+                    {item.bullets.map((b) => (
+                      <li key={b} className="text-sm text-muted-foreground flex items-start gap-2">
+                        <span className="mt-1.5 w-1 h-1 rounded-full bg-muted-foreground/50 shrink-0" />
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {item.link && (
                   <a
-                    href={link.href}
+                    href={item.link.href}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors mt-4"
                   >
-                    {link.label}
+                    {item.link.label}
                     <ArrowUpRight className="w-3.5 h-3.5" />
                   </a>
                 )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── EDUCATION ── */}
-      <section className="py-24 border-t">
-        <div className="max-w-3xl mx-auto px-6">
-          <div className="mb-12">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Education</p>
-            <h2 className="text-3xl font-bold tracking-tight">Degrees</h2>
-          </div>
-          <div className="space-y-6">
-            {[
-              {
-                type: 'Postgraduate',
-                icon: GraduationCap,
-                title: 'Software Architecture',
-                institution: 'FIAP',
-                period: '2026 – 2027',
-                active: true,
-                description: 'Specialization in system design, microservices, distributed systems, and architectural patterns for large-scale software.',
-              },
-              {
-                type: "Bachelor's",
-                icon: BookOpen,
-                title: 'Systems Analysis and Development',
-                institution: 'FIAP',
-                period: '2023 – 2025',
-                active: false,
-                description: 'Foundation in software development, databases, algorithms, and systems engineering.',
-              },
-            ].map(({ type, icon: Icon, title, institution, period, active, description }) => (
-              <div
-                key={title}
-                className="flex flex-col sm:flex-row sm:items-start justify-between p-6 rounded-2xl border border-border/60 bg-card hover:shadow-sm transition-shadow gap-4"
-              >
-                <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${active ? 'bg-primary/10' : 'bg-muted/60'}`}>
-                    <Icon className={`w-5 h-5 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${active ? 'text-primary bg-primary/10' : 'text-muted-foreground bg-muted/50'}`}>
-                        {type}
-                      </span>
-                      {active && (
-                        <span className="text-xs font-medium text-green-600 dark:text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">
-                          In Progress
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="font-semibold text-foreground">{title}</h3>
-                    <p className="text-sm text-muted-foreground mt-0.5">{institution}</p>
-                    <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{description}</p>
-                  </div>
-                </div>
-                <span className="text-xs font-medium text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full w-fit whitespace-nowrap shrink-0">
-                  {period}
-                </span>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
       {/* ── CLOSING CTA ── */}
-      <section className="py-24 border-t bg-muted/10">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-            Let's build something that lasts.
+      <section className="relative py-24 border-t bg-muted/10 overflow-hidden">
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-125 h-75 bg-primary/10 blur-[100px] rounded-full pointer-events-none" />
+        <div className="max-w-3xl mx-auto px-6 text-center relative">
+          <h2 className="font-display text-3xl md:text-4xl font-medium tracking-tight mb-4">
+            Let&apos;s build something that lasts.
           </h2>
           <p className="text-muted-foreground mb-8 leading-relaxed">
-            Whether it's a system architecture, a technical problem, or just an interesting conversation —
-            I'm always open to it.
+            Whether it&apos;s a system architecture, a technical problem, or just an interesting conversation —
+            I&apos;m always open to it.
           </p>
           <a href="mailto:humbertovitalino01@gmail.com">
             <Button size="lg" className="gap-2 shadow-sm hover:ring-2 hover:ring-primary/20 transition-all">
