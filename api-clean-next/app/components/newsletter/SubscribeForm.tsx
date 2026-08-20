@@ -41,7 +41,7 @@ export function SubscribeForm() {
             </p>
 
             {status === "success" ? (
-                <p className="text-sm text-green-600 dark:text-green-400">{message}</p>
+                <p className="text-sm text-success">{message}</p>
             ) : (
                 <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                     <input
@@ -55,13 +55,13 @@ export function SubscribeForm() {
                     />
 
                     {status === "error" && (
-                        <p className="text-sm text-red-600 dark:text-red-400">{message}</p>
+                        <p className="text-sm text-destructive">{message}</p>
                     )}
 
                     <button
                         type="submit"
                         disabled={status === "loading"}
-                        className="bg-foreground text-background rounded px-4 py-2 text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
+                        className="bg-primary text-primary-foreground rounded px-4 py-2 text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
                     >
                         {status === "loading" ? "Cadastrando..." : "Cadastrar"}
                     </button>

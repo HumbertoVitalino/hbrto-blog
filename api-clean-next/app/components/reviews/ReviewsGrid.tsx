@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { Review, ReviewLanguage } from '@/domain/Review'
 import { ReviewCard } from './ReviewCard'
+import { RevealGroup, RevealItem } from '@/app/components/motion/Reveal'
 
 interface ReviewsGridProps {
   reviews: Review[]
@@ -26,18 +27,19 @@ export function ReviewsGrid({ reviews, bookId, isAdmin = false, onDelete, onUpda
   }, [reviews])
 
   return (
-    <div className="space-y-6">
+    <RevealGroup className="space-y-6">
       {grouped.map(([primary, ...variants]) => (
-        <ReviewCard
-          key={primary.id}
-          review={primary}
-          variants={variants}
-          bookId={bookId}
-          isAdmin={isAdmin}
-          onDelete={onDelete}
-          onUpdate={onUpdate}
-        />
+        <RevealItem key={primary.id}>
+          <ReviewCard
+            review={primary}
+            variants={variants}
+            bookId={bookId}
+            isAdmin={isAdmin}
+            onDelete={onDelete}
+            onUpdate={onUpdate}
+          />
+        </RevealItem>
       ))}
-    </div>
+    </RevealGroup>
   )
 }

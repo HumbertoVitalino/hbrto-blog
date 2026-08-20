@@ -28,7 +28,7 @@ function RatingStars({ rating }: { rating: number }) {
       {[...Array(5)].map((_, i) => (
         <Star
           key={i}
-          className={`w-3.5 h-3.5 ${i < rating ? 'fill-yellow-400 text-yellow-400' : 'fill-muted text-muted'}`}
+          className={`w-3.5 h-3.5 ${i < rating ? 'fill-warning text-warning' : 'fill-muted text-muted'}`}
         />
       ))}
       <span className="ml-1.5 text-xs text-muted-foreground font-medium tabular-nums">{rating}/5</span>

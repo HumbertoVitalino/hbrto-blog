@@ -252,7 +252,7 @@ export function ReviewFormModal({
                       <Star
                         className={`w-6 h-6 transition-colors ${
                           star <= (hoveredStar ?? rating)
-                            ? 'fill-yellow-400 text-yellow-400'
+                            ? 'fill-warning text-warning'
                             : 'fill-muted text-muted-foreground/30'
                         }`}
                       />

@@ -65,7 +65,7 @@ export default function ReviewsPage() {
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Reviews</p>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-4xl font-bold tracking-tight">Writing</h1>
+              <h1 className="font-display text-4xl font-medium tracking-tight">Writing</h1>
               <p className="text-muted-foreground mt-2 leading-relaxed">
                 Thoughts, notes and reflections — not limited to books.
               </p>
@@ -135,7 +135,7 @@ export default function ReviewsPage() {
                   onClick={() => setSort(opt.value)}
                   className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
                     sort === opt.value
-                      ? 'bg-foreground text-background'
+                      ? 'bg-primary text-primary-foreground'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                   }`}
                 >

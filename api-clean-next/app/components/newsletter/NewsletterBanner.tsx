@@ -85,13 +85,13 @@ export function NewsletterBanner() {
                         />
 
                         {status === 'error' && (
-                            <p className="text-sm text-red-500">{errorMsg}</p>
+                            <p className="text-sm text-destructive">{errorMsg}</p>
                         )}
 
                         <button
                             type="submit"
                             disabled={status === 'loading'}
-                            className="bg-foreground text-background rounded-lg px-4 py-2.5 text-sm font-medium hover:opacity-90 transition disabled:opacity-50 w-full"
+                            className="bg-primary text-primary-foreground rounded-lg px-4 py-2.5 text-sm font-medium hover:opacity-90 transition disabled:opacity-50 w-full"
                         >
                             {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
                         </button>

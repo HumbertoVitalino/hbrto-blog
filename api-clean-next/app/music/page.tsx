@@ -56,7 +56,7 @@ export default function MusicPage() {
                     <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Music</p>
                     <div className="flex items-start justify-between gap-4 flex-wrap">
                         <div>
-                            <h1 className="text-4xl font-bold tracking-tight">What I'm listening to</h1>
+                            <h1 className="font-display text-4xl font-medium tracking-tight">What I&apos;m listening to</h1>
                             <p className="text-muted-foreground mt-2">
                                 My Spotify activity — live data updated every 30 seconds.
                             </p>

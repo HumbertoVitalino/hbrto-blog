@@ -35,9 +35,9 @@ export default function ReleaseNotesPage() {
                     <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Changelog</p>
                     <div className="flex items-start justify-between gap-4 flex-wrap">
                         <div>
-                            <h1 className="text-4xl font-bold tracking-tight">Release Notes</h1>
+                            <h1 className="font-display text-4xl font-medium tracking-tight">Release Notes</h1>
                             <p className="text-muted-foreground mt-2 leading-relaxed">
-                                What's new — features, fixes and improvements to this blog.
+                                What&apos;s new — features, fixes and improvements to this blog.
                             </p>
                         </div>
                         {isAdmin && (
