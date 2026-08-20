@@ -12,6 +12,7 @@ import { AlertCircle, ArrowLeft, Plus, ShoppingCart, Star } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Book } from '@/domain/Book'
 import { BookStatus } from '@/domain/BookStatus'
+import { Review, ReviewLanguage } from '@/domain/Review'
 
 function getStatusConfig(status?: BookStatus) {
   switch (status) {
@@ -64,6 +65,10 @@ export default function BookDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
+  const [selectedReview, setSelectedReview] = useState<Review | undefined>()
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | undefined>()
+
   useEffect(() => {
     if (!booksLoading) {
       const found = books.find(b => b.id === bookId)
@@ -94,9 +99,25 @@ export default function BookDetailPage() {
     }
   }
 
+  const handleEdit = (review: Review) => {
+    setSelectedReview(review)
+    setIsEditOpen(true)
+  }
+
+  const handleEditSubmit = async (data: { title: string; bookId: string | null; rating: number; comment: string; language?: ReviewLanguage }) => {
+    if (!selectedReview) return
+    await updateReview(selectedReview.id, selectedReview.bookId, data.title, data.rating, data.comment, data.language)
+    setIsEditOpen(false)
+  }
+
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this review?')) return
-    await deleteReview(id, bookId)
+    setDeletingId(id)
+    try {
+      await deleteReview(id, bookId)
+    } finally {
+      setDeletingId(undefined)
+    }
   }
 
   // LOADING
@@ -273,22 +294,38 @@ export default function BookDetailPage() {
               reviews={reviews}
               bookId={bookId}
               isAdmin={isAdmin}
+              deletingId={deletingId}
+              onEdit={isAdmin ? handleEdit : undefined}
               onDelete={isAdmin ? handleDelete : undefined}
-              onUpdate={isAdmin ? updateReview : undefined}
             />
           </div>
         )}
       </div>
 
-      {/* MODAL */}
+      {/* MODALS */}
       {isAdmin && (
-        <ReviewFormModal
-          open={isFormOpen}
-          onOpenChange={setIsFormOpen}
-          onSubmit={handleSubmit}
-          mode="create"
-          bookId={bookId}
-        />
+        <>
+          <ReviewFormModal
+            open={isFormOpen}
+            onOpenChange={setIsFormOpen}
+            onSubmit={handleSubmit}
+            mode="create"
+            bookId={bookId}
+          />
+          <ReviewFormModal
+            open={isEditOpen}
+            onOpenChange={setIsEditOpen}
+            onSubmit={handleEditSubmit}
+            initialValues={selectedReview ? {
+              title: selectedReview.title,
+              rating: selectedReview.rating,
+              comment: selectedReview.comment,
+              createdAt: selectedReview.createdAt,
+              language: selectedReview.language,
+            } : undefined}
+            mode="edit"
+          />
+        </>
       )}
     </main>
   )

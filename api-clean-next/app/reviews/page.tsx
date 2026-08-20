@@ -2,24 +2,47 @@
 
 import { useState, useCallback, useMemo } from 'react'
 import { useReviews } from '@/app/hooks/useReviews'
+import { useBooks } from '@/app/hooks/useBooks'
 import { useAuth } from '@/app/context/AuthContext'
 import { ReviewFormModal } from '@/app/components/reviews/ReviewFormModal'
 import { ReviewsGrid } from '@/app/components/reviews/ReviewsGrid'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle, Plus } from 'lucide-react'
+import { AlertCircle, Plus, Clock, TrendingUp, TrendingDown } from 'lucide-react'
+import { Review, ReviewLanguage } from '@/domain/Review'
 
 type SortOption = 'newest' | 'highest' | 'lowest'
 
+interface ReviewFormSubmitData {
+  title: string
+  bookId: string | null
+  rating: number
+  comment: string
+  language?: ReviewLanguage
+}
+
 export default function ReviewsPage() {
   const { reviews, isLoading, error, createReview, updateReview, deleteReview } = useReviews()
+  const { books } = useBooks()
   const { isAdmin } = useAuth()
+
+  const bookById = useMemo(() => {
+    const map: Record<string, typeof books[number]> = {}
+    for (const b of books) {
+      if (b.id) map[b.id] = b
+    }
+    return map
+  }, [books])
 
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [sort, setSort] = useState<SortOption>('newest')
 
-  const handleSubmit = useCallback(async (data: any) => {
+  const [selectedReview, setSelectedReview] = useState<Review | undefined>()
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | undefined>()
+
+  const handleSubmit = useCallback(async (data: ReviewFormSubmitData) => {
     try {
       setSubmitError(null)
       await createReview(data.title, data.bookId, data.rating, data.comment, data.language)
@@ -29,13 +52,26 @@ export default function ReviewsPage() {
     }
   }, [createReview])
 
-  const handleDelete = useCallback(async (id: string) => {
-    await deleteReview(id, null)
-  }, [deleteReview])
+  const handleEdit = useCallback((review: Review) => {
+    setSelectedReview(review)
+    setIsEditOpen(true)
+  }, [])
 
-  const handleUpdate = useCallback(async (id: string, bookId: string | null, title: string, rating: number, comment: string, language?: any) => {
-    await updateReview(id, bookId, title, rating, comment, language)
-  }, [updateReview])
+  const handleEditSubmit = useCallback(async (data: ReviewFormSubmitData) => {
+    if (!selectedReview) return
+    await updateReview(selectedReview.id, selectedReview.bookId, data.title, data.rating, data.comment, data.language)
+    setIsEditOpen(false)
+  }, [selectedReview, updateReview])
+
+  const handleDelete = useCallback(async (id: string, bookId?: string) => {
+    if (!confirm('Are you sure you want to delete this review?')) return
+    setDeletingId(id)
+    try {
+      await deleteReview(id, bookId ?? null)
+    } finally {
+      setDeletingId(undefined)
+    }
+  }, [deleteReview])
 
   const avgRating = useMemo(() => {
     if (!reviews.length) return 0
@@ -50,23 +86,22 @@ export default function ReviewsPage() {
     })
   }, [reviews, sort])
 
-  const sortOptions: { value: SortOption; label: string }[] = [
-    { value: 'newest', label: 'Newest' },
-    { value: 'highest', label: 'Highest rated' },
-    { value: 'lowest', label: 'Lowest rated' },
+  const sortOptions: { value: SortOption; label: string; icon: typeof Clock }[] = [
+    { value: 'newest', label: 'Newest', icon: Clock },
+    { value: 'highest', label: 'Highest rated', icon: TrendingUp },
+    { value: 'lowest', label: 'Lowest rated', icon: TrendingDown },
   ]
 
   return (
     <main className="min-h-screen bg-background">
+      <div className="max-w-6xl mx-auto px-6 py-12 space-y-10">
 
-      {/* HERO */}
-      <section className="border-b bg-muted/10">
-        <div className="max-w-5xl mx-auto px-6 py-14">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Reviews</p>
+        {/* TITLE BAR — editorial masthead */}
+        <div>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <h1 className="font-display text-4xl font-medium tracking-tight">Writing</h1>
-              <p className="text-muted-foreground mt-2 leading-relaxed">
+              <p className="text-muted-foreground mt-2">
                 Thoughts, notes and reflections — not limited to books.
               </p>
             </div>
@@ -80,7 +115,7 @@ export default function ReviewsPage() {
 
           {/* STATS */}
           {!isLoading && reviews.length > 0 && (
-            <div className="flex items-center gap-2 mt-8 pt-6 border-t border-border/50 text-sm flex-wrap">
+            <div className="flex items-center gap-2 mt-6 pt-6 border-t border-border/50 text-sm flex-wrap">
               <span>
                 <span className="font-semibold text-foreground tabular-nums">{reviews.length}</span>
                 <span className="text-muted-foreground ml-1">reviews</span>
@@ -93,9 +128,6 @@ export default function ReviewsPage() {
             </div>
           )}
         </div>
-      </section>
-
-      <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
 
         {/* ERROR */}
         {(error || submitError) && (
@@ -133,12 +165,13 @@ export default function ReviewsPage() {
                 <button
                   key={opt.value}
                   onClick={() => setSort(opt.value)}
-                  className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
+                  className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
                     sort === opt.value
                       ? 'bg-primary text-primary-foreground'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                   }`}
                 >
+                  <opt.icon className="w-3.5 h-3.5" />
                   {opt.label}
                 </button>
               ))}
@@ -146,21 +179,38 @@ export default function ReviewsPage() {
 
             <ReviewsGrid
               reviews={sorted}
+              bookById={bookById}
               isAdmin={isAdmin}
+              deletingId={deletingId}
+              onEdit={isAdmin ? handleEdit : undefined}
               onDelete={isAdmin ? handleDelete : undefined}
-              onUpdate={isAdmin ? handleUpdate : undefined}
             />
           </>
         )}
       </div>
 
       {isAdmin && (
-        <ReviewFormModal
-          open={isFormOpen}
-          onOpenChange={setIsFormOpen}
-          onSubmit={handleSubmit}
-          mode="create"
-        />
+        <>
+          <ReviewFormModal
+            open={isFormOpen}
+            onOpenChange={setIsFormOpen}
+            onSubmit={handleSubmit}
+            mode="create"
+          />
+          <ReviewFormModal
+            open={isEditOpen}
+            onOpenChange={setIsEditOpen}
+            onSubmit={handleEditSubmit}
+            initialValues={selectedReview ? {
+              title: selectedReview.title,
+              rating: selectedReview.rating,
+              comment: selectedReview.comment,
+              createdAt: selectedReview.createdAt,
+              language: selectedReview.language,
+            } : undefined}
+            mode="edit"
+          />
+        </>
       )}
     </main>
   )
