@@ -3,6 +3,8 @@ import { Review } from "@/domain/Review";
 import { ReleaseNote } from "@/domain/ReleaseNote";
 import { Subscriber } from "@/domain/Subscriber";
 import { Game } from "@/domain/Game";
+import { StudyTopic } from "@/domain/StudyTopic";
+import { StudySession } from "@/domain/StudySession";
 
 export function bookToPlain(book: Book) {
     return {
@@ -78,4 +80,37 @@ export function gameToPlain(game: Game) {
 
 export function gamesToPlain(games: Game[]) {
     return games.map(gameToPlain);
+}
+
+export function studyTopicToPlain(topic: StudyTopic) {
+    return {
+        id: topic.id,
+        title: topic.title,
+        description: topic.description,
+        status: topic.status,
+        priority: topic.priority,
+        resourceUrl: topic.resourceUrl,
+        createdAt: topic.createdAt,
+    };
+}
+
+export function studyTopicsToPlain(topics: StudyTopic[]) {
+    return topics.map(studyTopicToPlain);
+}
+
+export function studySessionToPlain(session: StudySession) {
+    return {
+        id: session.id,
+        topicId: session.topicId,
+        phaseType: session.phaseType,
+        plannedSeconds: session.plannedSeconds,
+        actualSeconds: session.actualSeconds,
+        completed: session.completed,
+        startedAt: session.startedAt,
+        endedAt: session.endedAt,
+    };
+}
+
+export function studySessionsToPlain(sessions: StudySession[]) {
+    return sessions.map(studySessionToPlain);
 }

@@ -11,13 +11,15 @@ import { BookStatus } from '@/domain/BookStatus'
 import Link from 'next/link'
 import {
   Loader2, BookOpen, Star, Zap, CheckCircle, Clock,
-  Library, Mail, Trash2, Send, ArrowUpRight, Users, FileText, Gamepad2
+  Library, Mail, Trash2, Send, ArrowUpRight, Users, FileText, Gamepad2, BookMarked
 } from 'lucide-react'
 import { useGames } from '@/app/hooks/useGames'
 import { GameStatus } from '@/domain/GameStatus'
 import { GamePlatform } from '@/domain/GamePlatform'
+import { useStudyTopics } from '@/app/hooks/useStudyTopics'
+import { StudyTopicStatus } from '@/domain/StudyTopicStatus'
 
-type Tab = 'overview' | 'books' | 'reviews' | 'games' | 'newsletter'
+type Tab = 'overview' | 'books' | 'reviews' | 'games' | 'studies' | 'newsletter'
 
 export default function AdminPage() {
   const router = useRouter()
@@ -27,6 +29,7 @@ export default function AdminPage() {
   const { notes, isLoading: notesLoading } = useReleaseNotes()
   const { subscribers, isLoading: subscribersLoading, removeSubscriber } = useSubscribers()
   const { games, isLoading: gamesLoading } = useGames()
+  const { topics, isLoading: topicsLoading } = useStudyTopics()
 
   const [tab, setTab] = useState<Tab>('overview')
   const [removingEmail, setRemovingEmail] = useState<string | null>(null)
@@ -91,6 +94,7 @@ export default function AdminPage() {
     { id: 'books',      label: 'Books'      },
     { id: 'reviews',    label: 'Reviews'    },
     { id: 'games',      label: 'Games'      },
+    { id: 'studies',    label: 'Studies'    },
     { id: 'newsletter', label: 'Newsletter' },
   ]
 
@@ -101,7 +105,7 @@ export default function AdminPage() {
       <section className="border-b bg-muted/10">
         <div className="max-w-5xl mx-auto px-6 pt-12 pb-0">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Admin</p>
-          <h1 className="text-3xl font-bold tracking-tight mb-8">Dashboard</h1>
+          <h1 className="font-display text-3xl font-medium tracking-tight mb-8">Dashboard</h1>
 
           {/* TABS */}
           <div className="flex gap-1">
@@ -117,7 +121,7 @@ export default function AdminPage() {
               >
                 {t.label}
                 {t.id === 'newsletter' && !subscribersLoading && subscribers.length > 0 && (
-                  <span className="ml-2 text-xs bg-pink-500/15 text-pink-600 dark:text-pink-400 px-1.5 py-0.5 rounded-full font-medium">
+                  <span className="ml-2 text-xs bg-brand-accent/15 text-brand-accent px-1.5 py-0.5 rounded-full font-medium">
                     {subscribers.length}
                   </span>
                 )}
@@ -136,13 +140,14 @@ export default function AdminPage() {
             {/* STAT CARDS */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {[
-                { label: 'Total books',  value: booksLoading ? null : books.length,            icon: BookOpen,    color: 'text-primary',    bg: 'bg-primary/10',    border: 'border-primary/20'    },
-                { label: 'Reading now',  value: booksLoading ? null : reading,                 icon: Clock,       color: 'text-blue-500',   bg: 'bg-blue-500/10',   border: 'border-blue-500/20'   },
-                { label: 'Completed',    value: booksLoading ? null : completed,               icon: CheckCircle, color: 'text-green-500',  bg: 'bg-green-500/10',  border: 'border-green-500/20'  },
-                { label: 'Reviews',      value: reviewsLoading ? null : reviews.length,        icon: Star,        color: 'text-yellow-500', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20' },
-                { label: 'Games',        value: gamesLoading ? null : games.length,            icon: Gamepad2,    color: 'text-orange-500', bg: 'bg-orange-500/10', border: 'border-orange-500/20' },
-                { label: 'Releases',     value: notesLoading ? null : notes.length,            icon: Zap,         color: 'text-purple-500', bg: 'bg-purple-500/10', border: 'border-purple-500/20' },
-                { label: 'Subscribers',  value: subscribersLoading ? null : subscribers.length, icon: Users,      color: 'text-pink-500',   bg: 'bg-pink-500/10',   border: 'border-pink-500/20'   },
+                { label: 'Total books',  value: booksLoading ? null : books.length,            icon: BookOpen,    color: 'text-primary',      bg: 'bg-primary/10',      border: 'border-primary/20'      },
+                { label: 'Reading now',  value: booksLoading ? null : reading,                 icon: Clock,       color: 'text-info',         bg: 'bg-info/10',         border: 'border-info/20'         },
+                { label: 'Completed',    value: booksLoading ? null : completed,               icon: CheckCircle, color: 'text-success',      bg: 'bg-success/10',      border: 'border-success/20'      },
+                { label: 'Reviews',      value: reviewsLoading ? null : reviews.length,        icon: Star,        color: 'text-warning',      bg: 'bg-warning/10',      border: 'border-warning/20'      },
+                { label: 'Games',        value: gamesLoading ? null : games.length,            icon: Gamepad2,    color: 'text-brand-accent', bg: 'bg-brand-accent/10', border: 'border-brand-accent/20' },
+                { label: 'Study topics', value: topicsLoading ? null : topics.length,          icon: BookMarked,  color: 'text-info',         bg: 'bg-info/10',         border: 'border-info/20'         },
+                { label: 'Releases',     value: notesLoading ? null : notes.length,            icon: Zap,         color: 'text-primary',      bg: 'bg-primary/10',      border: 'border-primary/20'      },
+                { label: 'Subscribers',  value: subscribersLoading ? null : subscribers.length, icon: Users,      color: 'text-brand-accent', bg: 'bg-brand-accent/10', border: 'border-brand-accent/20' },
               ].map(({ label, value, icon: Icon, color, bg, border }) => (
                 <div key={label} className={`p-5 rounded-2xl border ${border} ${bg}`}>
                   <div className="mb-4">
@@ -166,6 +171,7 @@ export default function AdminPage() {
                   { label: 'Library',    icon: Library,   href: '/library',       targetTab: null             as Tab | null },
                   { label: 'Reviews',    icon: FileText,  href: '/reviews',       targetTab: null             as Tab | null },
                   { label: 'Games',      icon: Gamepad2,  href: '/games',         targetTab: null             as Tab | null },
+                  { label: 'Studies',    icon: BookMarked, href: '/studies',      targetTab: null             as Tab | null },
                   { label: 'Newsletter', icon: Mail,      href: null,             targetTab: 'newsletter'     as Tab | null },
                 ].map(({ label, icon: Icon, href, targetTab }) =>
                   href ? (
@@ -210,9 +216,9 @@ export default function AdminPage() {
                   </div>
                   <div className="flex gap-4 mt-4">
                     {[
-                      { label: 'Reading', count: reading,   color: 'bg-blue-500'           },
+                      { label: 'Reading', count: reading,   color: 'bg-info'                },
                       { label: 'To read',  count: toRead,    color: 'bg-muted-foreground/30' },
-                      { label: 'Done',     count: completed, color: 'bg-green-500'           },
+                      { label: 'Done',     count: completed, color: 'bg-success'             },
                     ].map(({ label, count, color }) => (
                       <div key={label} className="flex items-center gap-2">
                         <span className={`w-2 h-2 rounded-full ${color}`} />
@@ -256,8 +262,8 @@ export default function AdminPage() {
                       <p className="text-xs text-muted-foreground">{book.author}</p>
                     </div>
                     <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${
-                      book.status === BookStatus.Completed  ? 'bg-green-500/10 text-green-600 dark:text-green-400' :
-                      book.status === BookStatus.InProgress ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'   :
+                      book.status === BookStatus.Completed  ? 'bg-success/10 text-success' :
+                      book.status === BookStatus.InProgress ? 'bg-info/10 text-info'       :
                       'bg-muted text-muted-foreground'
                     }`}>
                       {book.status === BookStatus.Completed  ? 'Completed' :
@@ -296,7 +302,7 @@ export default function AdminPage() {
                     </div>
                     <div className="flex items-center gap-0.5 shrink-0 ml-4">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-border'}`} />
+                        <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'fill-warning text-warning' : 'text-border'}`} />
                       ))}
                     </div>
                   </div>
@@ -339,12 +345,53 @@ export default function AdminPage() {
                       </p>
                     </div>
                     <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${
-                      game.status === GameStatus.Completed ? 'bg-green-500/10 text-green-600 dark:text-green-400' :
-                      game.status === GameStatus.Playing   ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'   :
+                      game.status === GameStatus.Completed ? 'bg-success/10 text-success' :
+                      game.status === GameStatus.Playing   ? 'bg-info/10 text-info'       :
                       'bg-muted text-muted-foreground'
                     }`}>
                       {game.status === GameStatus.Completed ? 'Completed' :
                        game.status === GameStatus.Playing   ? 'Playing'   : 'Backlog'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── STUDIES ── */}
+        {tab === 'studies' && (
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <p className="text-sm text-muted-foreground">
+                {topicsLoading ? '—' : `${topics.length} topics total`}
+              </p>
+              <Link href="/studies" className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                <BookMarked className="w-3.5 h-3.5" /> Manage in Studies
+              </Link>
+            </div>
+
+            {topicsLoading ? <Spinner /> : topics.length === 0 ? (
+              <Empty message="No study topics yet." />
+            ) : (
+              <div className="divide-y divide-border/50 border border-border/60 rounded-2xl overflow-hidden bg-card">
+                {topics.map((topic) => (
+                  <div key={topic.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-muted/30 transition-colors">
+                    <div className="w-8 h-8 bg-muted rounded-lg shrink-0 flex items-center justify-center">
+                      <BookMarked className="w-3.5 h-3.5 text-muted-foreground" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium truncate">{topic.title}</p>
+                    </div>
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${
+                      topic.status === StudyTopicStatus.Completed  ? 'bg-success/10 text-success' :
+                      topic.status === StudyTopicStatus.InProgress ? 'bg-info/10 text-info'       :
+                      topic.status === StudyTopicStatus.OnHold     ? 'bg-warning/10 text-warning' :
+                      'bg-muted text-muted-foreground'
+                    }`}>
+                      {topic.status === StudyTopicStatus.Completed  ? 'Completed' :
+                       topic.status === StudyTopicStatus.InProgress ? 'In progress' :
+                       topic.status === StudyTopicStatus.OnHold     ? 'On hold'   : 'Planned'}
                     </span>
                   </div>
                 ))}
@@ -370,7 +417,7 @@ export default function AdminPage() {
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     compose
                       ? 'border border-border text-muted-foreground hover:text-foreground'
-                      : 'bg-foreground text-background hover:opacity-90'
+                      : 'bg-primary text-primary-foreground hover:opacity-90'
                   }`}
                 >
                   <Send className="w-3.5 h-3.5" />
@@ -386,7 +433,7 @@ export default function AdminPage() {
                 </p>
                 {broadcastStatus === 'success' ? (
                   <div className="py-4 text-center">
-                    <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                    <p className="text-sm font-medium text-success">
                       Sent to {subscribers.length} subscriber{subscribers.length !== 1 ? 's' : ''}.
                     </p>
                     <button
@@ -417,13 +464,13 @@ export default function AdminPage() {
                       className="border rounded-lg px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 resize-none"
                     />
                     {broadcastStatus === 'error' && (
-                      <p className="text-sm text-red-500">{broadcastError}</p>
+                      <p className="text-sm text-destructive">{broadcastError}</p>
                     )}
                     <div className="flex justify-end">
                       <button
                         type="submit"
                         disabled={broadcastStatus === 'loading'}
-                        className="flex items-center gap-2 bg-foreground text-background rounded-lg px-5 py-2.5 text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
+                        className="flex items-center gap-2 bg-primary text-primary-foreground rounded-lg px-5 py-2.5 text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
                       >
                         {broadcastStatus === 'loading'
                           ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Sending...</>
@@ -443,8 +490,8 @@ export default function AdminPage() {
                 {subscribers.map((sub) => (
                   <div key={sub.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-muted/30 transition-colors">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-pink-500/10 flex items-center justify-center shrink-0">
-                        <Mail className="w-3.5 h-3.5 text-pink-500" />
+                      <div className="w-8 h-8 rounded-full bg-brand-accent/10 flex items-center justify-center shrink-0">
+                        <Mail className="w-3.5 h-3.5 text-brand-accent" />
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-medium truncate">{sub.email}</p>
@@ -454,7 +501,7 @@ export default function AdminPage() {
                     <button
                       onClick={() => handleRemove(sub.email)}
                       disabled={removingEmail === sub.email}
-                      className="shrink-0 ml-4 p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-40"
+                      className="shrink-0 ml-4 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40"
                       aria-label="Remove subscriber"
                     >
                       {removingEmail === sub.email

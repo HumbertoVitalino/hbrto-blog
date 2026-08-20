@@ -34,3 +34,13 @@ export { DeleteGameUseCase } from "./DeleteGameUseCase";
 
 export { GetSteamRecentGamesUseCase } from "./GetSteamRecentGamesUseCase";
 export { GetChessStatsUseCase } from "./GetChessStatsUseCase";
+
+export { GetAllStudyTopicsUseCase } from "./GetAllStudyTopicsUseCase";
+export { GetStudyTopicByIdUseCase } from "./GetStudyTopicByIdUseCase";
+export { CreateStudyTopicUseCase, type CreateStudyTopicDTO } from "./CreateStudyTopicUseCase";
+export { UpdateStudyTopicUseCase, type UpdateStudyTopicDTO } from "./UpdateStudyTopicUseCase";
+export { DeleteStudyTopicUseCase } from "./DeleteStudyTopicUseCase";
+
+export { GetAllStudySessionsUseCase } from "./GetAllStudySessionsUseCase";
+export { CreateStudySessionUseCase, type CreateStudySessionDTO } from "./CreateStudySessionUseCase";
+export { DeleteStudySessionUseCase } from "./DeleteStudySessionUseCase";
