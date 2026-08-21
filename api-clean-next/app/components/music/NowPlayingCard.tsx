@@ -7,7 +7,7 @@ interface NowPlayingCardProps {
 
 export function NowPlayingCard({ data }: NowPlayingCardProps) {
     return (
-        <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
+        <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm">
             {/* Ambient blur backdrop */}
             {data.albumImageUrl && (
                 <div
