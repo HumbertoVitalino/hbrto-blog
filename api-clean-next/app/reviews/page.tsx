@@ -94,14 +94,14 @@ export default function ReviewsPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto px-6 py-12 space-y-10">
+      <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
 
         {/* TITLE BAR — editorial masthead */}
         <div>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="font-display text-4xl font-medium tracking-tight">Writing</h1>
-              <p className="text-muted-foreground mt-2">
+              <h1 className="font-display text-3xl font-medium tracking-tight">Writing</h1>
+              <p className="text-sm text-muted-foreground mt-1">
                 Thoughts, notes and reflections — not limited to books.
               </p>
             </div>
