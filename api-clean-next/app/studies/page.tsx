@@ -2,29 +2,60 @@
 
 import { useState, useCallback, useMemo, useRef } from 'react'
 import { useStudyTopics, StudyTopicData } from '@/app/hooks/useStudyTopics'
+import { useStudyEpics, StudyEpicData } from '@/app/hooks/useStudyEpics'
 import { useStudySessions } from '@/app/hooks/useStudySessions'
 import { usePomodoroTimer } from '@/app/hooks/usePomodoroTimer'
 import { StudyTopicStatus } from '@/domain/StudyTopicStatus'
 import { useAuth } from '@/app/context/AuthContext'
 import { StudyTopicFormModal } from '@/app/components/studies/StudyTopicFormModal'
 import { StudyTopicCard } from '@/app/components/studies/StudyTopicCard'
+import { StudyEpicFormModal } from '@/app/components/studies/StudyEpicFormModal'
+import { StudyEpicGrid } from '@/app/components/studies/StudyEpicGrid'
+import { StudyOverviewStats } from '@/app/components/studies/StudyOverviewStats'
 import { PomodoroTimer } from '@/app/components/studies/PomodoroTimer'
-import { WeeklyActivityChart } from '@/app/components/studies/WeeklyActivityChart'
+import { StudyActivityChart, ActivityPeriod } from '@/app/components/studies/StudyActivityChart'
 import { StudySessionHistory } from '@/app/components/studies/StudySessionHistory'
 import { RevealGroup, RevealItem } from '@/app/components/motion/Reveal'
+import { computeEpicStats, computeOverviewStats } from '@/lib/studyStats'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle, Plus } from 'lucide-react'
+import { AlertCircle, Plus, X, Circle, PlayCircle, PauseCircle, CheckCircle2, ListChecks } from 'lucide-react'
 
-const columnOrder: { status: StudyTopicStatus; label: string; accent: string }[] = [
-  { status: StudyTopicStatus.Planned, label: 'Planned', accent: 'bg-muted-foreground/50' },
-  { status: StudyTopicStatus.InProgress, label: 'In progress', accent: 'bg-info' },
-  { status: StudyTopicStatus.OnHold, label: 'On hold', accent: 'bg-warning' },
-  { status: StudyTopicStatus.Completed, label: 'Completed', accent: 'bg-success' },
+type StatusToken = 'primary' | 'muted' | 'info' | 'warning' | 'success'
+
+const STATUS_FILTERS: { label: string; value: StudyTopicStatus | 'all'; icon: typeof Circle; token: StatusToken }[] = [
+  { label: 'All', value: 'all', icon: ListChecks, token: 'primary' },
+  { label: 'Planned', value: StudyTopicStatus.Planned, icon: Circle, token: 'muted' },
+  { label: 'In progress', value: StudyTopicStatus.InProgress, icon: PlayCircle, token: 'info' },
+  { label: 'On hold', value: StudyTopicStatus.OnHold, icon: PauseCircle, token: 'warning' },
+  { label: 'Completed', value: StudyTopicStatus.Completed, icon: CheckCircle2, token: 'success' },
 ]
+
+const ACTIVITY_PERIODS: { label: string; value: ActivityPeriod }[] = [
+  { label: '7 days', value: 7 },
+  { label: '30 days', value: 30 },
+  { label: '90 days', value: 90 },
+]
+
+const STATUS_ACTIVE: Record<StatusToken, string> = {
+  primary: 'border-primary/40 bg-primary/10 text-primary',
+  muted: 'border-foreground/30 bg-muted text-foreground',
+  info: 'border-info/40 bg-info/10 text-info',
+  warning: 'border-warning/40 bg-warning/10 text-warning',
+  success: 'border-success/40 bg-success/10 text-success',
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+      {children}
+    </p>
+  )
+}
 
 export default function StudiesPage() {
   const { topics, isLoading, error, createTopic, updateTopic, deleteTopic } = useStudyTopics()
+  const { epics, error: epicsError, createEpic, updateEpic, deleteEpic } = useStudyEpics()
   const { sessions, isLoading: sessionsLoading, createSession } = useStudySessions()
   const timer = usePomodoroTimer(createSession)
   const { isAdmin } = useAuth()
@@ -38,12 +69,33 @@ export default function StudiesPage() {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [pendingTopicId, setPendingTopicId] = useState<string | undefined>()
 
-  const topicsByStatus = useMemo(() => ({
-    [StudyTopicStatus.Planned]: topics.filter(t => t.status === StudyTopicStatus.Planned),
-    [StudyTopicStatus.InProgress]: topics.filter(t => t.status === StudyTopicStatus.InProgress),
-    [StudyTopicStatus.Completed]: topics.filter(t => t.status === StudyTopicStatus.Completed),
-    [StudyTopicStatus.OnHold]: topics.filter(t => t.status === StudyTopicStatus.OnHold),
-  }), [topics])
+  const [isEpicFormOpen, setIsEpicFormOpen] = useState(false)
+  const [selectedEpic, setSelectedEpic] = useState<StudyEpicData | undefined>()
+  const [isEpicSubmitting, setIsEpicSubmitting] = useState(false)
+  const [deletingEpicId, setDeletingEpicId] = useState<string | undefined>()
+  const [epicSubmitError, setEpicSubmitError] = useState<string | null>(null)
+  const [activeEpicId, setActiveEpicId] = useState<string | undefined>()
+  const [statusFilter, setStatusFilter] = useState<StudyTopicStatus | 'all'>('all')
+  const [activityPeriod, setActivityPeriod] = useState<ActivityPeriod>(7)
+
+  const epicById = useMemo(() => {
+    const map = new Map<string, StudyEpicData>()
+    epics.forEach(e => e.id && map.set(e.id, e))
+    return map
+  }, [epics])
+
+  const epicStats = useMemo(() => computeEpicStats(epics, topics, sessions), [epics, topics, sessions])
+  const overviewStats = useMemo(() => computeOverviewStats(epics, topics, sessions), [epics, topics, sessions])
+
+  const visibleTopics = useMemo(() => topics.filter(t => {
+    if (activeEpicId && t.epicId !== activeEpicId) return false
+    if (statusFilter !== 'all' && t.status !== statusFilter) return false
+    return true
+  }), [topics, activeEpicId, statusFilter])
+
+  const countForStatus = useCallback((status: StudyTopicStatus | 'all') =>
+    status === 'all' ? topics.length : topics.filter(t => t.status === status).length,
+  [topics])
 
   const handleEdit = useCallback((topic: StudyTopicData) => {
     setSelectedTopic(topic)
@@ -90,7 +142,53 @@ export default function StudiesPage() {
     focusPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [])
 
-  const hasVisibleTopics = topics.length > 0
+  const handleEpicEdit = useCallback((epic: StudyEpicData) => {
+    setSelectedEpic(epic)
+    setEpicSubmitError(null)
+    setIsEpicFormOpen(true)
+  }, [])
+
+  const handleEpicNew = useCallback(() => {
+    setSelectedEpic(undefined)
+    setEpicSubmitError(null)
+    setIsEpicFormOpen(true)
+  }, [])
+
+  const handleEpicSubmit = useCallback(async (data: Omit<StudyEpicData, 'id'>) => {
+    try {
+      setIsEpicSubmitting(true)
+      setEpicSubmitError(null)
+      if (selectedEpic?.id) {
+        await updateEpic(selectedEpic.id, data)
+      } else {
+        await createEpic(data)
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to save epic'
+      setEpicSubmitError(message)
+      throw err
+    } finally {
+      setIsEpicSubmitting(false)
+    }
+  }, [selectedEpic, createEpic, updateEpic])
+
+  const handleEpicDelete = useCallback(async (id: string) => {
+    if (!confirm('Delete this epic? Its topics will remain, unassigned.')) return
+    try {
+      setDeletingEpicId(id)
+      await deleteEpic(id)
+      setActiveEpicId(prev => prev === id ? undefined : prev)
+    } finally {
+      setDeletingEpicId(undefined)
+    }
+  }, [deleteEpic])
+
+  const handleEpicSelect = useCallback((id: string) => {
+    setActiveEpicId(prev => prev === id ? undefined : id)
+  }, [])
+
+  const hasVisibleTopics = visibleTopics.length > 0
+  const activeEpic = activeEpicId ? epicById.get(activeEpicId) : undefined
 
   return (
     <main className="min-h-screen bg-background">
@@ -112,86 +210,140 @@ export default function StudiesPage() {
           )}
         </div>
 
-        {(error || submitError) && (
+        {(error || submitError || epicsError || epicSubmitError) && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error || submitError}</AlertDescription>
+            <AlertDescription>{error || submitError || epicsError || epicSubmitError}</AlertDescription>
           </Alert>
         )}
 
-        {/* FOCUS PANEL + THIS WEEK */}
-        <div ref={focusPanelRef} className={`grid gap-5 ${isAdmin ? 'lg:grid-cols-2 items-start' : ''}`}>
-          {isAdmin && (
+        {/* OVERVIEW — the headline numbers, public */}
+        <StudyOverviewStats stats={overviewStats} />
+
+        {/* EPICS — initiatives that group topics */}
+        <StudyEpicGrid
+          epics={epics}
+          statsByEpicId={epicStats}
+          selectedEpicId={activeEpicId}
+          isAdmin={isAdmin}
+          deletingId={deletingEpicId}
+          onSelect={handleEpicSelect}
+          onNew={handleEpicNew}
+          onEdit={handleEpicEdit}
+          onDelete={handleEpicDelete}
+        />
+
+        {/* TOPICS — filterable catalog */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <SectionLabel>Topics</SectionLabel>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {STATUS_FILTERS.map(({ label, value, icon: Icon, token }) => (
+              <button
+                key={value}
+                onClick={() => setStatusFilter(value)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                  statusFilter === value
+                    ? STATUS_ACTIVE[token]
+                    : 'border-border/60 text-muted-foreground hover:text-foreground hover:border-border'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {label}
+                <span className="opacity-70 tabular-nums">{countForStatus(value)}</span>
+              </button>
+            ))}
+
+            {activeEpic && (
+              <button
+                onClick={() => setActiveEpicId(undefined)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-primary/40 bg-primary/10 text-primary transition-colors"
+              >
+                {activeEpic.title}
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+
+          {isLoading ? (
+            <div className="flex justify-center py-20">
+              <div className="h-6 w-6 rounded-full border border-muted border-t-foreground animate-spin" />
+            </div>
+          ) : !hasVisibleTopics ? (
+            <div className="text-center py-20 border border-dashed border-border/50 rounded-2xl">
+              <p className="text-sm text-muted-foreground">
+                {activeEpic || statusFilter !== 'all' ? 'No topics match these filters.' : 'No study topics yet.'}
+              </p>
+              {isAdmin && (
+                <Button variant="ghost" onClick={handleNew} className="mt-4">
+                  Add your first topic
+                </Button>
+              )}
+            </div>
+          ) : (
+            <RevealGroup className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              {visibleTopics.map(topic => (
+                <RevealItem key={topic.id}>
+                  <StudyTopicCard
+                    compact
+                    topic={topic}
+                    epic={topic.epicId ? epicById.get(topic.epicId) : undefined}
+                    isAdmin={isAdmin}
+                    isDeleting={deletingId === topic.id}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onStudy={handleStudy}
+                  />
+                </RevealItem>
+              ))}
+            </RevealGroup>
+          )}
+        </div>
+
+        {/* ACTIVITY — public, filterable focus-time chart */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <SectionLabel>Activity</SectionLabel>
+            <div className="flex gap-1.5">
+              {ACTIVITY_PERIODS.map(({ label, value }) => (
+                <button
+                  key={value}
+                  onClick={() => setActivityPeriod(value)}
+                  className={`text-xs font-medium px-3 py-1 rounded-full transition-colors ${
+                    activityPeriod === value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <StudyActivityChart sessions={sessions} period={activityPeriod} />
+        </div>
+
+        {/* FOCUS SESSION — admin-only Pomodoro tool */}
+        {isAdmin && (
+          <div ref={focusPanelRef} className="space-y-3">
+            <SectionLabel>Focus session</SectionLabel>
             <PomodoroTimer
               topics={topics}
+              epics={epics}
               sessions={sessions}
               timer={timer}
               pendingTopicId={pendingTopicId}
               onPendingTopicChange={setPendingTopicId}
             />
-          )}
-          <WeeklyActivityChart sessions={sessions} />
-        </div>
-
-        {/* TOPICS — KANBAN */}
-        {isLoading ? (
-          <div className="flex justify-center py-20">
-            <div className="h-6 w-6 rounded-full border border-muted border-t-foreground animate-spin" />
-          </div>
-        ) : !hasVisibleTopics ? (
-          <div className="text-center py-20 border border-dashed border-border/50 rounded-2xl">
-            <p className="text-sm text-muted-foreground">No study topics yet.</p>
-            {isAdmin && (
-              <Button variant="ghost" onClick={handleNew} className="mt-4">
-                Add your first topic
-              </Button>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {columnOrder.map(({ status, label, accent }) => {
-              const columnTopics = topicsByStatus[status]
-              return (
-                <div key={status} className="space-y-3">
-                  <div className="flex items-center gap-2 px-0.5">
-                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${accent}`} />
-                    <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground">{label}</h2>
-                    <span className="text-xs tabular-nums text-muted-foreground ml-auto">{columnTopics.length}</span>
-                  </div>
-                  {columnTopics.length === 0 ? (
-                    <div className="rounded-lg border border-dashed border-border/50 py-6 text-center">
-                      <p className="text-xs text-muted-foreground">Empty</p>
-                    </div>
-                  ) : (
-                    <RevealGroup className="flex flex-col gap-2">
-                      {columnTopics.map(topic => (
-                        <RevealItem key={topic.id}>
-                          <StudyTopicCard
-                            compact
-                            topic={topic}
-                            isAdmin={isAdmin}
-                            isDeleting={deletingId === topic.id}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                            onStudy={handleStudy}
-                          />
-                        </RevealItem>
-                      ))}
-                    </RevealGroup>
-                  )}
-                </div>
-              )
-            })}
           </div>
         )}
 
         {/* RECENT SESSIONS */}
         <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <h2 className="text-sm font-semibold text-foreground">Recent sessions</h2>
-            <div className="flex-1 h-px bg-border/40" />
-          </div>
+          <SectionLabel>Recent sessions</SectionLabel>
           <StudySessionHistory sessions={sessions} topics={topics} isLoading={sessionsLoading} />
         </div>
       </div>
@@ -203,6 +355,16 @@ export default function StudiesPage() {
           isLoading={isSubmitting}
           onSubmit={handleSubmit}
           onOpenChange={setIsFormOpen}
+        />
+      )}
+
+      {isAdmin && (
+        <StudyEpicFormModal
+          isOpen={isEpicFormOpen}
+          epic={selectedEpic}
+          isLoading={isEpicSubmitting}
+          onSubmit={handleEpicSubmit}
+          onOpenChange={setIsEpicFormOpen}
         />
       )}
     </main>

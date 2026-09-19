@@ -9,6 +9,7 @@ export interface UpdateStudyTopicDTO {
     status?: StudyTopicStatus;
     priority?: StudyPriority;
     resourceUrl?: string;
+    epicId?: string | null;
 }
 
 export class UpdateStudyTopicUseCase {
@@ -29,7 +30,8 @@ export class UpdateStudyTopicUseCase {
             description: dto.description !== undefined ? dto.description : topic.description,
             status: dto.status ?? topic.status,
             priority: dto.priority ?? topic.priority,
-            resourceUrl: dto.resourceUrl !== undefined ? dto.resourceUrl : topic.resourceUrl
+            resourceUrl: dto.resourceUrl !== undefined ? dto.resourceUrl : topic.resourceUrl,
+            epicId: dto.epicId !== undefined ? (dto.epicId ?? undefined) : topic.epicId
         });
     }
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { StudyTopicData } from '@/app/hooks/useStudyTopics'
+import { useStudyEpics } from '@/app/hooks/useStudyEpics'
 import { StudyTopicStatus } from '@/domain/StudyTopicStatus'
 import { StudyPriority } from '@/domain/StudyPriority'
 import {
@@ -32,6 +33,7 @@ const emptyForm: Omit<StudyTopicData, 'id'> = {
     status: StudyTopicStatus.Planned,
     priority: StudyPriority.Medium,
     resourceUrl: undefined,
+    epicId: undefined,
 }
 
 export function StudyTopicFormModal({
@@ -43,6 +45,7 @@ export function StudyTopicFormModal({
 }: StudyTopicFormModalProps) {
     const [formData, setFormData] = useState<Omit<StudyTopicData, 'id'>>(emptyForm)
     const [errors, setErrors] = useState<Record<string, string>>({})
+    const { epics } = useStudyEpics()
 
     useEffect(() => {
         if (topic) {
@@ -52,6 +55,7 @@ export function StudyTopicFormModal({
                 status: topic.status || StudyTopicStatus.Planned,
                 priority: topic.priority || StudyPriority.Medium,
                 resourceUrl: topic.resourceUrl,
+                epicId: topic.epicId ?? undefined,
             })
         } else {
             setFormData(emptyForm)
@@ -169,6 +173,24 @@ export function StudyTopicFormModal({
                                 <option value={StudyPriority.High}>High</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="epicId">Epic <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                        <select
+                            id="epicId"
+                            value={formData.epicId ?? ''}
+                            onChange={(e) =>
+                                setFormData({ ...formData, epicId: e.target.value || null })
+                            }
+                            disabled={isLoading}
+                            className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        >
+                            <option value="">No epic</option>
+                            {epics.map((epic) => (
+                                <option key={epic.id} value={epic.id}>{epic.title}</option>
+                            ))}
+                        </select>
                     </div>
 
                     <div className="space-y-2">

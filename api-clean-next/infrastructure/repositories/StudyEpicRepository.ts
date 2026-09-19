@@ -1,10 +1,10 @@
-import { StudyTopic } from "@/domain/StudyTopic";
+import { StudyEpic } from "@/domain/StudyEpic";
 import { supabase } from "../supabase/client";
 
-export class StudyTopicRepository {
-    async findAll(): Promise<StudyTopic[]> {
+export class StudyEpicRepository {
+    async findAll(): Promise<StudyEpic[]> {
         const { data, error } = await supabase
-            .from("study_topics")
+            .from("study_epics")
             .select("*")
             .order("created_at", { ascending: false });
 
@@ -14,22 +14,21 @@ export class StudyTopicRepository {
 
         return data.map(
             (item) =>
-                new StudyTopic({
+                new StudyEpic({
                     id: item.id,
                     title: item.title,
                     description: item.description,
                     status: item.status,
-                    priority: item.priority,
-                    resourceUrl: item.resource_url,
-                    epicId: item.epic_id,
+                    color: item.color,
+                    targetSeconds: item.target_seconds ?? undefined,
                     createdAt: item.created_at ? new Date(item.created_at) : new Date()
                 })
         )
     }
 
-    async findById(id: string): Promise<StudyTopic | null> {
+    async findById(id: string): Promise<StudyEpic | null> {
         const { data, error } = await supabase
-            .from("study_topics")
+            .from("study_epics")
             .select("*")
             .eq("id", id)
             .single();
@@ -41,28 +40,26 @@ export class StudyTopicRepository {
             throw new Error(error.message);
         }
 
-        return new StudyTopic({
+        return new StudyEpic({
             id: data.id,
             title: data.title,
             description: data.description,
             status: data.status,
-            priority: data.priority,
-            resourceUrl: data.resource_url,
-            epicId: data.epic_id,
+            color: data.color,
+            targetSeconds: data.target_seconds ?? undefined,
             createdAt: data.created_at ? new Date(data.created_at) : new Date()
         });
     }
 
-    async create(topic: Omit<StudyTopic, "id" | "createdAt">): Promise<StudyTopic> {
+    async create(epic: Omit<StudyEpic, "id" | "createdAt">): Promise<StudyEpic> {
         const { data, error } = await supabase
-            .from("study_topics")
+            .from("study_epics")
             .insert({
-                title: topic.title,
-                description: topic.description,
-                status: topic.status,
-                priority: topic.priority,
-                resource_url: topic.resourceUrl,
-                epic_id: topic.epicId ?? null
+                title: epic.title,
+                description: epic.description,
+                status: epic.status,
+                color: epic.color,
+                target_seconds: epic.targetSeconds ?? null
             })
             .select()
             .single();
@@ -71,28 +68,26 @@ export class StudyTopicRepository {
             throw new Error(error.message);
         }
 
-        return new StudyTopic({
+        return new StudyEpic({
             id: data.id,
             title: data.title,
             description: data.description,
             status: data.status,
-            priority: data.priority,
-            resourceUrl: data.resource_url,
-            epicId: data.epic_id,
+            color: data.color,
+            targetSeconds: data.target_seconds ?? undefined,
             createdAt: data.created_at ? new Date(data.created_at) : new Date()
         });
     }
 
-    async update(id: string, updates: Partial<Omit<StudyTopic, "id" | "createdAt">>): Promise<StudyTopic> {
+    async update(id: string, updates: Partial<Omit<StudyEpic, "id" | "createdAt">>): Promise<StudyEpic> {
         const { data, error } = await supabase
-            .from("study_topics")
+            .from("study_epics")
             .update({
                 ...(updates.title !== undefined && { title: updates.title }),
                 ...(updates.description !== undefined && { description: updates.description }),
                 ...(updates.status !== undefined && { status: updates.status }),
-                ...(updates.priority !== undefined && { priority: updates.priority }),
-                ...(updates.resourceUrl !== undefined && { resource_url: updates.resourceUrl || null }),
-                ...(updates.epicId !== undefined && { epic_id: updates.epicId || null })
+                ...(updates.color !== undefined && { color: updates.color }),
+                ...(updates.targetSeconds !== undefined && { target_seconds: updates.targetSeconds })
             })
             .eq("id", id)
             .select()
@@ -102,21 +97,20 @@ export class StudyTopicRepository {
             throw new Error(error.message);
         }
 
-        return new StudyTopic({
+        return new StudyEpic({
             id: data.id,
             title: data.title,
             description: data.description,
             status: data.status,
-            priority: data.priority,
-            resourceUrl: data.resource_url,
-            epicId: data.epic_id,
+            color: data.color,
+            targetSeconds: data.target_seconds ?? undefined,
             createdAt: data.created_at ? new Date(data.created_at) : new Date()
         });
     }
 
     async delete(id: string): Promise<void> {
         const { error } = await supabase
-            .from("study_topics")
+            .from("study_epics")
             .delete()
             .eq("id", id);
 

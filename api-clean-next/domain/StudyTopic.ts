@@ -8,6 +8,7 @@ export class StudyTopic {
     private _status: StudyTopicStatus
     private _priority: StudyPriority
     private _resourceUrl?: string
+    private _epicId?: string
     private _createdAt: Date
 
     constructor(props: {
@@ -17,6 +18,7 @@ export class StudyTopic {
         status?: StudyTopicStatus
         priority?: StudyPriority
         resourceUrl?: string
+        epicId?: string
         createdAt?: Date
     }) {
         this._id = props.id
@@ -25,6 +27,7 @@ export class StudyTopic {
         this._status = props.status ?? StudyTopicStatus.Planned
         this._priority = props.priority ?? StudyPriority.Medium
         this._resourceUrl = props.resourceUrl
+        this._epicId = props.epicId
         this._createdAt = props.createdAt ?? new Date()
     }
 
@@ -34,5 +37,6 @@ export class StudyTopic {
     get status() { return this._status }
     get priority() { return this._priority }
     get resourceUrl() { return this._resourceUrl }
+    get epicId() { return this._epicId }
     get createdAt() { return this._createdAt }
 }
