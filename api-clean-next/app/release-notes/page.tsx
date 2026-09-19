@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import { motion } from 'motion/react'
 import { useReleaseNotes } from '@/app/hooks/useReleaseNotes'
 import { useAuth } from '@/app/context/AuthContext'
 import { ReleaseNoteCard } from '@/app/components/release-notes/ReleaseNoteCard'
 import { ReleaseNoteFormModal } from '@/app/components/release-notes/ReleaseNoteFormModal'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle, Plus } from 'lucide-react'
+import { AlertCircle, Plus, Tag } from 'lucide-react'
 
 export default function ReleaseNotesPage() {
     const { notes, isLoading, error, createNote, updateNote, deleteNote } = useReleaseNotes()
@@ -28,38 +29,34 @@ export default function ReleaseNotesPage() {
 
     return (
         <main className="min-h-screen bg-background">
+            <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
 
-            {/* HERO */}
-            <section className="border-b bg-muted/10">
-                <div className="max-w-5xl mx-auto px-6 py-14">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Changelog</p>
-                    <div className="flex items-start justify-between gap-4 flex-wrap">
-                        <div>
-                            <h1 className="font-display text-4xl font-medium tracking-tight">Release Notes</h1>
-                            <p className="text-muted-foreground mt-2 leading-relaxed">
-                                What&apos;s new — features, fixes and improvements to this blog.
-                            </p>
-                        </div>
-                        {isAdmin && (
-                            <Button size="sm" onClick={() => setIsFormOpen(true)} className="gap-2 shrink-0">
-                                <Plus className="w-4 h-4" />
-                                New release
-                            </Button>
-                        )}
+                {/* TITLE BAR */}
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <div>
+                        <h1 className="font-display text-3xl font-medium tracking-tight">Release Notes</h1>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            What&apos;s new — features, fixes and improvements to this blog.
+                        </p>
                     </div>
-
-                    {!isLoading && notes.length > 0 && (
-                        <div className="flex items-center gap-2 mt-8 pt-6 border-t border-border/50 text-sm flex-wrap">
-                            <span>
-                                <span className="font-semibold text-foreground tabular-nums">{notes.length}</span>
-                                <span className="text-muted-foreground ml-1">releases published</span>
-                            </span>
-                        </div>
+                    {isAdmin && (
+                        <Button size="sm" onClick={() => setIsFormOpen(true)} className="gap-2 shrink-0">
+                            <Plus className="w-4 h-4" />
+                            New release
+                        </Button>
                     )}
                 </div>
-            </section>
 
-            <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
+                {!isLoading && notes.length > 0 && (
+                    <div className="flex items-center gap-2 text-sm">
+                        <span className="font-semibold text-foreground tabular-nums">{notes.length}</span>
+                        <span className="text-muted-foreground">releases published</span>
+                        <span className="text-muted-foreground/40">·</span>
+                        <span className="text-muted-foreground">
+                            latest <span className="font-mono text-foreground">{notes[0].version}</span>
+                        </span>
+                    </div>
+                )}
 
                 {error && (
                     <Alert variant="destructive">
@@ -87,15 +84,31 @@ export default function ReleaseNotesPage() {
                 )}
 
                 {!isLoading && notes.length > 0 && (
-                    <div>
-                        {notes.map((note) => (
-                            <ReleaseNoteCard
+                    <div className="border-l-2 border-border ml-3 pl-8 relative space-y-10 py-2">
+                        {notes.map((note, i) => (
+                            <motion.div
                                 key={note.id}
-                                note={note}
-                                isAdmin={isAdmin}
-                                onDelete={isAdmin ? handleDelete : undefined}
-                                onUpdate={isAdmin ? handleUpdate : undefined}
-                            />
+                                initial={{ opacity: 0, y: 16 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true, amount: 0.3 }}
+                                transition={{ type: 'spring', stiffness: 280, damping: 28, delay: (i % 3) * 0.06 }}
+                                className="relative"
+                            >
+                                <span
+                                    className={`absolute -left-11.5 top-0 h-7 w-7 rounded-full ring-4 ring-background flex items-center justify-center ${
+                                        i === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                                    }`}
+                                >
+                                    <Tag className="w-3.5 h-3.5" />
+                                </span>
+                                <ReleaseNoteCard
+                                    note={note}
+                                    isLatest={i === 0}
+                                    isAdmin={isAdmin}
+                                    onDelete={isAdmin ? handleDelete : undefined}
+                                    onUpdate={isAdmin ? handleUpdate : undefined}
+                                />
+                            </motion.div>
                         ))}
                     </div>
                 )}

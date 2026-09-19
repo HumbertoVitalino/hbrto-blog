@@ -10,12 +10,13 @@ import { formatDate } from '@/lib/formatDate'
 
 interface ReleaseNoteCardProps {
     note: ReleaseNoteData
+    isLatest?: boolean
     isAdmin?: boolean
     onDelete?: (id: string) => Promise<void>
     onUpdate?: (id: string, data: { version: string; title: string; description: string }) => Promise<void>
 }
 
-export function ReleaseNoteCard({ note, isAdmin, onDelete, onUpdate }: ReleaseNoteCardProps) {
+export function ReleaseNoteCard({ note, isLatest, isAdmin, onDelete, onUpdate }: ReleaseNoteCardProps) {
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
     const [isExpanded, setIsExpanded] = useState(false)
@@ -34,11 +35,11 @@ export function ReleaseNoteCard({ note, isAdmin, onDelete, onUpdate }: ReleaseNo
 
     return (
         <>
-            <article className="group relative py-8 border-b border-border/50 last:border-0">
+            <article className="group relative">
 
                 {/* ADMIN ACTIONS */}
                 {isAdmin && (
-                    <div className="absolute top-8 right-0 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-0 right-0 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button size="sm" variant="outline" className="h-7 w-7 p-0" onClick={() => setIsEditOpen(true)}>
                             <Edit2 className="w-3 h-3" />
                             <span className="sr-only">Edit</span>
@@ -55,6 +56,11 @@ export function ReleaseNoteCard({ note, isAdmin, onDelete, onUpdate }: ReleaseNo
                     <span className="text-xs font-mono font-medium bg-muted px-2.5 py-1 rounded-full border border-border/50">
                         {note.version}
                     </span>
+                    {isLatest && (
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                            Latest
+                        </span>
+                    )}
                     <span className="text-muted-foreground/40 text-xs">·</span>
                     <time className="text-xs text-muted-foreground" dateTime={new Date(note.publishedAt).toISOString()}>
                         {formatDate(note.publishedAt)}
