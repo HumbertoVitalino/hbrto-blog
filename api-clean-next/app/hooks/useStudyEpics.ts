@@ -1,18 +1,16 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { StudyTopicStatus } from '@/domain/StudyTopicStatus'
-import { StudyPriority } from '@/domain/StudyPriority'
+import { StudyEpicStatus } from '@/domain/StudyEpicStatus'
 import { supabase } from '@/infrastructure/supabase/client'
 
-export interface StudyTopicData {
+export interface StudyEpicData {
     id?: string
     title: string
     description?: string
-    status?: StudyTopicStatus
-    priority?: StudyPriority
-    resourceUrl?: string
-    epicId?: string | null
+    status?: StudyEpicStatus
+    color?: string
+    targetSeconds?: number | null
     createdAt?: string
 }
 
@@ -33,23 +31,23 @@ async function getAuthHeader(): Promise<Record<string, string>> {
     return {}
 }
 
-export function useStudyTopics() {
-    const [topics, setTopics] = useState<StudyTopicData[]>([])
+export function useStudyEpics() {
+    const [epics, setEpics] = useState<StudyEpicData[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    const fetchTopics = useCallback(async () => {
+    const fetchEpics = useCallback(async () => {
         try {
             setIsLoading(true)
             setError(null)
-            const response = await fetch('/api/study-topics')
+            const response = await fetch('/api/study-epics')
 
             if (!response.ok) {
-                throw new Error('Failed to load study topics')
+                throw new Error('Failed to load study epics')
             }
 
             const data = await response.json()
-            setTopics(data)
+            setEpics(data)
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Unknown error')
         } finally {
@@ -57,46 +55,45 @@ export function useStudyTopics() {
         }
     }, [])
 
-    const createTopic = useCallback(async (topic: Omit<StudyTopicData, 'id'>) => {
+    const createEpic = useCallback(async (epic: Omit<StudyEpicData, 'id'>) => {
         try {
             setError(null)
             const authHeader = await getAuthHeader()
-            const response = await fetch('/api/study-topics', {
+            const response = await fetch('/api/study-epics', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     ...authHeader
                 },
                 body: JSON.stringify({
-                    title: topic.title,
-                    description: topic.description,
-                    status: topic.status,
-                    priority: topic.priority,
-                    resourceUrl: topic.resourceUrl,
-                    epicId: topic.epicId
+                    title: epic.title,
+                    description: epic.description,
+                    status: epic.status,
+                    color: epic.color,
+                    targetSeconds: epic.targetSeconds
                 })
             })
 
             if (!response.ok) {
                 const errorData = await response.json()
-                throw new Error(errorData.error || 'Failed to create study topic')
+                throw new Error(errorData.error || 'Failed to create study epic')
             }
 
-            const newTopic = await response.json()
-            setTopics(prev => [newTopic, ...prev])
-            return newTopic
+            const newEpic = await response.json()
+            setEpics(prev => [newEpic, ...prev])
+            return newEpic
         } catch (err) {
-            const message = err instanceof Error ? err.message : 'Error creating study topic'
+            const message = err instanceof Error ? err.message : 'Error creating study epic'
             setError(message)
             throw err
         }
     }, [])
 
-    const updateTopic = useCallback(async (id: string, updates: Partial<Omit<StudyTopicData, 'id'>>) => {
+    const updateEpic = useCallback(async (id: string, updates: Partial<Omit<StudyEpicData, 'id'>>) => {
         try {
             setError(null)
             const authHeader = await getAuthHeader()
-            const response = await fetch(`/api/study-topics?id=${id}`, {
+            const response = await fetch(`/api/study-epics?id=${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -106,60 +103,59 @@ export function useStudyTopics() {
                     title: updates.title,
                     description: updates.description,
                     status: updates.status,
-                    priority: updates.priority,
-                    resourceUrl: updates.resourceUrl,
-                    epicId: updates.epicId
+                    color: updates.color,
+                    targetSeconds: updates.targetSeconds
                 })
             })
 
             if (!response.ok) {
                 const errorData = await response.json()
-                throw new Error(errorData.error || 'Failed to update study topic')
+                throw new Error(errorData.error || 'Failed to update study epic')
             }
 
-            const updatedTopic = await response.json()
-            setTopics(prev => prev.map(t => t.id === id ? updatedTopic : t))
-            return updatedTopic
+            const updatedEpic = await response.json()
+            setEpics(prev => prev.map(e => e.id === id ? updatedEpic : e))
+            return updatedEpic
         } catch (err) {
-            const message = err instanceof Error ? err.message : 'Error updating study topic'
+            const message = err instanceof Error ? err.message : 'Error updating study epic'
             setError(message)
             throw err
         }
     }, [])
 
-    const deleteTopic = useCallback(async (id: string) => {
+    const deleteEpic = useCallback(async (id: string) => {
         try {
             setError(null)
             const authHeader = await getAuthHeader()
-            const response = await fetch(`/api/study-topics?id=${id}`, {
+            const response = await fetch(`/api/study-epics?id=${id}`, {
                 method: 'DELETE',
                 headers: authHeader
             })
 
             if (!response.ok) {
                 const errorData = await response.json()
-                throw new Error(errorData.error || 'Failed to delete study topic')
+                throw new Error(errorData.error || 'Failed to delete study epic')
             }
 
-            setTopics(prev => prev.filter(t => t.id !== id))
+            setEpics(prev => prev.filter(e => e.id !== id))
         } catch (err) {
-            const message = err instanceof Error ? err.message : 'Error deleting study topic'
+            const message = err instanceof Error ? err.message : 'Error deleting study epic'
             setError(message)
             throw err
         }
     }, [])
 
     useEffect(() => {
-        fetchTopics()
-    }, [fetchTopics])
+        fetchEpics()
+    }, [fetchEpics])
 
     return {
-        topics,
+        epics,
         isLoading,
         error,
-        fetchTopics,
-        createTopic,
-        updateTopic,
-        deleteTopic
+        fetchEpics,
+        createEpic,
+        updateEpic,
+        deleteEpic
     }
 }

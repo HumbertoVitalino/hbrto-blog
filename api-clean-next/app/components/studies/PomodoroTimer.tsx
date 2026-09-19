@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 import { StudyTopicData } from '@/app/hooks/useStudyTopics'
+import { StudyEpicData } from '@/app/hooks/useStudyEpics'
 import { StudySessionData } from '@/app/hooks/useStudySessions'
 import { usePomodoroTimer } from '@/app/hooks/usePomodoroTimer'
 import { POMODORO_CYCLE, PHASE_LABEL } from '@/lib/pomodoroCycle'
@@ -17,13 +18,14 @@ function formatTime(totalSeconds: number) {
 
 interface PomodoroTimerProps {
     topics: StudyTopicData[]
+    epics: StudyEpicData[]
     sessions: StudySessionData[]
     timer: ReturnType<typeof usePomodoroTimer>
     pendingTopicId?: string
     onPendingTopicChange: (id: string) => void
 }
 
-export function PomodoroTimer({ topics, sessions, timer, pendingTopicId, onPendingTopicChange }: PomodoroTimerProps) {
+export function PomodoroTimer({ topics, epics, sessions, timer, pendingTopicId, onPendingTopicChange }: PomodoroTimerProps) {
     const { phase, phaseIndex, status, remainingSeconds, topicId, start, pause, resume, stop } = timer
     const isFocus = phase.type === PomodoroPhaseType.Focus
     const isIdle = status === 'idle'
@@ -32,6 +34,17 @@ export function PomodoroTimer({ topics, sessions, timer, pendingTopicId, onPendi
 
     const progress = 1 - remainingSeconds / (phase.minutes * 60)
     const today = useMemo(() => computeTodayStats(sessions), [sessions])
+
+    const topicsByEpic = useMemo(() => {
+        const epicTitleById = new Map(epics.filter(e => e.id).map(e => [e.id as string, e.title]))
+        const groups = new Map<string, StudyTopicData[]>()
+        for (const topic of topics) {
+            const label = (topic.epicId && epicTitleById.get(topic.epicId)) || 'No epic'
+            if (!groups.has(label)) groups.set(label, [])
+            groups.get(label)!.push(topic)
+        }
+        return groups
+    }, [topics, epics])
 
     return (
         <div className="relative rounded-2xl border border-border/60 bg-card p-6 overflow-hidden">
@@ -99,8 +112,12 @@ export function PomodoroTimer({ topics, sessions, timer, pendingTopicId, onPendi
                         <option value="" disabled>
                             {topics.length === 0 ? 'Add a topic first' : 'Select a topic'}
                         </option>
-                        {topics.map(t => (
-                            <option key={t.id} value={t.id}>{t.title}</option>
+                        {[...topicsByEpic.entries()].map(([label, groupTopics]) => (
+                            <optgroup key={label} label={label}>
+                                {groupTopics.map(t => (
+                                    <option key={t.id} value={t.id}>{t.title}</option>
+                                ))}
+                            </optgroup>
                         ))}
                     </select>
                     {!isIdle && activeTopic && (

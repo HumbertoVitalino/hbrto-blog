@@ -5,6 +5,7 @@ import { Subscriber } from "@/domain/Subscriber";
 import { Game } from "@/domain/Game";
 import { StudyTopic } from "@/domain/StudyTopic";
 import { StudySession } from "@/domain/StudySession";
+import { StudyEpic } from "@/domain/StudyEpic";
 
 export function bookToPlain(book: Book) {
     return {
@@ -90,6 +91,7 @@ export function studyTopicToPlain(topic: StudyTopic) {
         status: topic.status,
         priority: topic.priority,
         resourceUrl: topic.resourceUrl,
+        epicId: topic.epicId,
         createdAt: topic.createdAt,
     };
 }
@@ -113,4 +115,20 @@ export function studySessionToPlain(session: StudySession) {
 
 export function studySessionsToPlain(sessions: StudySession[]) {
     return sessions.map(studySessionToPlain);
+}
+
+export function studyEpicToPlain(epic: StudyEpic) {
+    return {
+        id: epic.id,
+        title: epic.title,
+        description: epic.description,
+        status: epic.status,
+        color: epic.color,
+        targetSeconds: epic.targetSeconds,
+        createdAt: epic.createdAt,
+    };
+}
+
+export function studyEpicsToPlain(epics: StudyEpic[]) {
+    return epics.map(studyEpicToPlain);
 }

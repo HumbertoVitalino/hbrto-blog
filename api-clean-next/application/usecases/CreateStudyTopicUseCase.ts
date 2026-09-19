@@ -9,6 +9,7 @@ export interface CreateStudyTopicDTO {
     status?: StudyTopicStatus;
     priority?: StudyPriority;
     resourceUrl?: string;
+    epicId?: string;
 }
 
 export class CreateStudyTopicUseCase {
@@ -25,7 +26,8 @@ export class CreateStudyTopicUseCase {
             description: dto.description,
             status: dto.status || StudyTopicStatus.Planned,
             priority: dto.priority || StudyPriority.Medium,
-            resourceUrl: dto.resourceUrl
+            resourceUrl: dto.resourceUrl,
+            epicId: dto.epicId
         });
 
         return await this.studyTopicRepository.create(topic);

@@ -1,5 +1,9 @@
 import { StudySessionData } from '@/app/hooks/useStudySessions'
+import { StudyTopicData } from '@/app/hooks/useStudyTopics'
+import { StudyEpicData } from '@/app/hooks/useStudyEpics'
 import { PomodoroPhaseType } from '@/domain/PomodoroPhaseType'
+import { StudyTopicStatus } from '@/domain/StudyTopicStatus'
+import { StudyEpicStatus } from '@/domain/StudyEpicStatus'
 
 export function dayKey(date: Date) {
     return date.toISOString().slice(0, 10)
@@ -58,5 +62,78 @@ export function computeTodayStats(sessions: StudySessionData[]): TodayStats {
         todaySeconds,
         todayCount,
         streak: computeStreak(completedDayKeys),
+    }
+}
+
+export interface EpicStats {
+    epicId: string
+    totalSeconds: number
+    topicCount: number
+    completedTopicCount: number
+}
+
+export function computeEpicStats(
+    epics: StudyEpicData[],
+    topics: StudyTopicData[],
+    sessions: StudySessionData[]
+): Map<string, EpicStats> {
+    const stats = new Map<string, EpicStats>()
+
+    for (const epic of epics) {
+        if (!epic.id) continue
+        stats.set(epic.id, { epicId: epic.id, totalSeconds: 0, topicCount: 0, completedTopicCount: 0 })
+    }
+
+    const epicIdByTopicId = new Map<string, string>()
+    for (const topic of topics) {
+        if (!topic.id || !topic.epicId) continue
+        const entry = stats.get(topic.epicId)
+        if (!entry) continue
+
+        epicIdByTopicId.set(topic.id, topic.epicId)
+        entry.topicCount += 1
+        if (topic.status === StudyTopicStatus.Completed) {
+            entry.completedTopicCount += 1
+        }
+    }
+
+    for (const session of focusSessions(sessions)) {
+        const epicId = epicIdByTopicId.get(session.topicId)
+        if (!epicId) continue
+        const entry = stats.get(epicId)
+        if (!entry) continue
+
+        entry.totalSeconds += session.actualSeconds
+    }
+
+    return stats
+}
+
+export interface OverviewStats {
+    totalSeconds: number
+    streak: number
+    activeEpics: number
+    completedTopics: number
+}
+
+export function computeOverviewStats(
+    epics: StudyEpicData[],
+    topics: StudyTopicData[],
+    sessions: StudySessionData[]
+): OverviewStats {
+    const focus = focusSessions(sessions)
+
+    let totalSeconds = 0
+    const completedDayKeys = new Set<string>()
+    for (const s of focus) {
+        totalSeconds += s.actualSeconds
+        if (s.completed) completedDayKeys.add(dayKey(new Date(s.startedAt)))
+    }
+
+    return {
+        totalSeconds,
+        streak: computeStreak(completedDayKeys),
+        activeEpics: epics.filter(e => e.status === StudyEpicStatus.InProgress).length,
+        completedTopics: topics.filter(t => t.status === StudyTopicStatus.Completed).length,
     }
 }

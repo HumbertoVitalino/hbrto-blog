@@ -44,3 +44,9 @@ export { DeleteStudyTopicUseCase } from "./DeleteStudyTopicUseCase";
 export { GetAllStudySessionsUseCase } from "./GetAllStudySessionsUseCase";
 export { CreateStudySessionUseCase, type CreateStudySessionDTO } from "./CreateStudySessionUseCase";
 export { DeleteStudySessionUseCase } from "./DeleteStudySessionUseCase";
+
+export { GetAllStudyEpicsUseCase } from "./GetAllStudyEpicsUseCase";
+export { GetStudyEpicByIdUseCase } from "./GetStudyEpicByIdUseCase";
+export { CreateStudyEpicUseCase, type CreateStudyEpicDTO } from "./CreateStudyEpicUseCase";
+export { UpdateStudyEpicUseCase, type UpdateStudyEpicDTO } from "./UpdateStudyEpicUseCase";
+export { DeleteStudyEpicUseCase } from "./DeleteStudyEpicUseCase";

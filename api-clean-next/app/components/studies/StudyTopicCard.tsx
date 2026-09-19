@@ -3,8 +3,10 @@
 import { memo } from 'react'
 import { motion } from 'motion/react'
 import { StudyTopicData } from '@/app/hooks/useStudyTopics'
+import { StudyEpicData } from '@/app/hooks/useStudyEpics'
 import { StudyTopicStatus } from '@/domain/StudyTopicStatus'
 import { StudyPriority } from '@/domain/StudyPriority'
+import { epicColorClasses } from '@/lib/studyEpicColors'
 import { Pencil, Trash2, Loader2, ExternalLink, Play, BookMarked } from 'lucide-react'
 
 const STATUS_LABEL: Record<StudyTopicStatus, string> = {
@@ -42,6 +44,7 @@ const PRIORITY_STRIPE: Record<StudyPriority, string> = {
 
 interface StudyTopicCardProps {
     topic: StudyTopicData
+    epic?: StudyEpicData
     isAdmin?: boolean
     isDeleting?: boolean
     compact?: boolean
@@ -50,9 +53,10 @@ interface StudyTopicCardProps {
     onStudy?: (id: string) => void
 }
 
-function StudyTopicCardComponent({ topic, isAdmin, isDeleting, compact, onEdit, onDelete, onStudy }: StudyTopicCardProps) {
+function StudyTopicCardComponent({ topic, epic, isAdmin, isDeleting, compact, onEdit, onDelete, onStudy }: StudyTopicCardProps) {
     const status = topic.status ?? StudyTopicStatus.Planned
     const priority = topic.priority ?? StudyPriority.Medium
+    const epicColors = epic ? epicColorClasses(epic.color) : null
 
     if (compact) {
         return (
@@ -75,6 +79,12 @@ function StudyTopicCardComponent({ topic, isAdmin, isDeleting, compact, onEdit, 
                         </a>
                     )}
                 </div>
+
+                {epic && epicColors && (
+                    <span className={`self-start text-[10px] font-medium px-1.5 py-0.5 rounded-full ${epicColors.bg} ${epicColors.text}`}>
+                        {epic.title}
+                    </span>
+                )}
 
                 {isAdmin && (
                     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -122,6 +132,12 @@ function StudyTopicCardComponent({ topic, isAdmin, isDeleting, compact, onEdit, 
                     {PRIORITY_LABEL[priority]}
                 </span>
             </div>
+
+            {epic && epicColors && (
+                <span className={`self-start text-[10px] font-medium px-1.5 py-0.5 rounded-full ${epicColors.bg} ${epicColors.text}`}>
+                    {epic.title}
+                </span>
+            )}
 
             {topic.description && (
                 <p className="text-xs text-muted-foreground line-clamp-3">{topic.description}</p>

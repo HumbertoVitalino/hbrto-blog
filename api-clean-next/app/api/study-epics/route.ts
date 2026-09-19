@@ -1,12 +1,12 @@
-import { StudyTopicRepository } from "@/infrastructure/repositories/StudyTopicRepository";
+import { StudyEpicRepository } from "@/infrastructure/repositories/StudyEpicRepository";
 import {
-    GetAllStudyTopicsUseCase,
-    GetStudyTopicByIdUseCase,
-    CreateStudyTopicUseCase,
-    UpdateStudyTopicUseCase,
-    DeleteStudyTopicUseCase
+    GetAllStudyEpicsUseCase,
+    GetStudyEpicByIdUseCase,
+    CreateStudyEpicUseCase,
+    UpdateStudyEpicUseCase,
+    DeleteStudyEpicUseCase
 } from "@/application/usecases";
-import { studyTopicsToPlain, studyTopicToPlain } from "@/lib/mappers";
+import { studyEpicsToPlain, studyEpicToPlain } from "@/lib/mappers";
 import { NextResponse, NextRequest } from "next/server";
 import { supabase } from "@/infrastructure/supabase/client";
 
@@ -38,25 +38,25 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const id = searchParams.get("id");
 
-        const repo = new StudyTopicRepository();
+        const repo = new StudyEpicRepository();
 
         if (id) {
-            const useCase = new GetStudyTopicByIdUseCase(repo);
-            const topic = await useCase.execute(id);
+            const useCase = new GetStudyEpicByIdUseCase(repo);
+            const epic = await useCase.execute(id);
 
-            if (!topic) {
+            if (!epic) {
                 return NextResponse.json(
-                    { error: "Study topic not found" },
+                    { error: "Study epic not found" },
                     { status: 404 }
                 );
             }
 
-            return NextResponse.json(studyTopicToPlain(topic));
+            return NextResponse.json(studyEpicToPlain(epic));
         }
 
-        const useCase = new GetAllStudyTopicsUseCase(repo);
-        const topics = await useCase.execute();
-        return NextResponse.json(studyTopicsToPlain(topics));
+        const useCase = new GetAllStudyEpicsUseCase(repo);
+        const epics = await useCase.execute();
+        return NextResponse.json(studyEpicsToPlain(epics));
     }
     catch (error: any) {
         return NextResponse.json(
@@ -76,19 +76,18 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const repo = new StudyTopicRepository();
-        const useCase = new CreateStudyTopicUseCase(repo);
+        const repo = new StudyEpicRepository();
+        const useCase = new CreateStudyEpicUseCase(repo);
 
-        const topic = await useCase.execute({
+        const epic = await useCase.execute({
             title: body.title,
             description: body.description,
             status: body.status,
-            priority: body.priority,
-            resourceUrl: body.resourceUrl,
-            epicId: body.epicId
+            color: body.color,
+            targetSeconds: body.targetSeconds
         });
 
-        return NextResponse.json(studyTopicToPlain(topic), { status: 201 });
+        return NextResponse.json(studyEpicToPlain(epic), { status: 201 });
     }
     catch (error: any) {
         return NextResponse.json(
@@ -112,28 +111,27 @@ export async function PUT(request: NextRequest) {
 
         if (!id) {
             return NextResponse.json(
-                { error: "Study topic ID is required" },
+                { error: "Study epic ID is required" },
                 { status: 400 }
             );
         }
 
         const body = await request.json();
-        const repo = new StudyTopicRepository();
-        const useCase = new UpdateStudyTopicUseCase(repo);
+        const repo = new StudyEpicRepository();
+        const useCase = new UpdateStudyEpicUseCase(repo);
 
-        const topic = await useCase.execute(id, {
+        const epic = await useCase.execute(id, {
             title: body.title,
             description: body.description,
             status: body.status,
-            priority: body.priority,
-            resourceUrl: body.resourceUrl,
-            epicId: body.epicId
+            color: body.color,
+            targetSeconds: body.targetSeconds
         });
 
-        return NextResponse.json(studyTopicToPlain(topic));
+        return NextResponse.json(studyEpicToPlain(epic));
     }
     catch (error: any) {
-        if (error.message === "Study topic not found") {
+        if (error.message === "Study epic not found") {
             return NextResponse.json(
                 { error: error.message },
                 { status: 404 }
@@ -161,23 +159,23 @@ export async function DELETE(request: NextRequest) {
 
         if (!id) {
             return NextResponse.json(
-                { error: "Study topic ID is required" },
+                { error: "Study epic ID is required" },
                 { status: 400 }
             );
         }
 
-        const repo = new StudyTopicRepository();
-        const useCase = new DeleteStudyTopicUseCase(repo);
+        const repo = new StudyEpicRepository();
+        const useCase = new DeleteStudyEpicUseCase(repo);
 
         await useCase.execute(id);
 
         return NextResponse.json(
-            { message: "Study topic deleted successfully" },
+            { message: "Study epic deleted successfully" },
             { status: 200 }
         );
     }
     catch (error: any) {
-        if (error.message === "Study topic not found") {
+        if (error.message === "Study epic not found") {
             return NextResponse.json(
                 { error: error.message },
                 { status: 404 }
