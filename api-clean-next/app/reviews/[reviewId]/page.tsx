@@ -10,6 +10,16 @@ import { ReviewFormModal } from '@/app/components/reviews/ReviewFormModal'
 import { MarkdownRenderer } from '@/app/components/reviews/MarkdownRenderer'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { AlertCircle, ArrowLeft, BookOpen, Edit2, Trash2, Star } from 'lucide-react'
 import { ReviewLanguage } from '@/domain/Review'
 import { formatDate } from '@/lib/formatDate'
@@ -44,6 +54,7 @@ export default function ReviewDetailPage() {
   const [activeId, setActiveId] = useState(reviewId)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
   const variants = useMemo(() => {
     const target = reviews.find(r => r.id === reviewId)
@@ -61,15 +72,20 @@ export default function ReviewDetailPage() {
     setIsEditOpen(false)
   }
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!activeReview) return
-    if (!confirm('Are you sure you want to delete this review?')) return
+    setIsConfirmOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!activeReview) return
     setIsDeleting(true)
     try {
       await deleteReview(activeReview.id, activeReview.bookId)
       router.push('/reviews')
     } finally {
       setIsDeleting(false)
+      setIsConfirmOpen(false)
     }
   }
 
@@ -210,6 +226,21 @@ export default function ReviewDetailPage() {
           mode="edit"
         />
       )}
+
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this review?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action can&apos;t be undone. The review will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel />
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   )
 }

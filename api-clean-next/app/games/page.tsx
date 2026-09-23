@@ -12,6 +12,16 @@ import { ChessStatsCard } from '@/app/components/games/ChessStatsCard'
 import { RevealGroup, RevealItem } from '@/app/components/motion/Reveal'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { AlertCircle, Plus, Gamepad2, PlayCircle, CheckCircle2, Bookmark } from 'lucide-react'
 import { GamePlatform } from '@/domain/GamePlatform'
 import { GameStatus } from '@/domain/GameStatus'
@@ -66,6 +76,7 @@ export default function GamesPage() {
     const [selectedGame, setSelectedGame] = useState<GameData | undefined>()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [deletingId, setDeletingId] = useState<string | undefined>()
+    const [pendingDeleteId, setPendingDeleteId] = useState<string | undefined>()
 
     const { games, isLoading: loadingGames, error: errorGames, createGame, updateGame, deleteGame } = useGames()
     const { games: steamGames, isLoading: loadingSteam, error: errorSteam } = useSteamGames()
@@ -95,12 +106,19 @@ export default function GamesPage() {
         }
     }, [selectedGame, createGame, updateGame])
 
-    const handleDelete = useCallback(async (id: string) => {
-        if (!confirm('Delete this game?')) return
-        setDeletingId(id)
-        try { await deleteGame(id) }
-        finally { setDeletingId(undefined) }
-    }, [deleteGame])
+    const handleDelete = useCallback((id: string) => {
+        setPendingDeleteId(id)
+    }, [])
+
+    const confirmDelete = useCallback(async () => {
+        if (!pendingDeleteId) return
+        setDeletingId(pendingDeleteId)
+        try { await deleteGame(pendingDeleteId) }
+        finally {
+            setDeletingId(undefined)
+            setPendingDeleteId(undefined)
+        }
+    }, [pendingDeleteId, deleteGame])
 
     const filteredGames = games.filter((g) => {
         if (platformFilter !== 'all' && g.platform !== platformFilter) return false
@@ -297,6 +315,21 @@ export default function GamesPage() {
                 onOpenChange={setIsFormOpen}
             />
         )}
+
+        <AlertDialog open={!!pendingDeleteId} onOpenChange={(open) => !open && setPendingDeleteId(undefined)}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Delete this game?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action can&apos;t be undone. The entry will be permanently removed from your library.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel />
+                    <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </>
     )
 }

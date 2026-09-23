@@ -23,7 +23,7 @@ export function SocialFooter({ label = 'Connect' }: SocialFooterProps) {
           </a>
 
           <a
-            href="mailto:humbertovitalino@gmail.com"
+            href="mailto:humbertovitalino01@gmail.com"
             className="text-sm text-muted-foreground hover:text-foreground transition"
           >
             Email
