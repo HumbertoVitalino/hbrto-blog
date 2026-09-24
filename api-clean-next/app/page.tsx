@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { SocialFooter } from '@/app/components/layout/Footer'
 import { NewsletterBanner } from '@/app/components/newsletter/NewsletterBanner'
-import { FiArrowRight, FiGithub } from 'react-icons/fi'
+import { FiGithub } from 'react-icons/fi'
 import { motion, type Variants } from 'motion/react'
 import { RevealGroup, RevealItem } from '@/app/components/motion/Reveal'
 import { useBooks } from '@/app/hooks/useBooks'
@@ -14,7 +14,7 @@ import { useReleaseNotes } from '@/app/hooks/useReleaseNotes'
 import { BookStatus } from '@/domain/BookStatus'
 import {
   Server, Layout, Cloud, Database, Activity,
-  BookOpen, Star, Music, Zap, ArrowUpRight,
+  BookOpen, Star, Music, Zap, ArrowUpRight, ArrowRight,
   Layers, GitBranch, Cpu, GraduationCap, Briefcase
 } from 'lucide-react'
 
@@ -258,22 +258,22 @@ export default function HomePage() {
             </motion.p>
 
             <motion.div variants={heroItem} className="flex gap-3 flex-wrap">
-              <a
-                href="https://github.com/humbertovitalino"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button size="lg" className="gap-2 shadow-sm hover:ring-2 hover:ring-primary/20 transition-all">
+              <Button size="lg" className="gap-2 shadow-sm hover:ring-2 hover:ring-primary/20 transition-all" asChild>
+                <a
+                  href="https://github.com/humbertovitalino"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <FiGithub className="w-4 h-4" />
                   GitHub
-                  <FiArrowRight className="w-4 h-4" />
-                </Button>
-              </a>
-              <a href="mailto:humbertovitalino01@gmail.com">
-                <Button size="lg" variant="outline" className="gap-2">
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </Button>
+              <Button size="lg" variant="outline" className="gap-2" asChild>
+                <a href="mailto:humbertovitalino01@gmail.com">
                   Contact Me
-                </Button>
-              </a>
+                </a>
+              </Button>
             </motion.div>
           </div>
 
@@ -492,12 +492,12 @@ export default function HomePage() {
             Whether it&apos;s a system architecture, a technical problem, or just an interesting conversation —
             I&apos;m always open to it.
           </p>
-          <a href="mailto:humbertovitalino01@gmail.com">
-            <Button size="lg" className="gap-2 shadow-sm hover:ring-2 hover:ring-primary/20 transition-all">
+          <Button size="lg" className="gap-2 shadow-sm hover:ring-2 hover:ring-primary/20 transition-all" asChild>
+            <a href="mailto:humbertovitalino01@gmail.com">
               Get in touch
-              <FiArrowRight className="w-4 h-4" />
-            </Button>
-          </a>
+              <ArrowRight className="w-4 h-4" />
+            </a>
+          </Button>
         </div>
       </section>
 

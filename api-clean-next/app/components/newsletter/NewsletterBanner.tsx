@@ -15,8 +15,15 @@ export function NewsletterBanner() {
         const stored = localStorage.getItem(STORAGE_KEY)
         if (stored === 'subscribed' || stored === 'dismissed') return
 
-        const timer = setTimeout(() => setVisible(true), 3000)
-        return () => clearTimeout(timer)
+        function handleScroll() {
+            if (window.scrollY > window.innerHeight * 0.6) {
+                setVisible(true)
+                window.removeEventListener('scroll', handleScroll)
+            }
+        }
+
+        window.addEventListener('scroll', handleScroll, { passive: true })
+        return () => window.removeEventListener('scroll', handleScroll)
     }, [])
 
     function dismiss() {
@@ -37,7 +44,7 @@ export function NewsletterBanner() {
 
             const data = await res.json()
 
-            if (!res.ok) throw new Error(data.error || 'Erro ao cadastrar')
+            if (!res.ok) throw new Error(data.error || 'Failed to subscribe')
 
             localStorage.setItem(STORAGE_KEY, 'subscribed')
             setStatus('success')
