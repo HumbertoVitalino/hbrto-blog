@@ -12,9 +12,20 @@ import { ChessStatsCard } from '@/app/components/games/ChessStatsCard'
 import { RevealGroup, RevealItem } from '@/app/components/motion/Reveal'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { AlertCircle, Plus, Gamepad2, PlayCircle, CheckCircle2, Bookmark } from 'lucide-react'
 import { GamePlatform } from '@/domain/GamePlatform'
 import { GameStatus } from '@/domain/GameStatus'
+import { toast } from 'sonner'
 
 const PLATFORM_FILTERS: { label: string; value: GamePlatform | 'all' }[] = [
     { label: 'All', value: 'all' },
@@ -66,6 +77,7 @@ export default function GamesPage() {
     const [selectedGame, setSelectedGame] = useState<GameData | undefined>()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [deletingId, setDeletingId] = useState<string | undefined>()
+    const [pendingDeleteId, setPendingDeleteId] = useState<string | undefined>()
 
     const { games, isLoading: loadingGames, error: errorGames, createGame, updateGame, deleteGame } = useGames()
     const { games: steamGames, isLoading: loadingSteam, error: errorSteam } = useSteamGames()
@@ -87,20 +99,32 @@ export default function GamesPage() {
         try {
             if (selectedGame?.id) {
                 await updateGame(selectedGame.id, data)
+                toast.success('Game updated')
             } else {
                 await createGame(data)
+                toast.success('Game added')
             }
         } finally {
             setIsSubmitting(false)
         }
     }, [selectedGame, createGame, updateGame])
 
-    const handleDelete = useCallback(async (id: string) => {
-        if (!confirm('Delete this game?')) return
-        setDeletingId(id)
-        try { await deleteGame(id) }
-        finally { setDeletingId(undefined) }
-    }, [deleteGame])
+    const handleDelete = useCallback((id: string) => {
+        setPendingDeleteId(id)
+    }, [])
+
+    const confirmDelete = useCallback(async () => {
+        if (!pendingDeleteId) return
+        setDeletingId(pendingDeleteId)
+        try {
+            await deleteGame(pendingDeleteId)
+            toast.success('Game deleted')
+        }
+        finally {
+            setDeletingId(undefined)
+            setPendingDeleteId(undefined)
+        }
+    }, [pendingDeleteId, deleteGame])
 
     const filteredGames = games.filter((g) => {
         if (platformFilter !== 'all' && g.platform !== platformFilter) return false
@@ -119,7 +143,7 @@ export default function GamesPage() {
 
     return (
     <>
-        <main className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background">
             <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
 
                 {/* TITLE BAR */}
@@ -150,7 +174,7 @@ export default function GamesPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
 
                     {/* Steam */}
-                    <div className="rounded-2xl border border-border/60 bg-card p-5 h-full">
+                    <div className="instrument-panel border border-border/60 p-5 h-full">
                         <PanelLabel>Recently played on Steam</PanelLabel>
                         {loadingSteam ? (
                             <Spinner />
@@ -185,8 +209,8 @@ export default function GamesPage() {
                                                 </p>
                                                 <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-2 max-w-50">
                                                     <div
-                                                        className="h-full bg-brand-accent rounded-full transition-[width] duration-500"
-                                                        style={{ width: `${spotlightRatio}%` }}
+                                                        className="h-full w-full bg-brand-accent rounded-full origin-left transition-transform duration-500"
+                                                        style={{ transform: `scaleX(${spotlightRatio / 100})` }}
                                                     />
                                                 </div>
                                             </div>
@@ -206,12 +230,12 @@ export default function GamesPage() {
 
                     {/* Chess.com */}
                     {loadingChess ? (
-                        <div className="rounded-2xl border border-border/60 bg-card p-5 h-full">
+                        <div className="instrument-panel border border-border/60 p-5 h-full">
                             <PanelLabel>Chess.com</PanelLabel>
                             <Spinner />
                         </div>
                     ) : errorChess || !chessStats ? (
-                        <div className="rounded-2xl border border-border/60 bg-card p-5 h-full">
+                        <div className="instrument-panel border border-border/60 p-5 h-full">
                             <PanelLabel>Chess.com</PanelLabel>
                             <p className="text-sm text-muted-foreground py-4 text-center">Could not load Chess.com data.</p>
                         </div>
@@ -286,7 +310,7 @@ export default function GamesPage() {
                 </div>
 
             </div>
-        </main>
+        </div>
 
         {isAdmin && (
             <GameFormModal
@@ -297,6 +321,21 @@ export default function GamesPage() {
                 onOpenChange={setIsFormOpen}
             />
         )}
+
+        <AlertDialog open={!!pendingDeleteId} onOpenChange={(open) => !open && setPendingDeleteId(undefined)}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Delete this game?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action can&apos;t be undone. The entry will be permanently removed from your library.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel />
+                    <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </>
     )
 }

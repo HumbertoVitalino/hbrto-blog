@@ -367,7 +367,7 @@ export function ReviewFormModal({
             )}
 
             {error && (
-              <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm p-3 rounded-lg flex items-center gap-2">
+              <div className="bg-destructive/10 border border-destructive/20 text-destructive-text text-sm p-3 rounded-lg flex items-center gap-2">
                 <Info className="w-4 h-4 shrink-0" />
                 <p>{error}</p>
               </div>

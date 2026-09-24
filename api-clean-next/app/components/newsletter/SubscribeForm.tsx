@@ -55,7 +55,7 @@ export function SubscribeForm() {
                     />
 
                     {status === "error" && (
-                        <p className="text-sm text-destructive">{message}</p>
+                        <p className="text-sm text-destructive-text">{message}</p>
                     )}
 
                     <button

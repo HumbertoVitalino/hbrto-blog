@@ -21,9 +21,10 @@ export function useTopTracks(timeRange: TimeRange) {
         setError(null)
 
         window.fetch(`/api/music/top-tracks?range=${timeRange}`)
-            .then((res) => {
-                if (!res.ok) throw new Error('Failed to fetch top tracks')
-                return res.json()
+            .then(async (res) => {
+                const json = await res.json()
+                if (!res.ok) throw new Error(json?.error || 'Failed to fetch top tracks')
+                return json
             })
             .then(setTracks)
             .catch((err) => setError(err.message))

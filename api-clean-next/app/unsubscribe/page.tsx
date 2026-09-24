@@ -31,7 +31,7 @@ function UnsubscribeContent() {
     }, [email])
 
     return (
-        <main className="min-h-screen bg-background flex items-center justify-center px-6">
+        <div className="min-h-screen bg-background flex items-center justify-center px-6">
             <div className="max-w-md w-full">
                 <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-6">
                     humbertovitalino.com.br
@@ -66,7 +66,7 @@ function UnsubscribeContent() {
                     </>
                 )}
             </div>
-        </main>
+        </div>
     )
 }
 

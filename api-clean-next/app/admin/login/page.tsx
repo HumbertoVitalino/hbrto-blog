@@ -128,6 +128,7 @@ export default function AdminLoginPage() {
                 <Input
                   id="email"
                   type="email"
+                  autoComplete="email"
                   placeholder="your@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -142,6 +143,7 @@ export default function AdminLoginPage() {
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -151,8 +153,9 @@ export default function AdminLoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    tabIndex={-1}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -161,7 +164,7 @@ export default function AdminLoginPage() {
 
               <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Sign in
+                {isLoading ? 'Signing in…' : 'Sign in'}
               </Button>
 
               <button

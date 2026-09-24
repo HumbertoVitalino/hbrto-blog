@@ -28,7 +28,7 @@ export default function ReleaseNotesPage() {
     }, [deleteNote])
 
     return (
-        <main className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background">
             <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
 
                 {/* TITLE BAR */}
@@ -91,7 +91,7 @@ export default function ReleaseNotesPage() {
                                 initial={{ opacity: 0, y: 16 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true, amount: 0.3 }}
-                                transition={{ type: 'spring', stiffness: 280, damping: 28, delay: (i % 3) * 0.06 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 28, delay: (i % 3) * 0.06 }}
                                 className="relative"
                             >
                                 <span
@@ -122,6 +122,6 @@ export default function ReleaseNotesPage() {
                     mode="create"
                 />
             )}
-        </main>
+        </div>
     )
 }

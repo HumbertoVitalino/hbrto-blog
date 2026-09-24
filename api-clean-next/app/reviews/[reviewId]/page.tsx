@@ -10,9 +10,20 @@ import { ReviewFormModal } from '@/app/components/reviews/ReviewFormModal'
 import { MarkdownRenderer } from '@/app/components/reviews/MarkdownRenderer'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { AlertCircle, ArrowLeft, BookOpen, Edit2, Trash2, Star } from 'lucide-react'
 import { ReviewLanguage } from '@/domain/Review'
 import { formatDate } from '@/lib/formatDate'
+import { toast } from 'sonner'
 
 const LANG_META: Record<ReviewLanguage, { flag: string; label: string }> = {
   'en': { flag: '🇺🇸', label: 'EN' },
@@ -44,6 +55,7 @@ export default function ReviewDetailPage() {
   const [activeId, setActiveId] = useState(reviewId)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
   const variants = useMemo(() => {
     const target = reviews.find(r => r.id === reviewId)
@@ -59,31 +71,38 @@ export default function ReviewDetailPage() {
     if (!activeReview) return
     await updateReview(activeReview.id, activeReview.bookId, data.title, data.rating, data.comment, data.language)
     setIsEditOpen(false)
+    toast.success('Entry updated')
   }
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!activeReview) return
-    if (!confirm('Are you sure you want to delete this review?')) return
+    setIsConfirmOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!activeReview) return
     setIsDeleting(true)
     try {
       await deleteReview(activeReview.id, activeReview.bookId)
+      toast.success('Entry deleted')
       router.push('/reviews')
     } finally {
       setIsDeleting(false)
+      setIsConfirmOpen(false)
     }
   }
 
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="h-6 w-6 rounded-full border border-muted border-t-foreground animate-spin" />
-      </main>
+      </div>
     )
   }
 
   if (!activeReview) {
     return (
-      <main className="min-h-screen bg-background max-w-3xl mx-auto px-6 py-16">
+      <div className="min-h-screen bg-background max-w-3xl mx-auto px-6 py-16">
         <Link href="/reviews">
           <Button variant="ghost" className="mb-6 gap-2 -ml-4">
             <ArrowLeft className="w-4 h-4" />
@@ -96,12 +115,12 @@ export default function ReviewDetailPage() {
           <AlertTitle>Review not found</AlertTitle>
           <AlertDescription>This review does not exist.</AlertDescription>
         </Alert>
-      </main>
+      </div>
     )
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <div className="max-w-3xl mx-auto px-6 py-10 space-y-8">
 
         <div className="flex items-center justify-between gap-4">
@@ -210,6 +229,21 @@ export default function ReviewDetailPage() {
           mode="edit"
         />
       )}
-    </main>
+
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this review?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action can&apos;t be undone. The review will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel />
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   )
 }

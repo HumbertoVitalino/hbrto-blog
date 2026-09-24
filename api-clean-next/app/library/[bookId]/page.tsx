@@ -8,11 +8,22 @@ import { ReviewsGrid } from '@/app/components/reviews/ReviewsGrid'
 import { ReviewFormModal } from '@/app/components/reviews/ReviewFormModal'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { AlertCircle, ArrowLeft, Plus, ShoppingCart, Star } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Book } from '@/domain/Book'
 import { BookStatus } from '@/domain/BookStatus'
 import { Review, ReviewLanguage } from '@/domain/Review'
+import { toast } from 'sonner'
 
 function getStatusConfig(status?: BookStatus) {
   switch (status) {
@@ -68,6 +79,7 @@ export default function BookDetailPage() {
   const [selectedReview, setSelectedReview] = useState<Review | undefined>()
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | undefined>()
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | undefined>()
 
   useEffect(() => {
     if (!booksLoading) {
@@ -90,6 +102,7 @@ export default function BookDetailPage() {
       setIsSubmitting(true)
       setSubmitError(null)
       await createReview(data.title, bookId, data.rating, data.comment)
+      toast.success('Review published')
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to save review'
       setSubmitError(message)
@@ -108,31 +121,38 @@ export default function BookDetailPage() {
     if (!selectedReview) return
     await updateReview(selectedReview.id, selectedReview.bookId, data.title, data.rating, data.comment, data.language)
     setIsEditOpen(false)
+    toast.success('Review updated')
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this review?')) return
-    setDeletingId(id)
+  const handleDelete = (id: string) => {
+    setPendingDeleteId(id)
+  }
+
+  const confirmDelete = async () => {
+    if (!pendingDeleteId) return
+    setDeletingId(pendingDeleteId)
     try {
-      await deleteReview(id, bookId)
+      await deleteReview(pendingDeleteId, bookId)
+      toast.success('Review deleted')
     } finally {
       setDeletingId(undefined)
+      setPendingDeleteId(undefined)
     }
   }
 
   // LOADING
   if (booksLoading) {
     return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="h-6 w-6 rounded-full border border-muted border-t-foreground animate-spin" />
-      </main>
+      </div>
     )
   }
 
   // NOT FOUND
   if (!book) {
     return (
-      <main className="min-h-screen bg-background max-w-4xl mx-auto px-4 py-16">
+      <div className="min-h-screen bg-background max-w-4xl mx-auto px-4 py-16">
         <Button variant="ghost" onClick={() => router.back()} className="mb-6 gap-2">
           <ArrowLeft className="w-4 h-4" />
           Back
@@ -143,7 +163,7 @@ export default function BookDetailPage() {
           <AlertTitle>Book not found</AlertTitle>
           <AlertDescription>This book does not exist.</AlertDescription>
         </Alert>
-      </main>
+      </div>
     )
   }
 
@@ -153,7 +173,7 @@ export default function BookDetailPage() {
     : null
 
   return (
-    <main className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 py-16 space-y-12">
 
         {/* BACK BUTTON */}
@@ -193,7 +213,7 @@ export default function BookDetailPage() {
                 {book.title}
               </h1>
               <p className="text-xl text-muted-foreground font-medium">
-                por {book.author}
+                by {book.author}
               </p>
             </div>
 
@@ -327,6 +347,21 @@ export default function BookDetailPage() {
           />
         </>
       )}
-    </main>
+
+      <AlertDialog open={!!pendingDeleteId} onOpenChange={(open) => !open && setPendingDeleteId(undefined)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this review?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action can&apos;t be undone. The review will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel />
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   )
 }

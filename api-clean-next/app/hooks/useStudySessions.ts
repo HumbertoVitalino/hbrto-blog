@@ -34,7 +34,7 @@ async function getAuthHeader(): Promise<Record<string, string>> {
 
 export function useStudySessions(topicId?: string) {
     const [sessions, setSessions] = useState<StudySessionData[]>([])
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
     const fetchSessions = useCallback(async () => {

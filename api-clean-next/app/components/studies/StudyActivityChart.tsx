@@ -107,7 +107,7 @@ export function StudyActivityChart({ sessions, period }: StudyActivityChartProps
     const hoveredPoint = hoverIndex !== null ? points[hoverIndex] : undefined
 
     return (
-        <div className="rounded-2xl border border-border/60 bg-card p-5">
+        <div className="instrument-panel border border-border/60 p-5">
             <div className="flex items-center justify-between mb-5 gap-3">
                 <div>
                     <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">

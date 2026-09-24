@@ -20,8 +20,8 @@ export function useNowPlaying() {
         async function fetch() {
             try {
                 const response = await window.fetch('/api/music/now-playing')
-                if (!response.ok) throw new Error('Failed to fetch now playing')
                 const json = await response.json()
+                if (!response.ok) throw new Error(json?.error || 'Failed to fetch now playing')
                 setData(json)
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to fetch')

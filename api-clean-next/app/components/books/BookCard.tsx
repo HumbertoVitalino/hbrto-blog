@@ -54,24 +54,26 @@ function BookCardComponent({ book, onEdit, onDelete, isDeleting, isPublic = fals
         )}
 
         {/* Status badge — bottom left */}
-        <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 bg-background/90 backdrop-blur-sm border border-border/50 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
+        <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 bg-background text-foreground backdrop-blur-sm border border-border/50 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
           <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
           {status.label}
         </div>
 
         {/* Admin overlay — top right */}
         {!isPublic && (
-          <div className="absolute top-2.5 right-2.5 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute top-2.5 right-2.5 flex gap-1.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
             <button
               onClick={() => onEdit(book)}
-              className="w-7 h-7 rounded-full bg-background/90 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-background shadow-sm transition-colors"
+              aria-label={`Edit ${book.title}`}
+              className="w-7 h-7 rounded-full bg-background/90 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-background shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
             >
               <Edit2 className="w-3 h-3" />
             </button>
             <button
               onClick={() => book.id && onDelete(book.id)}
               disabled={isDeleting || !book.id}
-              className="w-7 h-7 rounded-full bg-destructive/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive shadow-sm transition-colors disabled:opacity-50"
+              aria-label={`Delete ${book.title}`}
+              className="w-7 h-7 rounded-full bg-destructive/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive shadow-sm transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
             >
               <Trash2 className="w-3 h-3 text-destructive-foreground" />
             </button>
@@ -104,22 +106,24 @@ function BookCardComponent({ book, onEdit, onDelete, isDeleting, isPublic = fals
 
           <div className="flex items-center gap-0.5 shrink-0">
             {book.affiliateUrl && (
-              <a href={book.affiliateUrl} target="_blank" rel="noopener noreferrer">
-                <button
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-                  title="Buy on Amazon"
-                >
-                  <ShoppingCart className="w-3.5 h-3.5" />
-                </button>
+              <a
+                href={book.affiliateUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Buy on Amazon"
+                title="Buy on Amazon"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+              >
+                <ShoppingCart className="w-3.5 h-3.5" />
               </a>
             )}
-            <Link href={`/library/${book.id}`}>
-              <button
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-                title="Reviews"
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-              </button>
+            <Link
+              href={`/library/${book.id}`}
+              aria-label="Reviews"
+              title="Reviews"
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>

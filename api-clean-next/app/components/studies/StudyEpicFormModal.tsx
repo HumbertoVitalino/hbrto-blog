@@ -123,7 +123,7 @@ export function StudyEpicFormModal({
                             className={errors.title ? 'border-destructive' : ''}
                         />
                         {errors.title && (
-                            <p className="text-sm text-destructive">{errors.title}</p>
+                            <p className="text-sm text-destructive-text">{errors.title}</p>
                         )}
                     </div>
 
@@ -198,12 +198,12 @@ export function StudyEpicFormModal({
                             How much total time you&apos;re aiming to invest in this epic.
                         </p>
                         {errors.targetHours && (
-                            <p className="text-sm text-destructive">{errors.targetHours}</p>
+                            <p className="text-sm text-destructive-text">{errors.targetHours}</p>
                         )}
                     </div>
 
                     {errors.submit && (
-                        <p className="text-sm text-destructive">{errors.submit}</p>
+                        <p className="text-sm text-destructive-text">{errors.submit}</p>
                     )}
 
                     <DialogFooter>

@@ -54,24 +54,26 @@ export function GameCard({ game, isAdmin, isDeleting, onEdit, onDelete }: GameCa
                 )}
 
                 {/* Status badge — bottom left */}
-                <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 bg-background/90 backdrop-blur-sm border border-border/50 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
+                <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 bg-background text-foreground backdrop-blur-sm border border-border/50 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
                     <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[status]}`} />
                     {STATUS_LABEL[status]}
                 </div>
 
                 {/* Admin overlay — top right */}
                 {isAdmin && (
-                    <div className="absolute top-2.5 right-2.5 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-2.5 right-2.5 flex gap-1.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
                         <button
                             onClick={() => onEdit?.(game)}
-                            className="w-7 h-7 rounded-full bg-background/90 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-background shadow-sm transition-colors"
+                            aria-label={`Edit ${game.title}`}
+                            className="w-7 h-7 rounded-full bg-background/90 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-background shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                         >
                             <Pencil className="w-3 h-3" />
                         </button>
                         <button
                             onClick={() => game.id && onDelete?.(game.id)}
                             disabled={isDeleting || !game.id}
-                            className="w-7 h-7 rounded-full bg-destructive/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive shadow-sm transition-colors disabled:opacity-50"
+                            aria-label={`Delete ${game.title}`}
+                            className="w-7 h-7 rounded-full bg-destructive/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive shadow-sm transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                         >
                             {isDeleting
                                 ? <Loader2 className="w-3 h-3 animate-spin text-destructive-foreground" />
@@ -86,7 +88,7 @@ export function GameCard({ game, isAdmin, isDeleting, onEdit, onDelete }: GameCa
             <div className="flex flex-col flex-1 p-3 gap-1">
                 <p className="font-semibold text-[13px] leading-snug line-clamp-2">{game.title}</p>
                 <div className="flex items-center justify-between gap-2 mt-auto pt-1">
-                    <span className="text-[11px] text-muted-foreground truncate">
+                    <span className="text-[11px] text-muted-foreground truncate min-w-0">
                         {PLATFORM_LABEL[game.platform]}
                         {game.genre ? ` · ${game.genre}` : ''}
                     </span>

@@ -47,7 +47,7 @@ export function PomodoroTimer({ topics, epics, sessions, timer, pendingTopicId, 
     }, [topics, epics])
 
     return (
-        <div className="relative rounded-2xl border border-border/60 bg-card p-6 overflow-hidden">
+        <div className="instrument-panel relative border border-border/60 p-6 overflow-hidden">
             <div className="flex items-center justify-between mb-6">
                 <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                     Pomodoro

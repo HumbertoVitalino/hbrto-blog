@@ -81,17 +81,19 @@ function ReviewCardComponent({ review, variantCount = 0, bookId, bookById, isAdm
 
       {/* Admin overlay — sibling of the Link, not nested inside it */}
       {isAdmin && (
-        <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
           <button
             onClick={() => onEdit?.(review)}
-            className="w-7 h-7 rounded-full bg-background/90 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-background shadow-sm transition-colors"
+            aria-label={`Edit ${review.title}`}
+            className="w-7 h-7 rounded-full bg-background/90 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-background shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
           >
             <Edit2 className="w-3 h-3" />
           </button>
           <button
             onClick={() => onDelete?.(review.id, bookId || review.bookId || undefined)}
             disabled={isDeleting}
-            className="w-7 h-7 rounded-full bg-destructive/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive shadow-sm transition-colors disabled:opacity-50"
+            aria-label={`Delete ${review.title}`}
+            className="w-7 h-7 rounded-full bg-destructive/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive shadow-sm transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
           >
             {isDeleting
               ? <Loader2 className="w-3 h-3 animate-spin text-destructive-foreground" />

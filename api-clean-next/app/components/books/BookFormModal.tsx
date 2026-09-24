@@ -173,7 +173,7 @@ export function BookFormModal({
                             className={errors.title ? 'border-destructive' : ''}
                         />
                         {errors.title && (
-                            <p className="text-sm text-destructive">{errors.title}</p>
+                            <p className="text-sm text-destructive-text">{errors.title}</p>
                         )}
                     </div>
 
@@ -190,7 +190,7 @@ export function BookFormModal({
                             className={errors.author ? 'border-destructive' : ''}
                         />
                         {errors.author && (
-                            <p className="text-sm text-destructive">{errors.author}</p>
+                            <p className="text-sm text-destructive-text">{errors.author}</p>
                         )}
                     </div>
 
@@ -212,7 +212,7 @@ export function BookFormModal({
                             className={errors.pages ? 'border-destructive' : ''}
                         />
                         {errors.pages && (
-                            <p className="text-sm text-destructive">{errors.pages}</p>
+                            <p className="text-sm text-destructive-text">{errors.pages}</p>
                         )}
                     </div>
 
@@ -342,7 +342,7 @@ export function BookFormModal({
                     </div>
 
                     {errors.submit && (
-                        <p className="text-sm text-destructive">{errors.submit}</p>
+                        <p className="text-sm text-destructive-text">{errors.submit}</p>
                     )}
 
                     <DialogFooter>

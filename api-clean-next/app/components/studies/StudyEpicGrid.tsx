@@ -8,7 +8,7 @@ import { EpicStats } from '@/lib/studyStats'
 import { formatMinutes } from '@/lib/studyStats'
 import { epicColorClasses } from '@/lib/studyEpicColors'
 import { RevealGroup, RevealItem } from '@/app/components/motion/Reveal'
-import { Pencil, Trash2, Loader2, Clock, Layers, Plus, ListChecks, CheckCircle2 } from 'lucide-react'
+import { Pencil, Trash2, Loader2, Clock, Plus, ListChecks, CheckCircle2 } from 'lucide-react'
 
 const STATUS_LABEL: Record<StudyEpicStatus, string> = {
     [StudyEpicStatus.Planned]: 'Planned',
@@ -54,10 +54,7 @@ function StudyEpicGridComponent({
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                    <Layers className="w-3.5 h-3.5 text-muted-foreground" />
-                    <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Epics</h2>
-                </div>
+                <h2 className="font-display text-xl font-medium tracking-tight text-foreground">Epics</h2>
                 {isAdmin && (
                     <button
                         onClick={onNew}
@@ -122,20 +119,21 @@ function StudyEpicGridComponent({
                                         <div
                                             role="group"
                                             onClick={(e) => e.stopPropagation()}
-                                            className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            onKeyDown={(e) => e.stopPropagation()}
+                                            className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
                                         >
                                             <button
                                                 onClick={() => onEdit(epic)}
-                                                title="Edit"
-                                                className="w-6 h-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                                                aria-label={`Edit ${epic.title}`}
+                                                className="w-6 h-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                                             >
                                                 <Pencil className="w-3 h-3" />
                                             </button>
                                             <button
                                                 onClick={() => epic.id && onDelete(epic.id)}
                                                 disabled={deletingId === epic.id}
-                                                title="Delete"
-                                                className="w-6 h-6 flex items-center justify-center rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40"
+                                                aria-label={`Delete ${epic.title}`}
+                                                className="w-6 h-6 flex items-center justify-center rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                                             >
                                                 {deletingId === epic.id
                                                     ? <Loader2 className="w-3 h-3 animate-spin" />

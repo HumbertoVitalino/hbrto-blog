@@ -120,7 +120,7 @@ export function StudyTopicFormModal({
                             className={errors.title ? 'border-destructive' : ''}
                         />
                         {errors.title && (
-                            <p className="text-sm text-destructive">{errors.title}</p>
+                            <p className="text-sm text-destructive-text">{errors.title}</p>
                         )}
                     </div>
 
@@ -207,7 +207,7 @@ export function StudyTopicFormModal({
                     </div>
 
                     {errors.submit && (
-                        <p className="text-sm text-destructive">{errors.submit}</p>
+                        <p className="text-sm text-destructive-text">{errors.submit}</p>
                     )}
 
                     <DialogFooter>

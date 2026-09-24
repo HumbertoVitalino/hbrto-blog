@@ -8,8 +8,19 @@ import { ReviewFormModal } from '@/app/components/reviews/ReviewFormModal'
 import { ReviewsGrid } from '@/app/components/reviews/ReviewsGrid'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { AlertCircle, Plus, Clock, TrendingUp, TrendingDown } from 'lucide-react'
 import { Review, ReviewLanguage } from '@/domain/Review'
+import { toast } from 'sonner'
 
 type SortOption = 'newest' | 'highest' | 'lowest'
 
@@ -41,12 +52,14 @@ export default function ReviewsPage() {
   const [selectedReview, setSelectedReview] = useState<Review | undefined>()
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | undefined>()
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; bookId?: string } | undefined>()
 
   const handleSubmit = useCallback(async (data: ReviewFormSubmitData) => {
     try {
       setSubmitError(null)
       await createReview(data.title, data.bookId, data.rating, data.comment, data.language)
       setIsFormOpen(false)
+      toast.success('Entry published')
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Failed to publish')
     }
@@ -61,17 +74,24 @@ export default function ReviewsPage() {
     if (!selectedReview) return
     await updateReview(selectedReview.id, selectedReview.bookId, data.title, data.rating, data.comment, data.language)
     setIsEditOpen(false)
+    toast.success('Entry updated')
   }, [selectedReview, updateReview])
 
-  const handleDelete = useCallback(async (id: string, bookId?: string) => {
-    if (!confirm('Are you sure you want to delete this review?')) return
-    setDeletingId(id)
+  const handleDelete = useCallback((id: string, bookId?: string) => {
+    setPendingDelete({ id, bookId })
+  }, [])
+
+  const confirmDelete = useCallback(async () => {
+    if (!pendingDelete) return
+    setDeletingId(pendingDelete.id)
     try {
-      await deleteReview(id, bookId ?? null)
+      await deleteReview(pendingDelete.id, pendingDelete.bookId ?? null)
+      toast.success('Entry deleted')
     } finally {
       setDeletingId(undefined)
+      setPendingDelete(undefined)
     }
-  }, [deleteReview])
+  }, [pendingDelete, deleteReview])
 
   const avgRating = useMemo(() => {
     if (!reviews.length) return 0
@@ -93,14 +113,14 @@ export default function ReviewsPage() {
   ]
 
   return (
-    <main className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
 
         {/* TITLE BAR — editorial masthead */}
         <div>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="font-display text-3xl font-medium tracking-tight">Writing</h1>
+              <h1 className="font-display text-3xl font-medium tracking-tight">Reviews</h1>
               <p className="text-sm text-muted-foreground mt-1">
                 Thoughts, notes and reflections — not limited to books.
               </p>
@@ -212,6 +232,21 @@ export default function ReviewsPage() {
           />
         </>
       )}
-    </main>
+
+      <AlertDialog open={!!pendingDelete} onOpenChange={(open) => !open && setPendingDelete(undefined)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this review?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action can&apos;t be undone. The review will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel />
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   )
 }

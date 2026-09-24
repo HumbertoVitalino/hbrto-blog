@@ -20,8 +20,8 @@ export function useRecentlyPlayed() {
         async function fetch() {
             try {
                 const response = await window.fetch('/api/music/recently-played')
-                if (!response.ok) throw new Error('Failed to fetch recently played')
                 const json = await response.json()
+                if (!response.ok) throw new Error(json?.error || 'Failed to fetch recently played')
                 setTracks(json)
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to fetch')
