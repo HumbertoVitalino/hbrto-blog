@@ -365,7 +365,10 @@ export default function HomePage() {
               >
                 I build backend systems
                 <br />
-                <span className="italic text-primary">that hold under pressure.</span>
+                <span className="italic text-primary">
+                  that don&apos;t page you at{' '}
+                  <span className="font-mono not-italic text-foreground">3am</span>.
+                </span>
               </motion.h1>
 
               <motion.p variants={heroItem} className="text-lg text-muted-foreground mb-10 max-w-xl leading-relaxed">
