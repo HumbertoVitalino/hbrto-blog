@@ -30,9 +30,15 @@ function Spinner() {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
     return (
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             {children}
-        </p>
+        </h2>
+    )
+}
+
+function SectionError({ message }: { message: string }) {
+    return (
+        <p className="text-sm text-destructive py-4 text-center">{message}</p>
     )
 }
 
@@ -41,13 +47,11 @@ export default function MusicPage() {
 
     const { data: nowPlaying, isLoading: loadingNow, error: errorNow } = useNowPlaying()
     const { tracks: recentTracks, isLoading: loadingRecent, error: errorRecent } = useRecentlyPlayed()
-    const { tracks: topTracks, isLoading: loadingTopTracks } = useTopTracks(timeRange)
-    const { artists: topArtists, isLoading: loadingTopArtists } = useTopArtists(timeRange)
-
-    const error = errorNow || errorRecent
+    const { tracks: topTracks, isLoading: loadingTopTracks, error: errorTopTracks } = useTopTracks(timeRange)
+    const { artists: topArtists, isLoading: loadingTopArtists, error: errorTopArtists } = useTopArtists(timeRange)
 
     return (
-        <main className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background">
             <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
 
                 {/* TITLE BAR — editorial masthead */}
@@ -58,17 +62,15 @@ export default function MusicPage() {
                     </p>
                 </div>
 
-                {error && (
-                    <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Error</AlertTitle>
-                        <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                )}
-
                 {/* NOW PLAYING — hero, full width, always the anchor */}
                 {loadingNow ? (
                     <Spinner />
+                ) : errorNow ? (
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Now Playing unavailable</AlertTitle>
+                        <AlertDescription>{errorNow}</AlertDescription>
+                    </Alert>
                 ) : nowPlaying?.title ? (
                     <NowPlayingCard data={nowPlaying} />
                 ) : (
@@ -85,6 +87,8 @@ export default function MusicPage() {
                         <div className="rounded-2xl border border-border/60 bg-card p-5">
                             {loadingRecent ? (
                                 <Spinner />
+                            ) : errorRecent ? (
+                                <SectionError message={errorRecent} />
                             ) : recentTracks.length === 0 ? (
                                 <p className="text-sm text-muted-foreground py-4 text-center">No recent tracks.</p>
                             ) : (
@@ -121,9 +125,11 @@ export default function MusicPage() {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                             {/* Top Tracks */}
                             <div className="rounded-2xl border border-border/60 bg-card p-5">
-                                <p className="text-xs font-medium text-muted-foreground mb-3">Tracks</p>
+                                <h3 className="text-xs font-medium text-muted-foreground mb-3">Tracks</h3>
                                 {loadingTopTracks ? (
                                     <Spinner />
+                                ) : errorTopTracks ? (
+                                    <SectionError message={errorTopTracks} />
                                 ) : topTracks.length === 0 ? (
                                     <p className="text-sm text-muted-foreground py-4 text-center">No data.</p>
                                 ) : (
@@ -137,9 +143,11 @@ export default function MusicPage() {
 
                             {/* Top Artists */}
                             <div className="rounded-2xl border border-border/60 bg-card p-5">
-                                <p className="text-xs font-medium text-muted-foreground mb-3">Artists</p>
+                                <h3 className="text-xs font-medium text-muted-foreground mb-3">Artists</h3>
                                 {loadingTopArtists ? (
                                     <Spinner />
+                                ) : errorTopArtists ? (
+                                    <SectionError message={errorTopArtists} />
                                 ) : topArtists.length === 0 ? (
                                     <p className="text-sm text-muted-foreground py-4 text-center">No data.</p>
                                 ) : (
@@ -156,6 +164,6 @@ export default function MusicPage() {
                 </RevealGroup>
 
             </div>
-        </main>
+        </div>
     )
 }

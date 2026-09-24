@@ -20,9 +20,10 @@ export function useTopArtists(timeRange: TimeRange) {
         setError(null)
 
         window.fetch(`/api/music/top-artists?range=${timeRange}`)
-            .then((res) => {
-                if (!res.ok) throw new Error('Failed to fetch top artists')
-                return res.json()
+            .then(async (res) => {
+                const json = await res.json()
+                if (!res.ok) throw new Error(json?.error || 'Failed to fetch top artists')
+                return json
             })
             .then(setArtists)
             .catch((err) => setError(err.message))
