@@ -19,7 +19,18 @@ import { RevealGroup, RevealItem } from '@/app/components/motion/Reveal'
 import { computeEpicStats, computeOverviewStats } from '@/lib/studyStats'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { AlertCircle, Plus, X, Circle, PlayCircle, PauseCircle, CheckCircle2, ListChecks } from 'lucide-react'
+import { toast } from 'sonner'
 
 type StatusToken = 'primary' | 'muted' | 'info' | 'warning' | 'success'
 
@@ -68,12 +79,14 @@ export default function StudiesPage() {
   const [deletingId, setDeletingId] = useState<string | undefined>()
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [pendingTopicId, setPendingTopicId] = useState<string | undefined>()
+  const [pendingDeleteTopicId, setPendingDeleteTopicId] = useState<string | undefined>()
 
   const [isEpicFormOpen, setIsEpicFormOpen] = useState(false)
   const [selectedEpic, setSelectedEpic] = useState<StudyEpicData | undefined>()
   const [isEpicSubmitting, setIsEpicSubmitting] = useState(false)
   const [deletingEpicId, setDeletingEpicId] = useState<string | undefined>()
   const [epicSubmitError, setEpicSubmitError] = useState<string | null>(null)
+  const [pendingDeleteEpicId, setPendingDeleteEpicId] = useState<string | undefined>()
   const [activeEpicId, setActiveEpicId] = useState<string | undefined>()
   const [statusFilter, setStatusFilter] = useState<StudyTopicStatus | 'all'>('all')
   const [activityPeriod, setActivityPeriod] = useState<ActivityPeriod>(7)
@@ -115,8 +128,10 @@ export default function StudiesPage() {
       setSubmitError(null)
       if (selectedTopic?.id) {
         await updateTopic(selectedTopic.id, data)
+        toast.success('Topic updated')
       } else {
         await createTopic(data)
+        toast.success('Topic added')
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to save study topic'
@@ -127,15 +142,21 @@ export default function StudiesPage() {
     }
   }, [selectedTopic, createTopic, updateTopic])
 
-  const handleDelete = useCallback(async (id: string) => {
-    if (!confirm('Are you sure you want to delete this study topic?')) return
+  const handleDelete = useCallback((id: string) => {
+    setPendingDeleteTopicId(id)
+  }, [])
+
+  const confirmDeleteTopic = useCallback(async () => {
+    if (!pendingDeleteTopicId) return
     try {
-      setDeletingId(id)
-      await deleteTopic(id)
+      setDeletingId(pendingDeleteTopicId)
+      await deleteTopic(pendingDeleteTopicId)
+      toast.success('Topic deleted')
     } finally {
       setDeletingId(undefined)
+      setPendingDeleteTopicId(undefined)
     }
-  }, [deleteTopic])
+  }, [pendingDeleteTopicId, deleteTopic])
 
   const handleStudy = useCallback((id: string) => {
     setPendingTopicId(id)
@@ -160,8 +181,10 @@ export default function StudiesPage() {
       setEpicSubmitError(null)
       if (selectedEpic?.id) {
         await updateEpic(selectedEpic.id, data)
+        toast.success('Epic updated')
       } else {
         await createEpic(data)
+        toast.success('Epic added')
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to save epic'
@@ -172,16 +195,23 @@ export default function StudiesPage() {
     }
   }, [selectedEpic, createEpic, updateEpic])
 
-  const handleEpicDelete = useCallback(async (id: string) => {
-    if (!confirm('Delete this epic? Its topics will remain, unassigned.')) return
+  const handleEpicDelete = useCallback((id: string) => {
+    setPendingDeleteEpicId(id)
+  }, [])
+
+  const confirmDeleteEpic = useCallback(async () => {
+    if (!pendingDeleteEpicId) return
+    const id = pendingDeleteEpicId
     try {
       setDeletingEpicId(id)
       await deleteEpic(id)
       setActiveEpicId(prev => prev === id ? undefined : prev)
+      toast.success('Epic deleted')
     } finally {
       setDeletingEpicId(undefined)
+      setPendingDeleteEpicId(undefined)
     }
-  }, [deleteEpic])
+  }, [pendingDeleteEpicId, deleteEpic])
 
   const handleEpicSelect = useCallback((id: string) => {
     setActiveEpicId(prev => prev === id ? undefined : id)
@@ -367,6 +397,36 @@ export default function StudiesPage() {
           onOpenChange={setIsEpicFormOpen}
         />
       )}
+
+      <AlertDialog open={!!pendingDeleteTopicId} onOpenChange={(open) => !open && setPendingDeleteTopicId(undefined)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this topic?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action can&apos;t be undone. The topic will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel />
+            <AlertDialogAction onClick={confirmDeleteTopic}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!pendingDeleteEpicId} onOpenChange={(open) => !open && setPendingDeleteEpicId(undefined)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this epic?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action can&apos;t be undone. Its topics will remain, unassigned.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel />
+            <AlertDialogAction onClick={confirmDeleteEpic}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   )
 }

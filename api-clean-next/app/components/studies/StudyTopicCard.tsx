@@ -87,26 +87,26 @@ function StudyTopicCardComponent({ topic, epic, isAdmin, isDeleting, compact, on
                 )}
 
                 {isAdmin && (
-                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
                         <button
                             onClick={() => topic.id && onStudy?.(topic.id)}
-                            title="Study this"
-                            className="w-5.5 h-5.5 flex items-center justify-center rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                            aria-label={`Study ${topic.title}`}
+                            className="w-5.5 h-5.5 flex items-center justify-center rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                         >
                             <Play className="w-3 h-3" />
                         </button>
                         <button
                             onClick={() => onEdit?.(topic)}
-                            title="Edit"
-                            className="w-5.5 h-5.5 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                            aria-label={`Edit ${topic.title}`}
+                            className="w-5.5 h-5.5 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                         >
                             <Pencil className="w-3 h-3" />
                         </button>
                         <button
                             onClick={() => topic.id && onDelete?.(topic.id)}
                             disabled={isDeleting}
-                            title="Delete"
-                            className="w-5.5 h-5.5 flex items-center justify-center rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40"
+                            aria-label={`Delete ${topic.title}`}
+                            className="w-5.5 h-5.5 flex items-center justify-center rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                         >
                             {isDeleting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
                         </button>
@@ -168,6 +168,7 @@ function StudyTopicCardComponent({ topic, epic, isAdmin, isDeleting, compact, on
                     </button>
                     <button
                         onClick={() => onEdit?.(topic)}
+                        aria-label={`Edit ${topic.title}`}
                         className="flex items-center justify-center px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/60 transition-colors"
                     >
                         <Pencil className="w-3 h-3" />
@@ -175,6 +176,7 @@ function StudyTopicCardComponent({ topic, epic, isAdmin, isDeleting, compact, on
                     <button
                         onClick={() => topic.id && onDelete?.(topic.id)}
                         disabled={isDeleting}
+                        aria-label={`Delete ${topic.title}`}
                         className="flex items-center justify-center px-2.5 py-1.5 text-xs text-muted-foreground hover:text-destructive rounded-md hover:bg-destructive/10 transition-colors disabled:opacity-40"
                     >
                         {isDeleting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}

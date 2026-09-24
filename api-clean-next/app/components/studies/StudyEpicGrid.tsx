@@ -122,20 +122,21 @@ function StudyEpicGridComponent({
                                         <div
                                             role="group"
                                             onClick={(e) => e.stopPropagation()}
-                                            className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            onKeyDown={(e) => e.stopPropagation()}
+                                            className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
                                         >
                                             <button
                                                 onClick={() => onEdit(epic)}
-                                                title="Edit"
-                                                className="w-6 h-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                                                aria-label={`Edit ${epic.title}`}
+                                                className="w-6 h-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                                             >
                                                 <Pencil className="w-3 h-3" />
                                             </button>
                                             <button
                                                 onClick={() => epic.id && onDelete(epic.id)}
                                                 disabled={deletingId === epic.id}
-                                                title="Delete"
-                                                className="w-6 h-6 flex items-center justify-center rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40"
+                                                aria-label={`Delete ${epic.title}`}
+                                                className="w-6 h-6 flex items-center justify-center rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                                             >
                                                 {deletingId === epic.id
                                                     ? <Loader2 className="w-3 h-3 animate-spin" />

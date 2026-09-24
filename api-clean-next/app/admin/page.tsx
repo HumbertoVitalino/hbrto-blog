@@ -18,6 +18,17 @@ import { GameStatus } from '@/domain/GameStatus'
 import { GamePlatform } from '@/domain/GamePlatform'
 import { useStudyTopics } from '@/app/hooks/useStudyTopics'
 import { StudyTopicStatus } from '@/domain/StudyTopicStatus'
+import { toast } from 'sonner'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 type Tab = 'overview' | 'books' | 'reviews' | 'games' | 'studies' | 'newsletter'
 
@@ -38,19 +49,36 @@ export default function AdminPage() {
   const [broadcastMessage, setBroadcastMessage] = useState('')
   const [broadcastStatus, setBroadcastStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [broadcastError, setBroadcastError] = useState('')
+  const [pendingRemoveEmail, setPendingRemoveEmail] = useState<string | null>(null)
+  const [isBroadcastConfirmOpen, setIsBroadcastConfirmOpen] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !user) router.push('/admin/login')
   }, [user, authLoading, router])
 
-  const handleRemove = useCallback(async (email: string) => {
-    setRemovingEmail(email)
-    try { await removeSubscriber(email) }
-    finally { setRemovingEmail(null) }
-  }, [removeSubscriber])
+  const handleRemove = useCallback((email: string) => {
+    setPendingRemoveEmail(email)
+  }, [])
 
-  const handleBroadcast = useCallback(async (e: { preventDefault(): void }) => {
+  const confirmRemove = useCallback(async () => {
+    if (!pendingRemoveEmail) return
+    setRemovingEmail(pendingRemoveEmail)
+    try {
+      await removeSubscriber(pendingRemoveEmail)
+      toast.success('Subscriber removed')
+    } finally {
+      setRemovingEmail(null)
+      setPendingRemoveEmail(null)
+    }
+  }, [pendingRemoveEmail, removeSubscriber])
+
+  const handleBroadcastSubmit = useCallback((e: { preventDefault(): void }) => {
     e.preventDefault()
+    setIsBroadcastConfirmOpen(true)
+  }, [])
+
+  const confirmBroadcast = useCallback(async () => {
+    setIsBroadcastConfirmOpen(false)
     setBroadcastStatus('loading')
     setBroadcastError('')
     try {
@@ -64,6 +92,7 @@ export default function AdminPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to send')
       setBroadcastStatus('success')
+      toast.success('Newsletter sent')
       setBroadcastSubject('')
       setBroadcastMessage('')
     } catch (err: any) {
@@ -444,7 +473,7 @@ export default function AdminPage() {
                     </button>
                   </div>
                 ) : (
-                  <form onSubmit={handleBroadcast} className="flex flex-col gap-3">
+                  <form onSubmit={handleBroadcastSubmit} className="flex flex-col gap-3">
                     <input
                       type="text"
                       placeholder="Subject"
@@ -502,7 +531,7 @@ export default function AdminPage() {
                       onClick={() => handleRemove(sub.email)}
                       disabled={removingEmail === sub.email}
                       className="shrink-0 ml-4 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40"
-                      aria-label="Remove subscriber"
+                      aria-label={`Remove ${sub.email}`}
                     >
                       {removingEmail === sub.email
                         ? <Loader2 className="w-4 h-4 animate-spin" />
@@ -517,6 +546,36 @@ export default function AdminPage() {
         )}
 
       </div>
+
+      <AlertDialog open={!!pendingRemoveEmail} onOpenChange={(open) => !open && setPendingRemoveEmail(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this subscriber?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action can&apos;t be undone. {pendingRemoveEmail} will stop receiving updates and will need to subscribe again to rejoin.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel />
+            <AlertDialogAction onClick={confirmRemove}>Remove</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isBroadcastConfirmOpen} onOpenChange={setIsBroadcastConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send this newsletter?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will email &ldquo;{broadcastSubject || 'this message'}&rdquo; to all {subscribers.length} subscriber{subscribers.length === 1 ? '' : 's'} right now. This can&apos;t be undone or unsent.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel />
+            <AlertDialogAction onClick={confirmBroadcast}>Send</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   )
 }

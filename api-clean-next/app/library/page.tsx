@@ -10,7 +10,18 @@ import { BooksGrid } from '@/app/components/books/BooksGrid'
 import { LibraryFilterBento } from '@/app/components/books/LibraryFilterBento'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { AlertCircle, Plus } from 'lucide-react'
+import { toast } from 'sonner'
 
 type FilterStatus = BookStatus | 'all'
 type FilterGenre = BookGenre | 'all'
@@ -47,6 +58,7 @@ export default function LibraryPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState<string | undefined>()
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | undefined>()
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all')
   const [genreFilter, setGenreFilter] = useState<FilterGenre>('all')
 
@@ -109,8 +121,10 @@ export default function LibraryPage() {
       setSubmitError(null)
       if (selectedBook?.id) {
         await updateBook(selectedBook.id, data)
+        toast.success('Book updated')
       } else {
         await createBook(data)
+        toast.success('Book added')
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to save book'
@@ -121,15 +135,21 @@ export default function LibraryPage() {
     }
   }, [selectedBook, createBook, updateBook])
 
-  const handleDelete = useCallback(async (id: string) => {
-    if (!confirm('Are you sure you want to delete this book?')) return
+  const handleDelete = useCallback((id: string) => {
+    setPendingDeleteId(id)
+  }, [])
+
+  const confirmDelete = useCallback(async () => {
+    if (!pendingDeleteId) return
     try {
-      setDeletingId(id)
-      await deleteBook(id)
+      setDeletingId(pendingDeleteId)
+      await deleteBook(pendingDeleteId)
+      toast.success('Book deleted')
     } finally {
       setDeletingId(undefined)
+      setPendingDeleteId(undefined)
     }
-  }, [deleteBook])
+  }, [pendingDeleteId, deleteBook])
 
   const hasVisibleBooks = useMemo(() =>
     sectionOrder.some(({ status }) => {
@@ -297,6 +317,21 @@ export default function LibraryPage() {
           onOpenChange={setIsFormOpen}
         />
       )}
+
+      <AlertDialog open={!!pendingDeleteId} onOpenChange={(open) => !open && setPendingDeleteId(undefined)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this book?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action can&apos;t be undone. The book and its cover will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel />
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   )
 }

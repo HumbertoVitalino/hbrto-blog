@@ -33,7 +33,7 @@ async function getAuthHeader(): Promise<Record<string, string>> {
 
 export function useStudyEpics() {
     const [epics, setEpics] = useState<StudyEpicData[]>([])
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
     const fetchEpics = useCallback(async () => {

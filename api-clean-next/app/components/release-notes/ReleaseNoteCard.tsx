@@ -7,6 +7,17 @@ import { ReleaseNoteData } from '@/app/hooks/useReleaseNotes'
 import { ReleaseNoteFormModal } from './ReleaseNoteFormModal'
 import { MarkdownRenderer } from '@/app/components/reviews/MarkdownRenderer'
 import { formatDate } from '@/lib/formatDate'
+import { toast } from 'sonner'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 interface ReleaseNoteCardProps {
     note: ReleaseNoteData
@@ -20,16 +31,24 @@ export function ReleaseNoteCard({ note, isLatest, isAdmin, onDelete, onUpdate }:
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
     const [isExpanded, setIsExpanded] = useState(false)
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
     const isLong = note.description.length > 400
 
-    const handleDelete = async () => {
-        if (!onDelete || !confirm('Delete this release note?')) return
+    const handleDelete = () => {
+        if (!onDelete) return
+        setIsConfirmOpen(true)
+    }
+
+    const confirmDelete = async () => {
+        if (!onDelete) return
         try {
             setIsDeleting(true)
             await onDelete(note.id)
+            toast.success('Release note deleted')
         } finally {
             setIsDeleting(false)
+            setIsConfirmOpen(false)
         }
     }
 
@@ -39,7 +58,7 @@ export function ReleaseNoteCard({ note, isLatest, isAdmin, onDelete, onUpdate }:
 
                 {/* ADMIN ACTIONS */}
                 {isAdmin && (
-                    <div className="absolute top-0 right-0 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-0 right-0 flex gap-1.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
                         <Button size="sm" variant="outline" className="h-7 w-7 p-0" onClick={() => setIsEditOpen(true)}>
                             <Edit2 className="w-3 h-3" />
                             <span className="sr-only">Edit</span>
@@ -102,10 +121,25 @@ export function ReleaseNoteCard({ note, isLatest, isAdmin, onDelete, onUpdate }:
                     open={isEditOpen}
                     onOpenChange={setIsEditOpen}
                     initialValues={{ version: note.version, title: note.title, description: note.description }}
-                    onSubmit={async (data) => { if (onUpdate) await onUpdate(note.id, data) }}
+                    onSubmit={async (data) => { if (onUpdate) { await onUpdate(note.id, data); toast.success('Release note updated') } }}
                     mode="edit"
                 />
             )}
+
+            <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this release note?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action can&apos;t be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel />
+                        <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </>
     )
 }
