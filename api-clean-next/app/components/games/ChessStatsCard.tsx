@@ -56,7 +56,7 @@ export function ChessStatsCard({ data }: ChessStatsCardProps) {
     const modes = ['bullet', 'blitz', 'rapid', 'daily'] as const
 
     return (
-        <div className="rounded-2xl border border-border/60 bg-card p-5 h-full">
+        <div className="instrument-panel border border-border/60 p-5 h-full">
             <div className="flex items-center justify-between mb-2">
                 <div>
                     <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Chess.com</p>

@@ -174,7 +174,7 @@ export default function GamesPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
 
                     {/* Steam */}
-                    <div className="rounded-2xl border border-border/60 bg-card p-5 h-full">
+                    <div className="instrument-panel border border-border/60 p-5 h-full">
                         <PanelLabel>Recently played on Steam</PanelLabel>
                         {loadingSteam ? (
                             <Spinner />
@@ -230,12 +230,12 @@ export default function GamesPage() {
 
                     {/* Chess.com */}
                     {loadingChess ? (
-                        <div className="rounded-2xl border border-border/60 bg-card p-5 h-full">
+                        <div className="instrument-panel border border-border/60 p-5 h-full">
                             <PanelLabel>Chess.com</PanelLabel>
                             <Spinner />
                         </div>
                     ) : errorChess || !chessStats ? (
-                        <div className="rounded-2xl border border-border/60 bg-card p-5 h-full">
+                        <div className="instrument-panel border border-border/60 p-5 h-full">
                             <PanelLabel>Chess.com</PanelLabel>
                             <p className="text-sm text-muted-foreground py-4 text-center">Could not load Chess.com data.</p>
                         </div>

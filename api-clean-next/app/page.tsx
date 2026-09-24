@@ -298,8 +298,7 @@ export default function HomePage() {
       <section className="py-24 border-t bg-muted/10">
         <div className="max-w-6xl mx-auto px-6">
           <div className="mb-4 max-w-xl">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">What I do</p>
-            <h2 className="font-display text-3xl font-medium tracking-tight">
+            <h2 className="font-display text-4xl font-medium tracking-tight">
               Engineering that scales with the problem
             </h2>
           </div>
@@ -331,8 +330,7 @@ export default function HomePage() {
       <section className="py-24 border-t">
         <div className="max-w-6xl mx-auto px-6">
           <div className="mb-12">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Stack</p>
-            <h2 className="font-display text-3xl font-medium tracking-tight">Technologies</h2>
+            <h2 className="font-display text-4xl font-medium tracking-tight">Technologies</h2>
           </div>
 
           <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
@@ -371,8 +369,7 @@ export default function HomePage() {
       <section className="py-24 border-t bg-muted/10">
         <div className="max-w-6xl mx-auto px-6">
           <div className="mb-12">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Beyond code</p>
-            <h2 className="font-display text-3xl font-medium tracking-tight">From the blog</h2>
+            <h2 className="font-display text-4xl font-medium tracking-tight">From the blog</h2>
           </div>
 
           <RevealGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -414,8 +411,7 @@ export default function HomePage() {
       <section className="py-24 border-t">
         <div className="max-w-3xl mx-auto px-6">
           <div className="mb-12">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Career</p>
-            <h2 className="font-display text-3xl font-medium tracking-tight">Journey</h2>
+            <h2 className="font-display text-4xl font-medium tracking-tight">Journey</h2>
           </div>
 
           <div className="space-y-10 border-l-2 border-border ml-3 pl-8 relative">

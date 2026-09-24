@@ -58,9 +58,9 @@ const STATUS_ACTIVE: Record<StatusToken, string> = {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+    <h2 className="font-display text-xl font-medium tracking-tight text-foreground">
       {children}
-    </p>
+    </h2>
   )
 }
 

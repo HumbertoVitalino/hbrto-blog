@@ -30,7 +30,7 @@ function Spinner() {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
     return (
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+        <h2 className="font-display text-xl font-medium tracking-tight text-foreground">
             {children}
         </h2>
     )

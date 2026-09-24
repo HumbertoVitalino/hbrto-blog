@@ -306,3 +306,14 @@
     animation: none;
   }
 }
+
+/* Instrument surfaces (stats, charts, timers) — a measured surface reads
+   differently from a content card. Reuses the hero's own dot-grid motif
+   at a smaller, quieter scale instead of introducing a new device. */
+.instrument-panel {
+  --instrument-dot: oklch(0.5 0 0 / 0.14);
+  background-color: var(--card);
+  background-image: radial-gradient(circle, var(--instrument-dot) 1px, transparent 1px);
+  background-size: 18px 18px;
+  border-radius: var(--radius-xl);
+}

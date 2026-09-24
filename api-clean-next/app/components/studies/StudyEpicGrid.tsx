@@ -8,7 +8,7 @@ import { EpicStats } from '@/lib/studyStats'
 import { formatMinutes } from '@/lib/studyStats'
 import { epicColorClasses } from '@/lib/studyEpicColors'
 import { RevealGroup, RevealItem } from '@/app/components/motion/Reveal'
-import { Pencil, Trash2, Loader2, Clock, Layers, Plus, ListChecks, CheckCircle2 } from 'lucide-react'
+import { Pencil, Trash2, Loader2, Clock, Plus, ListChecks, CheckCircle2 } from 'lucide-react'
 
 const STATUS_LABEL: Record<StudyEpicStatus, string> = {
     [StudyEpicStatus.Planned]: 'Planned',
@@ -54,10 +54,7 @@ function StudyEpicGridComponent({
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                    <Layers className="w-3.5 h-3.5 text-muted-foreground" />
-                    <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Epics</h2>
-                </div>
+                <h2 className="font-display text-xl font-medium tracking-tight text-foreground">Epics</h2>
                 {isAdmin && (
                     <button
                         onClick={onNew}

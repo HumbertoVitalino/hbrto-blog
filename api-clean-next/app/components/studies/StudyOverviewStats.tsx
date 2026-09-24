@@ -36,7 +36,7 @@ export function StudyOverviewStats({ stats }: StudyOverviewStatsProps) {
     ]
 
     return (
-        <div className="rounded-2xl border border-border/60 bg-card p-5">
+        <div className="instrument-panel border border-border/60 p-5">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
                 {tiles.map(({ icon: Icon, color, value, label }) => (
                     <div key={label} className="flex flex-col items-center text-center gap-1.5">
