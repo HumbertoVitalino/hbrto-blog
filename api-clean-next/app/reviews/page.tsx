@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { AlertCircle, Plus, Clock, TrendingUp, TrendingDown } from 'lucide-react'
 import { Review, ReviewLanguage } from '@/domain/Review'
+import { toast } from 'sonner'
 
 type SortOption = 'newest' | 'highest' | 'lowest'
 
@@ -58,6 +59,7 @@ export default function ReviewsPage() {
       setSubmitError(null)
       await createReview(data.title, data.bookId, data.rating, data.comment, data.language)
       setIsFormOpen(false)
+      toast.success('Entry published')
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Failed to publish')
     }
@@ -72,6 +74,7 @@ export default function ReviewsPage() {
     if (!selectedReview) return
     await updateReview(selectedReview.id, selectedReview.bookId, data.title, data.rating, data.comment, data.language)
     setIsEditOpen(false)
+    toast.success('Entry updated')
   }, [selectedReview, updateReview])
 
   const handleDelete = useCallback((id: string, bookId?: string) => {
@@ -83,6 +86,7 @@ export default function ReviewsPage() {
     setDeletingId(pendingDelete.id)
     try {
       await deleteReview(pendingDelete.id, pendingDelete.bookId ?? null)
+      toast.success('Entry deleted')
     } finally {
       setDeletingId(undefined)
       setPendingDelete(undefined)
@@ -116,7 +120,7 @@ export default function ReviewsPage() {
         <div>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="font-display text-3xl font-medium tracking-tight">Writing</h1>
+              <h1 className="font-display text-3xl font-medium tracking-tight">Reviews</h1>
               <p className="text-sm text-muted-foreground mt-1">
                 Thoughts, notes and reflections — not limited to books.
               </p>

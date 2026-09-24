@@ -23,6 +23,7 @@ import {
 import { AlertCircle, ArrowLeft, BookOpen, Edit2, Trash2, Star } from 'lucide-react'
 import { ReviewLanguage } from '@/domain/Review'
 import { formatDate } from '@/lib/formatDate'
+import { toast } from 'sonner'
 
 const LANG_META: Record<ReviewLanguage, { flag: string; label: string }> = {
   'en': { flag: '🇺🇸', label: 'EN' },
@@ -70,6 +71,7 @@ export default function ReviewDetailPage() {
     if (!activeReview) return
     await updateReview(activeReview.id, activeReview.bookId, data.title, data.rating, data.comment, data.language)
     setIsEditOpen(false)
+    toast.success('Entry updated')
   }
 
   const handleDelete = () => {
@@ -82,6 +84,7 @@ export default function ReviewDetailPage() {
     setIsDeleting(true)
     try {
       await deleteReview(activeReview.id, activeReview.bookId)
+      toast.success('Entry deleted')
       router.push('/reviews')
     } finally {
       setIsDeleting(false)

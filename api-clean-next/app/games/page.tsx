@@ -25,6 +25,7 @@ import {
 import { AlertCircle, Plus, Gamepad2, PlayCircle, CheckCircle2, Bookmark } from 'lucide-react'
 import { GamePlatform } from '@/domain/GamePlatform'
 import { GameStatus } from '@/domain/GameStatus'
+import { toast } from 'sonner'
 
 const PLATFORM_FILTERS: { label: string; value: GamePlatform | 'all' }[] = [
     { label: 'All', value: 'all' },
@@ -98,8 +99,10 @@ export default function GamesPage() {
         try {
             if (selectedGame?.id) {
                 await updateGame(selectedGame.id, data)
+                toast.success('Game updated')
             } else {
                 await createGame(data)
+                toast.success('Game added')
             }
         } finally {
             setIsSubmitting(false)
@@ -113,7 +116,10 @@ export default function GamesPage() {
     const confirmDelete = useCallback(async () => {
         if (!pendingDeleteId) return
         setDeletingId(pendingDeleteId)
-        try { await deleteGame(pendingDeleteId) }
+        try {
+            await deleteGame(pendingDeleteId)
+            toast.success('Game deleted')
+        }
         finally {
             setDeletingId(undefined)
             setPendingDeleteId(undefined)
@@ -203,8 +209,8 @@ export default function GamesPage() {
                                                 </p>
                                                 <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-2 max-w-50">
                                                     <div
-                                                        className="h-full bg-brand-accent rounded-full transition-[width] duration-500"
-                                                        style={{ width: `${spotlightRatio}%` }}
+                                                        className="h-full w-full bg-brand-accent rounded-full origin-left transition-transform duration-500"
+                                                        style={{ transform: `scaleX(${spotlightRatio / 100})` }}
                                                     />
                                                 </div>
                                             </div>

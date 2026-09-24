@@ -189,7 +189,7 @@ const heroContainer: Variants = {
 
 const heroItem: Variants = {
   hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 260, damping: 26 } },
+  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 28 } },
 }
 
 export default function HomePage() {
@@ -311,7 +311,7 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.5 }}
-                transition={{ type: 'spring', stiffness: 280, damping: 26, delay: i * 0.08 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 28, delay: i * 0.08 }}
                 className="grid grid-cols-1 md:grid-cols-[16rem_1fr] md:items-center gap-4 md:gap-10 py-8"
               >
                 <div className="flex items-center gap-4 min-w-0">
@@ -425,7 +425,7 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
-                transition={{ type: 'spring', stiffness: 280, damping: 28, delay: (i % 3) * 0.06 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 28, delay: (i % 3) * 0.06 }}
                 className="relative"
               >
                 <span
