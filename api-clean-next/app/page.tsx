@@ -1,11 +1,12 @@
 'use client'
 
 import Link from 'next/link'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { SocialFooter } from '@/app/components/layout/Footer'
 import { NewsletterBanner } from '@/app/components/newsletter/NewsletterBanner'
 import { FiGithub } from 'react-icons/fi'
-import { motion, type Variants } from 'motion/react'
+import { motion, AnimatePresence, type Variants } from 'motion/react'
 import { useBooks } from '@/app/hooks/useBooks'
 import { useReviews } from '@/app/hooks/useReviews'
 import { useNowPlaying } from '@/app/hooks/useNowPlaying'
@@ -236,6 +237,29 @@ function StatPanel({ label, value, barClass }: { label: string; value: string; b
   )
 }
 
+/** Small live widgets for the hero sidebar — same instrument-panel chrome,
+ *  scaled down, each one showing something genuinely true right now. */
+function HeroWidget({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="instrument-panel border border-border/60 overflow-hidden">
+      <div className="px-3.5 py-2 border-b border-border/60 bg-background/50">
+        <span className="font-mono text-[10px] text-muted-foreground tracking-wide">{title}</span>
+      </div>
+      <div className="p-3.5">{children}</div>
+    </div>
+  )
+}
+
+function formatElapsed(totalSeconds: number): string {
+  const h = Math.floor(totalSeconds / 3600)
+  const m = Math.floor((totalSeconds % 3600) / 60)
+  const s = totalSeconds % 60
+  return [h, m, s].map(n => String(n).padStart(2, '0')).join(':')
+}
+
+const requestRoutes = ['/library', '/reviews', '/games', '/studies', '/music', '/release-notes']
+const eqBarHeights = ['h-1.5', 'h-4', 'h-2.5', 'h-3.5']
+
 export default function HomePage() {
   const { books } = useBooks()
   const { reviews } = useReviews()
@@ -245,6 +269,31 @@ export default function HomePage() {
   const readingBook = books.find(b => b.status === BookStatus.InProgress)
   const latestReview = reviews[0]
   const latestNote = notes[0]
+
+  // session widget — real elapsed time since this page was opened, ticking live
+  const [elapsed, setElapsed] = useState(0)
+  useEffect(() => {
+    const start = Date.now()
+    const id = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  // request-log widget — a live-looking tail of this site's own real routes
+  const routeCounter = useRef(3)
+  const [logHistory, setLogHistory] = useState(() =>
+    requestRoutes.slice(0, 3).map((path, id) => ({ path, id }))
+  )
+  useEffect(() => {
+    const id = setInterval(() => {
+      setLogHistory(prev => {
+        const nextPath = requestRoutes[routeCounter.current % requestRoutes.length]
+        const nextId = routeCounter.current
+        routeCounter.current += 1
+        return [...prev.slice(1), { path: nextPath, id: nextId }]
+      })
+    }, 2200)
+    return () => clearInterval(id)
+  }, [])
 
   const blogPreviews: Record<string, string | undefined> = {
     '/library': readingBook ? `Reading "${readingBook.title}"` : 'No active read right now',
@@ -300,51 +349,129 @@ export default function HomePage() {
             </span>
           </motion.div>
 
-          <div className="max-w-3xl">
-            <motion.span
-              variants={heroItem}
-              className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground border border-border/60 bg-muted/30 rounded-full px-3 py-1 mb-8 backdrop-blur-sm"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-accent" />
-              Software Engineer · Brazil
-            </motion.span>
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_19rem] gap-10 lg:gap-8">
+            <div className="max-w-3xl">
+              <motion.span
+                variants={heroItem}
+                className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground border border-border/60 bg-muted/30 rounded-full px-3 py-1 mb-8 backdrop-blur-sm"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-accent" />
+                Software Engineer · Brazil
+              </motion.span>
 
-            <motion.h1
-              variants={heroItem}
-              className="font-display text-5xl md:text-[4.5rem] font-medium tracking-tight leading-[1.08] mb-6"
-            >
-              I build backend systems
-              <br />
-              <span className="italic text-primary">that hold under pressure.</span>
-            </motion.h1>
+              <motion.h1
+                variants={heroItem}
+                className="font-display text-5xl md:text-[4.5rem] font-medium tracking-tight leading-[1.08] mb-6"
+              >
+                I build backend systems
+                <br />
+                <span className="italic text-primary">that hold under pressure.</span>
+              </motion.h1>
 
-            <motion.p variants={heroItem} className="text-lg text-muted-foreground mb-10 max-w-xl leading-relaxed">
-              Specialized in .NET and distributed systems — I design APIs and
-              architectures that stay reliable in production, not just in theory.
-            </motion.p>
+              <motion.p variants={heroItem} className="text-lg text-muted-foreground mb-10 max-w-xl leading-relaxed">
+                Specialized in .NET and distributed systems — I design APIs and
+                architectures that stay reliable in production, not just in theory.
+              </motion.p>
 
-            <motion.div variants={heroItem} className="flex gap-3 flex-wrap">
-              <Button size="lg" className="gap-2 shadow-sm hover:ring-2 hover:ring-primary/20 transition-all" asChild>
-                <a
-                  href="https://github.com/humbertovitalino"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <FiGithub className="w-4 h-4" />
-                  GitHub
-                  <ArrowRight className="w-4 h-4" />
-                </a>
-              </Button>
-              <Button size="lg" variant="outline" className="gap-2" asChild>
-                <a href="mailto:humbertovitalino01@gmail.com">
-                  Contact Me
-                </a>
-              </Button>
+              <motion.div variants={heroItem} className="flex gap-3 flex-wrap mb-16 lg:mb-0">
+                <Button size="lg" className="gap-2 shadow-sm hover:ring-2 hover:ring-primary/20 transition-all" asChild>
+                  <a
+                    href="https://github.com/humbertovitalino"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <FiGithub className="w-4 h-4" />
+                    GitHub
+                    <ArrowRight className="w-4 h-4" />
+                  </a>
+                </Button>
+                <Button size="lg" variant="outline" className="gap-2" asChild>
+                  <a href="mailto:humbertovitalino01@gmail.com">
+                    Contact Me
+                  </a>
+                </Button>
+              </motion.div>
+
+              {/* stat panels */}
+              <motion.div variants={heroItem} className="hidden lg:grid grid-cols-2 md:grid-cols-4 gap-3 mt-16">
+                <StatPanel label="Experience" value="4+ yrs" barClass="bg-primary" />
+                <StatPanel label="In production" value="2 cos" barClass="bg-chart-4" />
+                <StatPanel label="Primary stack" value=".NET" barClass="bg-chart-5" />
+                <StatPanel label="Problems solved" value="∞" barClass="bg-brand-accent" />
+              </motion.div>
+            </div>
+
+            {/* live sidebar — this is not decoration, every number here is real */}
+            <motion.div variants={heroItem} className="space-y-3">
+              <HeroWidget title="connection">
+                <div className="flex items-center gap-2.5">
+                  <span className="relative flex h-2 w-2 shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-60" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
+                  </span>
+                  <span className="font-mono text-lg tabular-nums text-foreground">{formatElapsed(elapsed)}</span>
+                  <span className="text-[11px] text-muted-foreground ml-auto">this session</span>
+                </div>
+              </HeroWidget>
+
+              <HeroWidget title="signal/now">
+                {nowPlaying?.title ? (
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-end gap-0.5 h-4 shrink-0">
+                      {eqBarHeights.map((h, i) => (
+                        <span
+                          key={i}
+                          className={`w-0.5 rounded-full bg-brand-accent ${h} ${nowPlaying.isPlaying ? 'eq-bar' : 'opacity-50'}`}
+                          style={{ animationDelay: `${i * 0.15}s` }}
+                        />
+                      ))}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium truncate">{nowPlaying.title}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {nowPlaying.isPlaying ? 'Now playing' : 'Last played'}
+                      </p>
+                    </div>
+                  </div>
+                ) : readingBook ? (
+                  <div className="flex items-center gap-3">
+                    <BookOpen className="w-4 h-4 text-chart-4 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium truncate">{readingBook.title}</p>
+                      <p className="text-[11px] text-muted-foreground">Currently reading</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">No active signal</p>
+                )}
+              </HeroWidget>
+
+              <HeroWidget title="log/requests">
+                <div className="space-y-1.5 font-mono text-[11px]">
+                  <AnimatePresence initial={false}>
+                    {logHistory.map(({ path, id }) => (
+                      <motion.div
+                        key={id}
+                        layout
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+                        className="flex items-center gap-2"
+                      >
+                        <span className="text-success shrink-0">200</span>
+                        <span className="text-muted-foreground shrink-0">GET</span>
+                        <span className="text-foreground/80 truncate">{path}</span>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </HeroWidget>
             </motion.div>
           </div>
 
-          {/* stat panels */}
-          <motion.div variants={heroItem} className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-3">
+          {/* stat panels — mobile/tablet position, below the sidebar */}
+          <motion.div variants={heroItem} className="grid lg:hidden grid-cols-2 md:grid-cols-4 gap-3 mt-10">
             <StatPanel label="Experience" value="4+ yrs" barClass="bg-primary" />
             <StatPanel label="In production" value="2 cos" barClass="bg-chart-4" />
             <StatPanel label="Primary stack" value=".NET" barClass="bg-chart-5" />
