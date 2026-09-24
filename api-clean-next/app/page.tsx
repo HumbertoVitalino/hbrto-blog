@@ -192,6 +192,28 @@ const heroItem: Variants = {
   show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 28 } },
 }
 
+/** A trace hop — this page reads as a request moving through a distributed system,
+ *  one section per hop. The node lights up once its section is actually in view. */
+function TraceHop({ index, label }: { index: string; label: string }) {
+  return (
+    <div className="flex items-center gap-3 mb-6">
+      <span className="relative flex h-2.5 w-2.5 shrink-0">
+        <motion.span
+          className="absolute inline-flex h-full w-full rounded-full bg-brand-accent"
+          initial={{ scale: 0.5, opacity: 0.4 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true, amount: 0.8 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        />
+      </span>
+      <span className="h-px w-8 bg-border" />
+      <span className="font-mono text-[11px] tracking-wide text-muted-foreground">
+        {index} <span className="text-muted-foreground/50">·</span> {label}
+      </span>
+    </div>
+  )
+}
+
 export default function HomePage() {
   const { books } = useBooks()
   const { reviews } = useReviews()
@@ -235,6 +257,19 @@ export default function HomePage() {
           variants={heroContainer}
         >
           <div className="max-w-3xl">
+            <motion.div variants={heroItem} className="flex items-center gap-3 mb-6">
+              <motion.span
+                className="h-2.5 w-2.5 rounded-full bg-brand-accent shrink-0"
+                initial={{ scale: 0.5, opacity: 0.4 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.3 }}
+              />
+              <span className="h-px w-8 bg-border" />
+              <span className="font-mono text-[11px] tracking-wide text-muted-foreground">
+                00 <span className="text-muted-foreground/50">·</span> ingress
+              </span>
+            </motion.div>
+
             <motion.span
               variants={heroItem}
               className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground border border-border/60 bg-muted/30 rounded-full px-3 py-1 mb-8 backdrop-blur-sm"
@@ -298,6 +333,7 @@ export default function HomePage() {
       <section className="py-24 border-t bg-muted/10">
         <div className="max-w-6xl mx-auto px-6">
           <div className="mb-4 max-w-xl">
+            <TraceHop index="01" label="service layer" />
             <h2 className="font-display text-4xl font-medium tracking-tight">
               Engineering that scales with the problem
             </h2>
@@ -330,6 +366,7 @@ export default function HomePage() {
       <section className="py-24 border-t">
         <div className="max-w-6xl mx-auto px-6">
           <div className="mb-12">
+            <TraceHop index="02" label="infrastructure" />
             <h2 className="font-display text-4xl font-medium tracking-tight">Technologies</h2>
           </div>
 
@@ -365,52 +402,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── FROM THE BLOG ── */}
-      <section className="py-24 border-t bg-muted/10">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-12">
-            <h2 className="font-display text-4xl font-medium tracking-tight">From the blog</h2>
-          </div>
-
-          <RevealGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {blogSections.map(({ href, icon: Icon, label, description, color, bg }) => {
-              const preview = blogPreviews[href]
-              return (
-                <RevealItem key={href}>
-                  <Link
-                    href={href}
-                    className="group relative block overflow-hidden p-6 rounded-2xl border border-border/60 bg-card hover:shadow-md hover:border-primary/30 transition-all hover:-translate-y-0.5"
-                  >
-                    <div className="pointer-events-none absolute -top-8 -right-8 w-32 h-32 rounded-full bg-brand-accent/0 group-hover:bg-brand-accent/10 blur-2xl transition-colors duration-500" />
-                    <div className="relative">
-                      <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center mb-4`}>
-                        <Icon className={`w-5 h-5 ${color}`} />
-                      </div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold">{label}</h3>
-                        <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                      {preview ? (
-                        <p className="text-sm text-muted-foreground leading-relaxed flex items-start gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-brand-accent shrink-0 mt-1.5" />
-                          <span className="line-clamp-2">{preview}</span>
-                        </p>
-                      ) : (
-                        <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-                      )}
-                    </div>
-                  </Link>
-                </RevealItem>
-              )
-            })}
-          </RevealGroup>
-        </div>
-      </section>
-
       {/* ── JOURNEY — work + education, one timeline ── */}
       <section className="py-24 border-t">
         <div className="max-w-3xl mx-auto px-6">
           <div className="mb-12">
+            <TraceHop index="03" label="deploy log" />
             <h2 className="font-display text-4xl font-medium tracking-tight">Journey</h2>
           </div>
 
@@ -477,10 +473,60 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── FROM THE BLOG ── */}
+      <section className="py-24 border-t bg-muted/10">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="mb-12">
+            <TraceHop index="04" label="telemetry" />
+            <h2 className="font-display text-4xl font-medium tracking-tight">From the blog</h2>
+          </div>
+
+          <RevealGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {blogSections.map(({ href, icon: Icon, label, description, color, bg }) => {
+              const preview = blogPreviews[href]
+              return (
+                <RevealItem key={href}>
+                  <Link
+                    href={href}
+                    className="group relative block overflow-hidden p-6 rounded-2xl border border-border/60 bg-card hover:shadow-md hover:border-primary/30 transition-all hover:-translate-y-0.5"
+                  >
+                    <div className="pointer-events-none absolute -top-8 -right-8 w-32 h-32 rounded-full bg-brand-accent/0 group-hover:bg-brand-accent/10 blur-2xl transition-colors duration-500" />
+                    <div className="relative">
+                      <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center mb-4`}>
+                        <Icon className={`w-5 h-5 ${color}`} />
+                      </div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-semibold">{label}</h3>
+                        <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      {preview ? (
+                        <p className="text-sm text-muted-foreground leading-relaxed flex items-start gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-brand-accent shrink-0 mt-1.5" />
+                          <span className="line-clamp-2">{preview}</span>
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+                      )}
+                    </div>
+                  </Link>
+                </RevealItem>
+              )
+            })}
+          </RevealGroup>
+        </div>
+      </section>
+
       {/* ── CLOSING CTA ── */}
       <section className="relative py-24 border-t bg-muted/10 overflow-hidden">
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-125 h-75 bg-primary/10 blur-[100px] rounded-full pointer-events-none" />
         <div className="max-w-3xl mx-auto px-6 text-center relative">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <span className="h-px w-8 bg-border" />
+            <span className="font-mono text-[11px] tracking-wide text-muted-foreground">
+              05 <span className="text-muted-foreground/50">·</span> response
+            </span>
+            <span className="h-px w-8 bg-border" />
+          </div>
           <h2 className="font-display text-3xl md:text-4xl font-medium tracking-tight mb-4">
             Let&apos;s build something that lasts.
           </h2>
