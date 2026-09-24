@@ -32,7 +32,7 @@ const PRIORITY_LABEL: Record<StudyPriority, string> = {
 const PRIORITY_COLOR: Record<StudyPriority, string> = {
     [StudyPriority.Low]: 'text-muted-foreground',
     [StudyPriority.Medium]: 'text-info',
-    [StudyPriority.High]: 'text-destructive',
+    [StudyPriority.High]: 'text-destructive-text',
 }
 
 // left-edge stripe used in compact/kanban cards, where the status dot lives in the column header instead
@@ -64,7 +64,7 @@ function StudyTopicCardComponent({ topic, epic, isAdmin, isDeleting, compact, on
                 className={`group flex flex-col bg-card border border-l-2 border-border/60 ${PRIORITY_STRIPE[priority]} rounded-lg p-2.5 gap-1.5 hover:shadow-sm hover:border-primary/30 transition-shadow`}
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 24 }}
             >
                 <div className="flex items-start justify-between gap-1.5">
                     <h3 className="text-xs font-medium leading-snug line-clamp-2 text-foreground">{topic.title}</h3>

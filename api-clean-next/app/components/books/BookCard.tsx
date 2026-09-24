@@ -54,7 +54,7 @@ function BookCardComponent({ book, onEdit, onDelete, isDeleting, isPublic = fals
         )}
 
         {/* Status badge — bottom left */}
-        <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 bg-background/90 backdrop-blur-sm border border-border/50 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
+        <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 bg-background text-foreground backdrop-blur-sm border border-border/50 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
           <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
           {status.label}
         </div>

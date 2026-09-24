@@ -128,7 +128,7 @@ export default function AdminPage() {
   ]
 
   return (
-    <main className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
 
       {/* PAGE HEADER */}
       <section className="border-b bg-muted/10">
@@ -493,7 +493,7 @@ export default function AdminPage() {
                       className="border rounded-lg px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 resize-none"
                     />
                     {broadcastStatus === 'error' && (
-                      <p className="text-sm text-destructive">{broadcastError}</p>
+                      <p className="text-sm text-destructive-text">{broadcastError}</p>
                     )}
                     <div className="flex justify-end">
                       <button
@@ -576,7 +576,7 @@ export default function AdminPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </main>
+    </div>
   )
 }
 

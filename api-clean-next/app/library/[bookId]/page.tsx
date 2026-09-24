@@ -143,16 +143,16 @@ export default function BookDetailPage() {
   // LOADING
   if (booksLoading) {
     return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="h-6 w-6 rounded-full border border-muted border-t-foreground animate-spin" />
-      </main>
+      </div>
     )
   }
 
   // NOT FOUND
   if (!book) {
     return (
-      <main className="min-h-screen bg-background max-w-4xl mx-auto px-4 py-16">
+      <div className="min-h-screen bg-background max-w-4xl mx-auto px-4 py-16">
         <Button variant="ghost" onClick={() => router.back()} className="mb-6 gap-2">
           <ArrowLeft className="w-4 h-4" />
           Back
@@ -163,7 +163,7 @@ export default function BookDetailPage() {
           <AlertTitle>Book not found</AlertTitle>
           <AlertDescription>This book does not exist.</AlertDescription>
         </Alert>
-      </main>
+      </div>
     )
   }
 
@@ -173,7 +173,7 @@ export default function BookDetailPage() {
     : null
 
   return (
-    <main className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 py-16 space-y-12">
 
         {/* BACK BUTTON */}
@@ -362,6 +362,6 @@ export default function BookDetailPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </main>
+    </div>
   )
 }

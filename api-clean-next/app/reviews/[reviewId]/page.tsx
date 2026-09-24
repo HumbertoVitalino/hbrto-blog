@@ -94,15 +94,15 @@ export default function ReviewDetailPage() {
 
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="h-6 w-6 rounded-full border border-muted border-t-foreground animate-spin" />
-      </main>
+      </div>
     )
   }
 
   if (!activeReview) {
     return (
-      <main className="min-h-screen bg-background max-w-3xl mx-auto px-6 py-16">
+      <div className="min-h-screen bg-background max-w-3xl mx-auto px-6 py-16">
         <Link href="/reviews">
           <Button variant="ghost" className="mb-6 gap-2 -ml-4">
             <ArrowLeft className="w-4 h-4" />
@@ -115,12 +115,12 @@ export default function ReviewDetailPage() {
           <AlertTitle>Review not found</AlertTitle>
           <AlertDescription>This review does not exist.</AlertDescription>
         </Alert>
-      </main>
+      </div>
     )
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <div className="max-w-3xl mx-auto px-6 py-10 space-y-8">
 
         <div className="flex items-center justify-between gap-4">
@@ -244,6 +244,6 @@ export default function ReviewDetailPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </main>
+    </div>
   )
 }

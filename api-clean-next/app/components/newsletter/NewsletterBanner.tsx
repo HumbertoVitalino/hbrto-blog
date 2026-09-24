@@ -92,7 +92,7 @@ export function NewsletterBanner() {
                         />
 
                         {status === 'error' && (
-                            <p className="text-sm text-destructive">{errorMsg}</p>
+                            <p className="text-sm text-destructive-text">{errorMsg}</p>
                         )}
 
                         <button

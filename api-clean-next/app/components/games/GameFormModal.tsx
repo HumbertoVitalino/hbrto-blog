@@ -96,7 +96,7 @@ export function GameFormModal({ isOpen, game, isLoading, onSubmit, onOpenChange 
                             disabled={isLoading}
                             className={errors.title ? 'border-destructive' : ''}
                         />
-                        {errors.title && <p className="text-sm text-destructive">{errors.title}</p>}
+                        {errors.title && <p className="text-sm text-destructive-text">{errors.title}</p>}
                     </div>
 
                     <div className="space-y-2">
@@ -169,7 +169,7 @@ export function GameFormModal({ isOpen, game, isLoading, onSubmit, onOpenChange 
                         />
                     </div>
 
-                    {errors.submit && <p className="text-sm text-destructive">{errors.submit}</p>}
+                    {errors.submit && <p className="text-sm text-destructive-text">{errors.submit}</p>}
 
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>

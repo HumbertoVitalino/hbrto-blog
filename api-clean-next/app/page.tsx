@@ -239,7 +239,7 @@ export default function HomePage() {
               variants={heroItem}
               className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground border border-border/60 bg-muted/30 rounded-full px-3 py-1 mb-8 backdrop-blur-sm"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-accent" />
               Software Engineer · Brazil
             </motion.span>
 

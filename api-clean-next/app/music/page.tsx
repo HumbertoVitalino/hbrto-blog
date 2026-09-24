@@ -38,7 +38,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function SectionError({ message }: { message: string }) {
     return (
-        <p className="text-sm text-destructive py-4 text-center">{message}</p>
+        <p className="text-sm text-destructive-text py-4 text-center">{message}</p>
     )
 }
 

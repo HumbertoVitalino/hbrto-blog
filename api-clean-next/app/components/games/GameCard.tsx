@@ -54,7 +54,7 @@ export function GameCard({ game, isAdmin, isDeleting, onEdit, onDelete }: GameCa
                 )}
 
                 {/* Status badge — bottom left */}
-                <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 bg-background/90 backdrop-blur-sm border border-border/50 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
+                <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 bg-background text-foreground backdrop-blur-sm border border-border/50 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
                     <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[status]}`} />
                     {STATUS_LABEL[status]}
                 </div>
@@ -88,7 +88,7 @@ export function GameCard({ game, isAdmin, isDeleting, onEdit, onDelete }: GameCa
             <div className="flex flex-col flex-1 p-3 gap-1">
                 <p className="font-semibold text-[13px] leading-snug line-clamp-2">{game.title}</p>
                 <div className="flex items-center justify-between gap-2 mt-auto pt-1">
-                    <span className="text-[11px] text-muted-foreground truncate">
+                    <span className="text-[11px] text-muted-foreground truncate min-w-0">
                         {PLATFORM_LABEL[game.platform]}
                         {game.genre ? ` · ${game.genre}` : ''}
                     </span>

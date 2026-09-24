@@ -16,7 +16,7 @@ interface LibraryFilterBentoProps {
 const tapProps = {
     whileHover: { y: -2 },
     whileTap: { scale: 0.98 },
-    transition: { type: 'spring' as const, stiffness: 320, damping: 26 },
+    transition: { type: 'spring' as const, stiffness: 300, damping: 24 },
 }
 
 export function LibraryFilterBento({ books, statusFilter, onStatusFilter }: LibraryFilterBentoProps) {

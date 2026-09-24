@@ -45,7 +45,7 @@ export function TopArtistItem({ artist, rank }: TopArtistItemProps) {
                 href={artist.artistUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground shrink-0"
+                className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-foreground shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 rounded-sm"
                 aria-label="Open in Spotify"
             >
                 <ExternalLink className="w-3.5 h-3.5" />
