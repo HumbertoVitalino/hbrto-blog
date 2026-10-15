@@ -34,7 +34,9 @@ export function RevealGroup({ children, className }: RevealGroupProps) {
             variants={groupVariants}
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, amount: 0.2 }}
+            // 'some' (not a fraction): a tall group on a narrow screen can never have 20% of itself
+            // in view at once, so a proportional threshold would leave every item stuck at opacity 0
+            viewport={{ once: true, amount: 'some' }}
         >
             {children}
         </motion.div>

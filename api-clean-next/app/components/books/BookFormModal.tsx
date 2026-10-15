@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { BookData } from '@/app/hooks/useBooks'
 import { BookGenre } from '@/domain/BookGenre'
 import { BookStatus } from '@/domain/BookStatus'
-import { uploadBookCover } from '@/lib/uploadBookCover'
+import { uploadBookCover, deleteBookCover, MAX_FILE_SIZE, VALID_MIMES } from '@/lib/uploadBookCover'
 import {
     Dialog,
     DialogContent,
@@ -16,15 +16,49 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2, Upload, X } from 'lucide-react'
+import { ImagePlus, Loader2 } from 'lucide-react'
+
+type FormState = Omit<BookData, 'id'>
 
 interface BookFormModalProps {
     isOpen: boolean
     book?: BookData
     isLoading?: boolean
-    onSubmit: (data: Omit<BookData, 'id'>) => Promise<void>
+    onSubmit: (data: FormState) => Promise<void>
     onOpenChange: (open: boolean) => void
 }
+
+const emptyForm: FormState = {
+    title: '',
+    author: '',
+    pages: 0,
+    genre: undefined,
+    coverImageUrl: undefined,
+    affiliateUrl: undefined,
+    status: BookStatus.NotStarted,
+}
+
+const genreOptions: { value: BookGenre; label: string }[] = [
+    { value: BookGenre.Fiction, label: 'Fiction' },
+    { value: BookGenre.NonFiction, label: 'Non-Fiction' },
+    { value: BookGenre.Fantasy, label: 'Fantasy' },
+    { value: BookGenre.ScienceFiction, label: 'Science Fiction' },
+    { value: BookGenre.Mystery, label: 'Mystery' },
+    { value: BookGenre.Thriller, label: 'Thriller' },
+    { value: BookGenre.Romance, label: 'Romance' },
+    { value: BookGenre.Horror, label: 'Horror' },
+    { value: BookGenre.Biography, label: 'Biography' },
+    { value: BookGenre.History, label: 'History' },
+    { value: BookGenre.SelfHelp, label: 'Self-Help' },
+    { value: BookGenre.Business, label: 'Business' },
+    { value: BookGenre.Technology, label: 'Technology' },
+    { value: BookGenre.Philosophy, label: 'Philosophy' },
+]
+
+// taller fields on touch screens; text-base below md keeps iOS from zooming in on focus
+const fieldClass = 'h-10 md:h-8'
+const selectClass =
+    'h-10 md:h-8 w-full rounded-lg border border-input bg-background px-2.5 text-base md:text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50'
 
 export function BookFormModal({
     isOpen,
@@ -33,24 +67,20 @@ export function BookFormModal({
     onSubmit,
     onOpenChange,
 }: BookFormModalProps) {
-    const [formData, setFormData] = useState<Omit<BookData, 'id'>>({
-        title: '',
-        author: '',
-        pages: 0,
-        genre: undefined,
-        coverImageUrl: undefined,
-        affiliateUrl: undefined,
-        status: BookStatus.NotStarted,
-    })
-
-    const [errors, setErrors] = useState<Record<string, string>>({})
+    const [formData, setFormData] = useState<FormState>(emptyForm)
+    const [errors, setErrors] = useState<Record<string, string | undefined>>({})
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
     const [preview, setPreview] = useState<string | null>(null)
     const [uploadingImage, setUploadingImage] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
+    const isBusy = isLoading || uploadingImage
+
+    // reset only when opening, so the content doesn't swap mid close-animation
     useEffect(() => {
-        if (book) {
-            setFormData({
+        if (!isOpen) return
+        setFormData(book
+            ? {
                 title: book.title,
                 author: book.author,
                 pages: book.pages,
@@ -58,39 +88,47 @@ export function BookFormModal({
                 coverImageUrl: book.coverImageUrl,
                 affiliateUrl: book.affiliateUrl,
                 status: book.status || BookStatus.NotStarted,
-            })
-            setPreview(book.coverImageUrl || null)
-        } else {
-            setFormData({
-                title: '',
-                author: '',
-                pages: 0,
-                genre: undefined,
-                coverImageUrl: undefined,
-                status: BookStatus.NotStarted,
-            })
-            setPreview(null)
-        }
+            }
+            : emptyForm)
+        setPreview(book?.coverImageUrl || null)
         setErrors({})
         setSelectedFile(null)
     }, [book, isOpen])
 
+    useEffect(() => {
+        if (!preview?.startsWith('blob:')) return
+        return () => URL.revokeObjectURL(preview)
+    }, [preview])
+
+    const setField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
+        setFormData(prev => ({ ...prev, [key]: value }))
+        if (errors[key]) setErrors(prev => ({ ...prev, [key]: undefined }))
+    }
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
-        if (file) {
-            setSelectedFile(file)
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                setPreview(reader.result as string)
-            }
-            reader.readAsDataURL(file)
+        // allow picking the same file again after removing it
+        e.target.value = ''
+        if (!file) return
+
+        if (!VALID_MIMES.includes(file.type)) {
+            setErrors(prev => ({ ...prev, cover: 'Use a JPG, PNG or WebP image' }))
+            return
         }
+        if (file.size > MAX_FILE_SIZE) {
+            setErrors(prev => ({ ...prev, cover: 'Image is larger than 5MB' }))
+            return
+        }
+
+        setErrors(prev => ({ ...prev, cover: undefined }))
+        setSelectedFile(file)
+        setPreview(URL.createObjectURL(file))
     }
 
     const clearImage = () => {
         setSelectedFile(null)
         setPreview(null)
-        setFormData({ ...formData, coverImageUrl: undefined })
+        setField('coverImageUrl', undefined)
     }
 
     const validateForm = () => {
@@ -107,7 +145,12 @@ export function BookFormModal({
         }
 
         setErrors(newErrors)
-        return Object.keys(newErrors).length === 0
+
+        // on a phone the invalid field may be scrolled out of view — focusing it brings it back
+        const firstInvalid = Object.keys(newErrors)[0]
+        if (firstInvalid) document.getElementById(firstInvalid)?.focus()
+
+        return !firstInvalid
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -117,245 +160,224 @@ export function BookFormModal({
             return
         }
 
-        try {
-            let imageUrl = formData.coverImageUrl
+        let uploadedPath: string | undefined
 
-            // Se há novo arquivo, fazer upload
-            if (selectedFile && book) {
+        try {
+            let coverImageUrl = formData.coverImageUrl
+
+            if (selectedFile) {
                 setUploadingImage(true)
-                const result = await uploadBookCover(selectedFile, book.id!)
-                imageUrl = result.url
+                // a new book has no id yet; the folder only groups files, names are already unique
+                const result = await uploadBookCover(selectedFile, book?.id ?? 'new')
+                coverImageUrl = result.url
+                uploadedPath = result.path
                 setUploadingImage(false)
-            } else if (selectedFile && !book) {
-                // Para novo livro, precisa ser feito após criar o livro
-                // Vamos armazenar o arquivo no estado para processar depois
-                // Por enquanto, enviamos sem imagem e o modal pode lidar com isso
             }
 
             await onSubmit({
                 ...formData,
-                coverImageUrl: imageUrl
+                coverImageUrl,
             })
             onOpenChange(false)
         } catch (error) {
-            console.error('Error submitting form:', error)
+            // don't leave an orphaned cover in storage when the book itself failed to save
+            if (uploadedPath) await deleteBookCover(uploadedPath)
             setErrors({
                 submit: error instanceof Error ? error.message : 'Error submitting form'
             })
+        } finally {
+            setUploadingImage(false)
         }
     }
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-106.25">
-                <DialogHeader>
+            <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-md">
+                <DialogHeader className="shrink-0 px-5 pt-5 pr-12 pb-4">
                     <DialogTitle>
                         {book ? 'Edit Book' : 'New Book'}
                     </DialogTitle>
                     <DialogDescription>
                         {book
                             ? 'Update the book information.'
-                            : 'Add a new book to your blog.'}
+                            : 'Add a new book to your library.'}
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="title">Title</Label>
-                        <Input
-                            id="title"
-                            placeholder="Ex: Clean Code"
-                            value={formData.title}
-                            onChange={(e) =>
-                                setFormData({ ...formData, title: e.target.value })
-                            }
-                            disabled={isLoading}
-                            className={errors.title ? 'border-destructive' : ''}
-                        />
-                        {errors.title && (
-                            <p className="text-sm text-destructive-text">{errors.title}</p>
-                        )}
-                    </div>
+                <form onSubmit={handleSubmit} noValidate className="flex min-h-0 flex-1 flex-col">
+                    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-5 pb-5">
 
-                    <div className="space-y-2">
-                        <Label htmlFor="author">Author</Label>
-                        <Input
-                            id="author"
-                            placeholder="Ex: Robert Martin"
-                            value={formData.author}
-                            onChange={(e) =>
-                                setFormData({ ...formData, author: e.target.value })
-                            }
-                            disabled={isLoading}
-                            className={errors.author ? 'border-destructive' : ''}
-                        />
-                        {errors.author && (
-                            <p className="text-sm text-destructive-text">{errors.author}</p>
-                        )}
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="pages">Number of Pages</Label>
-                        <Input
-                            id="pages"
-                            type="number"
-                            placeholder="Ex: 464"
-                            value={formData.pages || ''}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    pages: parseInt(e.target.value) || 0,
-                                })
-                            }
-                            disabled={isLoading}
-                            min="1"
-                            className={errors.pages ? 'border-destructive' : ''}
-                        />
-                        {errors.pages && (
-                            <p className="text-sm text-destructive-text">{errors.pages}</p>
-                        )}
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="genre">Genre</Label>
-                        <select
-                            id="genre"
-                            value={formData.genre || ''}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    genre: (e.target.value as BookGenre) || undefined,
-                                })
-                            }
-                            disabled={isLoading}
-                            className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                        >
-                            <option value="">Select a genre</option>
-                            <option value={BookGenre.Fiction}>Fiction</option>
-                            <option value={BookGenre.NonFiction}>Non-Fiction</option>
-                            <option value={BookGenre.Fantasy}>Fantasy</option>
-                            <option value={BookGenre.ScienceFiction}>Science Fiction</option>
-                            <option value={BookGenre.Mystery}>Mystery</option>
-                            <option value={BookGenre.Thriller}>Thriller</option>
-                            <option value={BookGenre.Romance}>Romance</option>
-                            <option value={BookGenre.Horror}>Horror</option>
-                            <option value={BookGenre.Biography}>Biography</option>
-                            <option value={BookGenre.History}>History</option>
-                            <option value={BookGenre.SelfHelp}>Self-Help</option>
-                            <option value={BookGenre.Business}>Business</option>
-                            <option value={BookGenre.Technology}>Technology</option>
-                            <option value={BookGenre.Philosophy}>Philosophy</option>
-                        </select>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="status">Status</Label>
-                        <select
-                            id="status"
-                            value={formData.status || BookStatus.NotStarted}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    status: (e.target.value as BookStatus),
-                                })
-                            }
-                            disabled={isLoading}
-                            className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                        >
-                            <option value={BookStatus.NotStarted}>Not Started</option>
-                            <option value={BookStatus.InProgress}>In Progress</option>
-                            <option value={BookStatus.Completed}>Completed</option>
-                        </select>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="affiliateUrl">Amazon Affiliate Link <span className="text-muted-foreground font-normal">(optional)</span></Label>
-                        <Input
-                            id="affiliateUrl"
-                            placeholder="https://www.amazon.com.br/dp/ASIN?tag=yourtag-20"
-                            value={formData.affiliateUrl || ''}
-                            onChange={(e) =>
-                                setFormData({ ...formData, affiliateUrl: e.target.value || undefined })
-                            }
-                            disabled={isLoading}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="cover">Cover Image</Label>
-                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4">
-                            {preview ? (
-                                <div className="space-y-3">
-                                    <div className="relative w-full h-48">
-                                        <img
-                                            src={preview}
-                                            alt="Cover preview"
-                                            className="w-full h-full object-cover rounded-md"
-                                        />
-                                    </div>
-                                    <div className="flex gap-2">
+                        {/* COVER */}
+                        <div className="flex gap-4">
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isBusy}
+                                aria-label={preview ? 'Change cover image' : 'Upload cover image'}
+                                className="relative flex aspect-2/3 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md border border-dashed border-muted-foreground/30 bg-muted/40 transition-colors hover:border-foreground/40 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+                            >
+                                {preview ? (
+                                    <img src={preview} alt="Cover preview" className="h-full w-full object-cover" />
+                                ) : (
+                                    <ImagePlus className="h-5 w-5 text-muted-foreground" />
+                                )}
+                            </button>
+                            <div className="flex min-w-0 flex-col justify-center gap-1.5">
+                                <Label htmlFor="cover">Cover image</Label>
+                                <p className="text-xs text-muted-foreground">JPG, PNG or WebP · max 5MB</p>
+                                <div className="mt-1 flex gap-2">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={isBusy}
+                                    >
+                                        {preview ? 'Change' : 'Upload'}
+                                    </Button>
+                                    {preview && (
                                         <Button
                                             type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => {
-                                                const input = document.getElementById('cover') as HTMLInputElement
-                                                input?.click()
-                                            }}
-                                            disabled={isLoading || uploadingImage}
-                                        >
-                                            Change
-                                        </Button>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
+                                            variant="ghost"
                                             size="sm"
                                             onClick={clearImage}
-                                            disabled={isLoading || uploadingImage}
+                                            disabled={isBusy}
                                         >
-                                            <X className="w-4 h-4" />
+                                            Remove
                                         </Button>
-                                    </div>
+                                    )}
                                 </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center py-6">
-                                    <Upload className="w-8 h-8 text-muted-foreground mb-2" />
-                                    <label htmlFor="cover" className="cursor-pointer">
-                                        <span className="text-sm font-medium text-primary hover:underline">
-                                            Click to upload
-                                        </span>
-                                    </label>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        JPG, PNG or WebP (max 5MB)
-                                    </p>
-                                </div>
-                            )}
-                            <Input
+                                {errors.cover && (
+                                    <p className="text-sm text-destructive-text">{errors.cover}</p>
+                                )}
+                            </div>
+                            <input
+                                ref={fileInputRef}
                                 id="cover"
                                 type="file"
-                                accept="image/jpeg,image/png,image/webp"
+                                accept={VALID_MIMES.join(',')}
                                 onChange={handleFileChange}
-                                disabled={isLoading || uploadingImage}
+                                disabled={isBusy}
                                 className="hidden"
                             />
                         </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="title">Title</Label>
+                            <Input
+                                id="title"
+                                placeholder="Ex: Clean Code"
+                                value={formData.title}
+                                onChange={(e) => setField('title', e.target.value)}
+                                disabled={isBusy}
+                                aria-invalid={!!errors.title}
+                                className={fieldClass}
+                            />
+                            {errors.title && (
+                                <p className="text-sm text-destructive-text">{errors.title}</p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="author">Author</Label>
+                            <Input
+                                id="author"
+                                placeholder="Ex: Robert Martin"
+                                value={formData.author}
+                                onChange={(e) => setField('author', e.target.value)}
+                                disabled={isBusy}
+                                aria-invalid={!!errors.author}
+                                className={fieldClass}
+                            />
+                            {errors.author && (
+                                <p className="text-sm text-destructive-text">{errors.author}</p>
+                            )}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                                <Label htmlFor="pages">Pages</Label>
+                                <Input
+                                    id="pages"
+                                    type="number"
+                                    inputMode="numeric"
+                                    placeholder="Ex: 464"
+                                    value={formData.pages || ''}
+                                    onChange={(e) => setField('pages', parseInt(e.target.value) || 0)}
+                                    disabled={isBusy}
+                                    min="1"
+                                    aria-invalid={!!errors.pages}
+                                    className={fieldClass}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="status">Status</Label>
+                                <select
+                                    id="status"
+                                    value={formData.status || BookStatus.NotStarted}
+                                    onChange={(e) => setField('status', e.target.value as BookStatus)}
+                                    disabled={isBusy}
+                                    className={selectClass}
+                                >
+                                    <option value={BookStatus.NotStarted}>Not Started</option>
+                                    <option value={BookStatus.InProgress}>In Progress</option>
+                                    <option value={BookStatus.Completed}>Completed</option>
+                                </select>
+                            </div>
+                        </div>
+                        {errors.pages && (
+                            <p className="-mt-2 text-sm text-destructive-text">{errors.pages}</p>
+                        )}
+
+                        <div className="space-y-2">
+                            <Label htmlFor="genre">Genre</Label>
+                            <select
+                                id="genre"
+                                value={formData.genre || ''}
+                                onChange={(e) => setField('genre', (e.target.value as BookGenre) || undefined)}
+                                disabled={isBusy}
+                                className={selectClass}
+                            >
+                                <option value="">Select a genre</option>
+                                {genreOptions.map(({ value, label }) => (
+                                    <option key={value} value={value}>{label}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="affiliateUrl">Amazon Affiliate Link <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                            <Input
+                                id="affiliateUrl"
+                                type="url"
+                                inputMode="url"
+                                placeholder="https://www.amazon.com.br/dp/ASIN?tag=yourtag-20"
+                                value={formData.affiliateUrl || ''}
+                                onChange={(e) => setField('affiliateUrl', e.target.value || undefined)}
+                                disabled={isBusy}
+                                className={fieldClass}
+                            />
+                        </div>
+
+                        {errors.submit && (
+                            <p role="alert" className="text-sm text-destructive-text">{errors.submit}</p>
+                        )}
                     </div>
 
-                    {errors.submit && (
-                        <p className="text-sm text-destructive-text">{errors.submit}</p>
-                    )}
-
-                    <DialogFooter>
+                    {/* always visible, so Save never ends up below the fold on a phone */}
+                    <DialogFooter className="mx-0 mb-0 shrink-0 flex-row px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
                         <Button
                             type="button"
                             variant="outline"
                             onClick={() => onOpenChange(false)}
-                            disabled={isLoading || uploadingImage}
+                            disabled={isBusy}
+                            className="h-10 flex-1 sm:h-8 sm:flex-none"
                         >
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={isLoading || uploadingImage}>
-                            {(isLoading || uploadingImage) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                        <Button type="submit" disabled={isBusy} className="h-10 flex-1 sm:h-8 sm:flex-none">
+                            {isBusy && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                             {uploadingImage ? 'Uploading...' : (book ? 'Save' : 'Create')}
                         </Button>
                     </DialogFooter>

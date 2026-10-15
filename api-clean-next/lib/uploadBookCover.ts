@@ -1,7 +1,8 @@
 import { supabase } from "@/infrastructure/supabase/client";
 
 const BUCKET_NAME = "book-covers";
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+export const VALID_MIMES = ["image/jpeg", "image/png", "image/webp"];
 
 export interface UploadBookCoverResult {
     url: string;
@@ -21,8 +22,7 @@ export async function uploadBookCover(
         throw new Error("Arquivo muito grande. Máximo 5MB");
     }
 
-    const validMimes = ["image/jpeg", "image/png", "image/webp"];
-    if (!validMimes.includes(file.type)) {
+    if (!VALID_MIMES.includes(file.type)) {
         throw new Error("Formato inválido. Use JPG, PNG ou WebP");
     }
 
