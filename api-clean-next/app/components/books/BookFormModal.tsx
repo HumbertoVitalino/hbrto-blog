@@ -17,12 +17,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ImagePlus, Loader2 } from 'lucide-react'
+import { todayIsoDate } from './libraryFilters'
 
 type FormState = Omit<BookData, 'id'>
 
 interface BookFormModalProps {
     isOpen: boolean
     book?: BookData
+    /** existing author names, suggested while typing to keep one spelling per author */
+    authors?: string[]
     isLoading?: boolean
     onSubmit: (data: FormState) => Promise<void>
     onOpenChange: (open: boolean) => void
@@ -36,6 +39,7 @@ const emptyForm: FormState = {
     coverImageUrl: undefined,
     affiliateUrl: undefined,
     status: BookStatus.NotStarted,
+    completedAt: undefined,
 }
 
 const genreOptions: { value: BookGenre; label: string }[] = [
@@ -63,6 +67,7 @@ const selectClass =
 export function BookFormModal({
     isOpen,
     book,
+    authors = [],
     isLoading,
     onSubmit,
     onOpenChange,
@@ -88,6 +93,7 @@ export function BookFormModal({
                 coverImageUrl: book.coverImageUrl,
                 affiliateUrl: book.affiliateUrl,
                 status: book.status || BookStatus.NotStarted,
+                completedAt: book.completedAt,
             }
             : emptyForm)
         setPreview(book?.coverImageUrl || null)
@@ -103,6 +109,15 @@ export function BookFormModal({
     const setField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
         setFormData(prev => ({ ...prev, [key]: value }))
         if (errors[key]) setErrors(prev => ({ ...prev, [key]: undefined }))
+    }
+
+    // finishing a book stamps today (editable); leaving "completed" drops the date
+    const setStatus = (status: BookStatus) => {
+        setFormData(prev => ({
+            ...prev,
+            status,
+            completedAt: status === BookStatus.Completed ? prev.completedAt || todayIsoDate() : undefined,
+        }))
     }
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -177,6 +192,8 @@ export function BookFormModal({
             await onSubmit({
                 ...formData,
                 coverImageUrl,
+                // explicit null so clearing the date on edit is actually saved
+                completedAt: formData.status === BookStatus.Completed ? formData.completedAt || null : null,
             })
             onOpenChange(false)
         } catch (error) {
@@ -287,8 +304,15 @@ export function BookFormModal({
                                 onChange={(e) => setField('author', e.target.value)}
                                 disabled={isBusy}
                                 aria-invalid={!!errors.author}
+                                list={authors.length ? 'author-suggestions' : undefined}
+                                autoComplete="off"
                                 className={fieldClass}
                             />
+                            {authors.length > 0 && (
+                                <datalist id="author-suggestions">
+                                    {authors.map(name => <option key={name} value={name} />)}
+                                </datalist>
+                            )}
                             {errors.author && (
                                 <p className="text-sm text-destructive-text">{errors.author}</p>
                             )}
@@ -316,7 +340,7 @@ export function BookFormModal({
                                 <select
                                     id="status"
                                     value={formData.status || BookStatus.NotStarted}
-                                    onChange={(e) => setField('status', e.target.value as BookStatus)}
+                                    onChange={(e) => setStatus(e.target.value as BookStatus)}
                                     disabled={isBusy}
                                     className={selectClass}
                                 >
@@ -328,6 +352,24 @@ export function BookFormModal({
                         </div>
                         {errors.pages && (
                             <p className="-mt-2 text-sm text-destructive-text">{errors.pages}</p>
+                        )}
+
+                        {formData.status === BookStatus.Completed && (
+                            <div className="space-y-2">
+                                <Label htmlFor="completedAt">
+                                    Finished on <span className="text-muted-foreground font-normal">(optional)</span>
+                                </Label>
+                                <Input
+                                    id="completedAt"
+                                    type="date"
+                                    max={todayIsoDate()}
+                                    value={formData.completedAt || ''}
+                                    onChange={(e) => setField('completedAt', e.target.value || null)}
+                                    disabled={isBusy}
+                                    className={`${fieldClass} [&::-webkit-date-and-time-value]:text-left`}
+                                />
+                                <p className="text-xs text-muted-foreground">Used to file the book under its year.</p>
+                            </div>
                         )}
 
                         <div className="space-y-2">

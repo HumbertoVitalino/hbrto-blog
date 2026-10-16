@@ -6,6 +6,7 @@ import { BookData } from '@/app/hooks/useBooks'
 import { BookStatus } from '@/domain/BookStatus'
 import Link from 'next/link'
 import { Trash2, Edit2, MessageSquare, ShoppingCart, BookOpen } from 'lucide-react'
+import { formatMonthYear } from './libraryFilters'
 
 interface BookCardProps {
   book: BookData
@@ -13,6 +14,7 @@ interface BookCardProps {
   onDelete: (id: string) => void
   isDeleting?: boolean
   isPublic?: boolean
+  onAuthorClick?: (author: string) => void
 }
 
 function getStatusConfig(status?: BookStatus) {
@@ -26,7 +28,7 @@ function getStatusConfig(status?: BookStatus) {
   }
 }
 
-function BookCardComponent({ book, onEdit, onDelete, isDeleting, isPublic = false }: BookCardProps) {
+function BookCardComponent({ book, onEdit, onDelete, isDeleting, isPublic = false, onAuthorClick }: BookCardProps) {
   const status = getStatusConfig(book.status)
 
   return (
@@ -45,6 +47,8 @@ function BookCardComponent({ book, onEdit, onDelete, isDeleting, isPublic = fals
           <img
             src={book.coverImageUrl}
             alt={`${book.title} cover`}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
@@ -61,7 +65,7 @@ function BookCardComponent({ book, onEdit, onDelete, isDeleting, isPublic = fals
 
         {/* Admin overlay — top right */}
         {!isPublic && (
-          <div className="absolute top-2.5 right-2.5 flex gap-1.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+          <div className="absolute top-2.5 right-2.5 flex gap-1.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
             <button
               onClick={() => onEdit(book)}
               aria-label={`Edit ${book.title}`}
@@ -87,9 +91,20 @@ function BookCardComponent({ book, onEdit, onDelete, isDeleting, isPublic = fals
           <h3 className="font-semibold text-[15px] leading-snug line-clamp-2 text-foreground">
             {book.title}
           </h3>
-          <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">
-            {book.author}
-          </p>
+          {onAuthorClick ? (
+            <button
+              type="button"
+              onClick={() => onAuthorClick(book.author)}
+              title={`More by ${book.author}`}
+              className="mt-0.5 block max-w-full truncate text-left text-sm text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 rounded-sm"
+            >
+              {book.author}
+            </button>
+          ) : (
+            <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">
+              {book.author}
+            </p>
+          )}
         </div>
 
         {/* Footer: metadata + icon actions */}
@@ -102,6 +117,14 @@ function BookCardComponent({ book, onEdit, onDelete, isDeleting, isPublic = fals
               </>
             )}
             <span className="whitespace-nowrap shrink-0">{book.pages}p</span>
+            {book.status === BookStatus.Completed && book.completedAt && (
+              <>
+                <span className="opacity-40 shrink-0">·</span>
+                <time dateTime={book.completedAt} title="Finished" className="whitespace-nowrap shrink-0 tabular-nums">
+                  {formatMonthYear(book.completedAt)}
+                </time>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-0.5 shrink-0">

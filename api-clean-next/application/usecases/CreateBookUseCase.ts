@@ -11,6 +11,7 @@ export interface CreateBookDTO {
     coverImageUrl?: string;
     affiliateUrl?: string;
     status?: BookStatus;
+    completedAt?: string | null;
 }
 
 export class CreateBookUseCase {
@@ -33,7 +34,8 @@ export class CreateBookUseCase {
             genre: dto.genre,
             coverImageUrl: dto.coverImageUrl,
             affiliateUrl: dto.affiliateUrl,
-            status: dto.status || BookStatus.NotStarted
+            status: dto.status || BookStatus.NotStarted,
+            completedAt: dto.completedAt
         });
 
         return await this.bookRepository.create(book);

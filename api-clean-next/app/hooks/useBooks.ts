@@ -14,6 +14,8 @@ export interface BookData {
     coverImageUrl?: string
     affiliateUrl?: string
     status?: BookStatus
+    /** YYYY-MM-DD, only for completed books; null clears it on update */
+    completedAt?: string | null
 }
 
 async function getAuthHeader(): Promise<Record<string, string>> {
@@ -74,7 +76,8 @@ export function useBooks() {
                     genre: book.genre,
                     coverImageUrl: book.coverImageUrl,
                     affiliateUrl: book.affiliateUrl,
-                    status: book.status
+                    status: book.status,
+                    completedAt: book.completedAt
                 })
             })
 
@@ -110,7 +113,8 @@ export function useBooks() {
                     genre: updates.genre,
                     coverImageUrl: updates.coverImageUrl,
                     affiliateUrl: updates.affiliateUrl,
-                    status: updates.status
+                    status: updates.status,
+                    completedAt: updates.completedAt
                 })
             })
 
