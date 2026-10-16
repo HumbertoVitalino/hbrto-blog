@@ -1,6 +1,26 @@
 import { Book } from "@/domain/Book";
 import { supabase } from "../supabase/client";
 
+type BookUpdate = Partial<Omit<Book, "id" | "completedAt">> & {
+    // null clears the date; undefined leaves it untouched
+    completedAt?: string | null
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toDomain(row: any): Book {
+    return new Book({
+        id: row.id,
+        title: row.title,
+        author: row.author,
+        pages: row.pages,
+        genre: row.genre,
+        coverImageUrl: row.cover_image_url,
+        affiliateUrl: row.affiliate_url,
+        status: row.status,
+        completedAt: row.completed_at
+    });
+}
+
 export class BookRepository {
     async findAll(): Promise<Book[]> {
         const { data, error } = await supabase
@@ -11,19 +31,7 @@ export class BookRepository {
             throw new Error(error.message);
         }
 
-        return data.map(
-            (item) =>
-                new Book({
-                    id: item.id,
-                    title: item.title,
-                    author: item.author,
-                    pages: item.pages,
-                    genre: item.genre,
-                    coverImageUrl: item.cover_image_url,
-                    affiliateUrl: item.affiliate_url,
-                    status: item.status
-                })
-        )
+        return data.map(toDomain);
     }
 
     async findById(id: string): Promise<Book | null> {
@@ -40,16 +48,7 @@ export class BookRepository {
             throw new Error(error.message);
         }
 
-        return new Book({
-            id: data.id,
-            title: data.title,
-            author: data.author,
-            pages: data.pages,
-            genre: data.genre,
-            coverImageUrl: data.cover_image_url,
-            affiliateUrl: data.affiliate_url,
-            status: data.status
-        });
+        return toDomain(data);
     }
 
     async create(book: Omit<Book, "id">): Promise<Book> {
@@ -62,7 +61,8 @@ export class BookRepository {
                 genre: book.genre,
                 cover_image_url: book.coverImageUrl,
                 affiliate_url: book.affiliateUrl,
-                status: book.status
+                status: book.status,
+                completed_at: book.completedAt ?? null
             })
             .select()
             .single();
@@ -71,19 +71,10 @@ export class BookRepository {
             throw new Error(error.message);
         }
 
-        return new Book({
-            id: data.id,
-            title: data.title,
-            author: data.author,
-            pages: data.pages,
-            genre: data.genre,
-            coverImageUrl: data.cover_image_url,
-            affiliateUrl: data.affiliate_url,
-            status: data.status
-        });
+        return toDomain(data);
     }
 
-    async update(id: string, updates: Partial<Omit<Book, "id">>): Promise<Book> {
+    async update(id: string, updates: BookUpdate): Promise<Book> {
         const { data, error } = await supabase
             .from("books")
             .update({
@@ -93,7 +84,8 @@ export class BookRepository {
                 ...(updates.genre && { genre: updates.genre }),
                 ...(updates.coverImageUrl && { cover_image_url: updates.coverImageUrl }),
                 ...(updates.affiliateUrl !== undefined && { affiliate_url: updates.affiliateUrl || null }),
-                ...(updates.status && { status: updates.status })
+                ...(updates.status && { status: updates.status }),
+                ...(updates.completedAt !== undefined && { completed_at: updates.completedAt })
             })
             .eq("id", id)
             .select()
@@ -103,16 +95,7 @@ export class BookRepository {
             throw new Error(error.message);
         }
 
-        return new Book({
-            id: data.id,
-            title: data.title,
-            author: data.author,
-            pages: data.pages,
-            genre: data.genre,
-            coverImageUrl: data.cover_image_url,
-            affiliateUrl: data.affiliate_url,
-            status: data.status
-        });
+        return toDomain(data);
     }
 
     async delete(id: string): Promise<void> {

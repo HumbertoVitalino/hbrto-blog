@@ -16,7 +16,8 @@ export function bookToPlain(book: Book) {
         genre: book.genre,
         coverImageUrl: book.coverImageUrl,
         affiliateUrl: book.affiliateUrl,
-        status: book.status
+        status: book.status,
+        completedAt: book.completedAt ?? null
     };
 }
 

@@ -11,6 +11,7 @@ interface BooksGridProps {
     onDelete: (id: string) => void
     deletingId?: string
     isPublic?: boolean
+    onAuthorClick?: (author: string) => void
 }
 
 function EmptyState({ isPublic }: { isPublic: boolean }) {
@@ -34,6 +35,7 @@ function BooksGridComponent({
     onDelete,
     deletingId,
     isPublic = false,
+    onAuthorClick,
 }: BooksGridProps) {
 
     const hasBooks = books.length > 0
@@ -47,10 +49,11 @@ function BooksGridComponent({
                     onDelete={onDelete}
                     isDeleting={deletingId === book.id}
                     isPublic={isPublic}
+                    onAuthorClick={onAuthorClick}
                 />
             </RevealItem>
         ))
-    }, [books, onEdit, onDelete, deletingId, isPublic])
+    }, [books, onEdit, onDelete, deletingId, isPublic, onAuthorClick])
 
     if (!hasBooks) {
         return <EmptyState isPublic={isPublic} />

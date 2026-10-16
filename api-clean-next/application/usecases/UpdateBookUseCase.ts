@@ -11,6 +11,8 @@ export interface UpdateBookDTO {
     coverImageUrl?: string;
     affiliateUrl?: string;
     status?: BookStatus;
+    // null clears the date; omitted keeps the current one
+    completedAt?: string | null;
 }
 
 export class UpdateBookUseCase {
@@ -30,6 +32,17 @@ export class UpdateBookUseCase {
             throw new Error("Pages must be greater than 0");
         }
 
+        const status = dto.status ?? book.status;
+        // validates the date and drops it when the book is no longer completed
+        const next = new Book({
+            id,
+            title: book.title,
+            author: book.author,
+            pages: book.pages,
+            status,
+            completedAt: dto.completedAt !== undefined ? dto.completedAt : book.completedAt
+        });
+
         return await this.bookRepository.update(id, {
             title: dto.title ?? book.title,
             author: dto.author ?? book.author,
@@ -37,7 +50,8 @@ export class UpdateBookUseCase {
             genre: dto.genre ?? book.genre,
             coverImageUrl: dto.coverImageUrl ?? book.coverImageUrl,
             affiliateUrl: dto.affiliateUrl !== undefined ? dto.affiliateUrl : book.affiliateUrl,
-            status: dto.status ?? book.status
+            status,
+            completedAt: next.completedAt ?? null
         });
     }
 }

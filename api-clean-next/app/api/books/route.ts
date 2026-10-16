@@ -86,7 +86,8 @@ export async function POST(request: NextRequest) {
             genre: body.genre,
             coverImageUrl: body.coverImageUrl,
             affiliateUrl: body.affiliateUrl,
-            status: body.status
+            status: body.status,
+            completedAt: body.completedAt
         });
 
         return NextResponse.json(bookToPlain(book), { status: 201 });
@@ -129,7 +130,8 @@ export async function PUT(request: NextRequest) {
             genre: body.genre,
             coverImageUrl: body.coverImageUrl,
             affiliateUrl: body.affiliateUrl,
-            status: body.status
+            status: body.status,
+            completedAt: body.completedAt
         });
 
         return NextResponse.json(bookToPlain(book));
