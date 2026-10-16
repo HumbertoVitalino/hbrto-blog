@@ -3,6 +3,7 @@
 import { memo, useMemo } from 'react'
 import { BookData } from '@/app/hooks/useBooks'
 import { BookCard } from './BookCard'
+import { BookFeedItem } from './BookFeedItem'
 import { RevealGroup, RevealItem } from '@/app/components/motion/Reveal'
 
 interface BooksGridProps {
@@ -55,14 +56,36 @@ function BooksGridComponent({
         ))
     }, [books, onEdit, onDelete, deletingId, isPublic, onAuthorClick])
 
+    const feedItems = useMemo(() => {
+        return books.map((book) => (
+            <BookFeedItem
+                key={book.id}
+                book={book}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                isDeleting={deletingId === book.id}
+                isPublic={isPublic}
+                onAuthorClick={onAuthorClick}
+            />
+        ))
+    }, [books, onEdit, onDelete, deletingId, isPublic, onAuthorClick])
+
     if (!hasBooks) {
         return <EmptyState isPublic={isPublic} />
     }
 
+    // phones get a dense log (5–6 books per screen) instead of one full-width cover at a time;
+    // the cover grid takes over once there's room for two columns. Lazy covers in the hidden
+    // layout aren't fetched, so rendering both costs only markup.
     return (
-        <RevealGroup className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {renderedBooks}
-        </RevealGroup>
+        <>
+            <ul className="divide-y divide-border/40 md:hidden">
+                {feedItems}
+            </ul>
+            <RevealGroup className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {renderedBooks}
+            </RevealGroup>
+        </>
     )
 }
 

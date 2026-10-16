@@ -163,6 +163,13 @@
   }
   html {
     @apply font-sans;
+    /* no translucent flash over tapped elements; each control brings its own :active feedback */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+  /* skip the double-tap-to-zoom wait so taps register on touch-down timing */
+  a, button, select, label, summary, [role="button"] {
+    touch-action: manipulation;
   }
 }
 

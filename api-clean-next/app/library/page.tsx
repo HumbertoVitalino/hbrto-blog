@@ -216,7 +216,7 @@ function LibraryContent() {
   return (
     <div className="min-h-screen bg-background">
 
-      <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
+      <div className="max-w-5xl mx-auto px-4 py-6 space-y-8 sm:px-6 sm:py-10 sm:space-y-10">
 
         {/* TITLE BAR */}
         <div>
@@ -302,10 +302,10 @@ function LibraryContent() {
 
             {/* YEAR VIEW — one slice of the reading log */}
             {visibleBooks.length > 0 && isYearView && (
-              <section className="space-y-6">
+              <section className="space-y-3 md:space-y-6">
                 <YearHeading year={filters.year} books={completedBooks} as="h2" large />
                 {filters.year === UNDATED && isAdmin && (
-                  <p className="-mt-3 text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground md:-mt-3">
                     Edit a book and set when you finished it to file it under its year.
                   </p>
                 )}
@@ -315,7 +315,7 @@ function LibraryContent() {
 
             {/* SECTIONS */}
             {visibleBooks.length > 0 && !isYearView && (
-              <div className="space-y-14">
+              <div className="space-y-10 md:space-y-14">
                 {sectionOrder.map(({ status, label, accent }) => {
                   const sectionBooks = booksByStatus[status]
                   if (!sectionBooks.length) return null
@@ -325,7 +325,7 @@ function LibraryContent() {
                   const groupByYear = yearGroups.some(group => group.year !== UNDATED)
 
                   return (
-                    <section key={status} className="space-y-6">
+                    <section key={status} className="space-y-3 md:space-y-6">
                       <div className="flex items-center gap-3">
                         <div className={`w-1 h-4 rounded-full shrink-0 ${accent}`} />
                         <h2 className="text-sm font-semibold text-foreground">
@@ -336,9 +336,9 @@ function LibraryContent() {
                       </div>
 
                       {groupByYear ? (
-                        <div className="space-y-10">
+                        <div className="space-y-6 md:space-y-10">
                           {yearGroups.map(group => (
-                            <div key={group.year} className="space-y-4">
+                            <div key={group.year} className="space-y-1 md:space-y-4">
                               <YearHeading year={group.year} books={group.books} />
                               <BooksGrid books={group.books} {...gridProps} />
                             </div>

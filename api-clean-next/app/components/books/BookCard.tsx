@@ -47,6 +47,8 @@ function BookCardComponent({ book, onEdit, onDelete, isDeleting, isPublic = fals
           <img
             src={book.coverImageUrl}
             alt={`${book.title} cover`}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
@@ -63,7 +65,7 @@ function BookCardComponent({ book, onEdit, onDelete, isDeleting, isPublic = fals
 
         {/* Admin overlay — top right */}
         {!isPublic && (
-          <div className="absolute top-2.5 right-2.5 flex gap-1.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+          <div className="absolute top-2.5 right-2.5 flex gap-1.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
             <button
               onClick={() => onEdit(book)}
               aria-label={`Edit ${book.title}`}
