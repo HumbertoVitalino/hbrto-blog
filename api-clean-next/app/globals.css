@@ -531,3 +531,70 @@
   color: var(--foreground);
   font-weight: 600;
 }
+
+/* ── Covers as physical objects (books, games): soft depth, light on the spine ──
+   .cover-object on the cover box; .cover-item on the clickable item that holds it. */
+:root {
+  --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
+  --cover-shadow: 0 1px 2px oklch(0.18 0.006 295 / 0.10), 0 10px 24px -10px oklch(0.18 0.006 295 / 0.35);
+  --cover-shadow-lift: 0 2px 4px oklch(0.18 0.006 295 / 0.10), 0 18px 34px -12px oklch(0.18 0.006 295 / 0.42);
+}
+
+.dark {
+  --cover-shadow: 0 1px 2px oklch(0 0 0 / 0.6), 0 10px 24px -10px oklch(0 0 0 / 0.9);
+  --cover-shadow-lift: 0 2px 4px oklch(0 0 0 / 0.6), 0 18px 34px -12px oklch(0 0 0 / 1);
+}
+
+.cover-object {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 5px;
+  background: var(--muted);
+  box-shadow: var(--cover-shadow);
+  transition: transform 0.45s var(--ease-ios), box-shadow 0.45s var(--ease-ios);
+  /* the box takes its height from the 2:3 ratio alone, never from the image inside */
+  flex-shrink: 0;
+  min-height: 0;
+}
+
+.cover-object > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cover-object::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(to right, oklch(0 0 0 / 0.14), oklch(1 0 0 / 0.10) 3%, transparent 7%);
+  box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.06);
+}
+
+@media (hover: hover) {
+  .cover-item:hover .cover-object {
+    transform: translateY(-3px);
+    box-shadow: var(--cover-shadow-lift);
+  }
+}
+
+.cover-item:active .cover-object {
+  transform: scale(0.98);
+  transition-duration: 0.1s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cover-object {
+    transition: none;
+  }
+  .cover-item:hover .cover-object,
+  .cover-item:active .cover-object {
+    transform: none;
+  }
+}

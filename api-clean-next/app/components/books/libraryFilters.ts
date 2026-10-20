@@ -89,6 +89,68 @@ export function hasRefinements(filters: LibraryFilters) {
     return filters.genre !== 'all' || filters.year !== 'all' || filters.author !== 'all' || filters.query.trim() !== ''
 }
 
+/** Books per status under the other active filters, for the status control's counts. */
+export function statusCounts(books: BookData[], filters: LibraryFilters): Record<StatusFilter, number> {
+    const counts: Record<StatusFilter, number> = {
+        all: 0,
+        [BookStatus.InProgress]: 0,
+        [BookStatus.NotStarted]: 0,
+        [BookStatus.Completed]: 0,
+    }
+    for (const book of books) {
+        if (!matches(book, filters, ['status'])) continue
+        counts.all++
+        if (book.status) counts[book.status]++
+    }
+    return counts
+}
+
+export interface LibrarySummary {
+    finished: number
+    pages: number
+    /** the earliest year a book was finished in */
+    since: string | null
+    /** a genre that makes up at least 40% of what was finished */
+    mainGenre: string | null
+    /** surnames of the authors finished most often (2+ books), most read first */
+    repeatAuthors: string[]
+}
+
+/** The facts the Library opens with, worked out from the books so they stay true. */
+export function librarySummary(books: BookData[]): LibrarySummary {
+    const finished = books.filter(b => b.status === BookStatus.Completed)
+    const years = finished.map(b => b.completedAt?.slice(0, 4)).filter((y): y is string => Boolean(y)).sort()
+
+    const genreCount = new Map<string, number>()
+    for (const b of finished) if (b.genre) genreCount.set(b.genre, (genreCount.get(b.genre) ?? 0) + 1)
+    const [topGenre, topGenreCount] = [...genreCount].sort((a, b) => b[1] - a[1])[0] ?? [null, 0]
+
+    const byAuthor = new Map<string, { name: string; count: number; last: string }>()
+    for (const b of finished) {
+        const key = authorKey(b.author)
+        const entry = byAuthor.get(key) ?? { name: b.author.trim(), count: 0, last: '' }
+        entry.count++
+        if ((b.completedAt ?? '') > entry.last) entry.last = b.completedAt ?? ''
+        byAuthor.set(key, entry)
+    }
+    const repeatAuthors = [...byAuthor.values()]
+        .filter(a => a.count >= 2)
+        // ties go to whoever was read more recently
+        .sort((a, b) => b.count - a.count || b.last.localeCompare(a.last))
+        .slice(0, 2)
+        .map(a => a.name.split(/\s+/).pop()!)
+
+    return {
+        finished: finished.length,
+        pages: finished.reduce((total, b) => total + (b.pages || 0), 0),
+        since: years[0] ?? null,
+        mainGenre: topGenre && finished.length > 0 && topGenreCount / finished.length >= 0.4
+            ? (genreLabels[topGenre as BookGenre] ?? topGenre).toLowerCase()
+            : null,
+        repeatAuthors,
+    }
+}
+
 /**
  * Every value present in the library stays listed (a stable menu), ordered by how often it
  * appears overall; the count reflects the other active filters so dead ends can be disabled.

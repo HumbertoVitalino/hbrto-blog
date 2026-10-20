@@ -7,10 +7,14 @@ import { BookStatus } from '@/domain/BookStatus'
 import { useAuth } from '@/app/context/AuthContext'
 import { BookFormModal } from '@/app/components/books/BookFormModal'
 import { BooksGrid } from '@/app/components/books/BooksGrid'
-import { LibraryFilterBento } from '@/app/components/books/LibraryFilterBento'
 import { LibraryFilterBar } from '@/app/components/books/LibraryFilterBar'
+import { ReadingNow } from '@/app/components/books/ReadingNow'
+import { StatusSegmented } from '@/app/components/books/StatusSegmented'
+import { PageContainer, PageHeader, PageLead } from '@/app/components/layout/PageHeader'
+import { FadeIn } from '@/app/components/motion/FadeIn'
 import {
   LibraryFilters,
+  LibrarySummary,
   StatusFilter,
   UNDATED,
   authorKey,
@@ -21,9 +25,11 @@ import {
   genreOptions,
   groupByCompletionYear,
   hasRefinements,
+  librarySummary,
   numberFormat,
   parseFilters,
   sortByCompletion,
+  statusCounts,
   yearLabel,
   yearOptions,
 } from '@/app/components/books/libraryFilters'
@@ -42,10 +48,10 @@ import {
 import { AlertCircle, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 
-const sectionOrder: { status: BookStatus; label: string; accent: string }[] = [
-  { status: BookStatus.InProgress, label: 'Currently reading', accent: 'bg-info' },
-  { status: BookStatus.NotStarted, label: 'To read', accent: 'bg-muted-foreground/50' },
-  { status: BookStatus.Completed, label: 'Completed', accent: 'bg-success' },
+const sectionOrder: { status: BookStatus; label: string }[] = [
+  { status: BookStatus.InProgress, label: 'Reading now' },
+  { status: BookStatus.NotStarted, label: 'To read' },
+  { status: BookStatus.Completed, label: 'Completed' },
 ]
 
 const countBooks = (n: number) => `${n} ${n === 1 ? 'book' : 'books'}`
@@ -59,7 +65,7 @@ function Spinner() {
   )
 }
 
-/** The year as the heading of a slice of the reading log. */
+/** The year as the heading of a slice of the reading log, like a chapter title. */
 function YearHeading({ year, books, as: Tag = 'h3', large = false }: {
   year: string
   books: BookData[]
@@ -67,13 +73,33 @@ function YearHeading({ year, books, as: Tag = 'h3', large = false }: {
   large?: boolean
 }) {
   return (
-    <div className="flex items-baseline gap-3">
-      <Tag className={`font-display font-medium tracking-tight tabular-nums ${large ? 'text-3xl' : 'text-xl'}`}>
+    <div className="mb-7 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-border pb-4">
+      <Tag className={`font-semibold tracking-tight tabular-nums ${large ? 'text-3xl' : 'text-2xl'}`}>
         {yearLabel(year)}
       </Tag>
-      <span className="text-xs tabular-nums text-muted-foreground">
+      <span className="text-[13px] tabular-nums text-muted-foreground">
         {countBooks(books.length)} · {numberFormat.format(sumPages(books))} pages
       </span>
+    </div>
+  )
+}
+
+/** "28 finished since 2016, 7,946 pages in all. Mostly philosophy, with Dostoyevsky and Rowling on repeat." */
+function summaryLine(s: LibrarySummary) {
+  if (s.finished === 0) return null
+  const first = `${s.finished} finished${s.since ? ` since ${s.since}` : ''}, ${numberFormat.format(s.pages)} pages in all.`
+  const authors = s.repeatAuthors.length ? `${s.repeatAuthors.join(' and ')} on repeat` : ''
+  const taste = s.mainGenre
+    ? ` Mostly ${s.mainGenre}${authors ? `, with ${authors}` : ''}.`
+    : authors ? ` ${authors[0].toUpperCase()}${authors.slice(1)}.` : ''
+  return first + taste
+}
+
+function SectionHeading({ label, count }: { label: string; count: number }) {
+  return (
+    <div className="mb-7 flex items-baseline gap-3">
+      <h2 className="text-sm font-semibold">{label}</h2>
+      <span className="text-[13px] tabular-nums text-muted-foreground">{countBooks(count)}</span>
     </div>
   )
 }
@@ -81,7 +107,7 @@ function YearHeading({ year, books, as: Tag = 'h3', large = false }: {
 export default function LibraryPage() {
   // useSearchParams needs a Suspense boundary to prerender
   return (
-    <Suspense fallback={<div className="min-h-screen bg-background"><Spinner /></div>}>
+    <Suspense fallback={<div className="min-h-screen"><Spinner /></div>}>
       <LibraryContent />
     </Suspense>
   )
@@ -153,6 +179,9 @@ function LibraryContent() {
   const authors = useMemo(() => authorOptions(books, filters), [books, filters])
   const genres = useMemo(() => genreOptions(books, filters), [books, filters])
   const authorSuggestions = useMemo(() => distinctAuthors(books), [books])
+  const counts = useMemo(() => statusCounts(books, filters), [books, filters])
+  const summary = useMemo(() => summaryLine(librarySummary(books)), [books])
+  const readingNow = useMemo(() => books.filter(b => b.status === BookStatus.InProgress), [books])
 
   const handleEdit = useCallback((book: BookData) => {
     setSelectedBook(book)
@@ -213,32 +242,26 @@ function LibraryContent() {
   const isYearView = filters.year !== 'all'
   const completedBooks = booksByStatus[BookStatus.Completed]
 
+  const isOverview = filters.status === 'all' && !hasRefinements(filters)
+  // on the overview the book in hand gets its own card instead of a one-book shelf
+  const showReadingNow = isOverview && readingNow.length > 0
+
   return (
-    <div className="min-h-screen bg-background">
+    <PageContainer>
 
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-8 sm:px-6 sm:py-10 sm:space-y-10">
-
-        {/* TITLE BAR */}
-        <div>
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <h1 className="font-display text-3xl font-medium tracking-tight">Library</h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Books I&apos;ve read, I&apos;m reading, and plan to read.
-              </p>
-            </div>
-            {isAdmin && (
-              <Button size="sm" onClick={handleNew} className="gap-2 shrink-0">
-                <Plus className="w-4 h-4" />
-                Add book
-              </Button>
-            )}
-          </div>
-        </div>
+        <PageHeader title="Books I’ve read, I’m reading, and want to read.">
+          {summary && <PageLead>{summary}</PageLead>}
+          {isAdmin && (
+            <Button size="sm" onClick={handleNew} className="mt-8 gap-2">
+              <Plus className="size-4" />
+              Add book
+            </Button>
+          )}
+        </PageHeader>
 
         {/* ERRORS */}
         {(error || submitError) && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="mt-10">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error || submitError}</AlertDescription>
@@ -251,16 +274,18 @@ function LibraryContent() {
         {/* CONTENT */}
         {!isLoading && (
           <>
+            {showReadingNow && (
+              <FadeIn index={1} className="mt-14">
+                <ReadingNow books={readingNow} />
+              </FadeIn>
+            )}
+
             {/* FILTERS */}
             {books.length > 0 && (
-              <div className="space-y-4">
-                <LibraryFilterBento
-                  books={books}
-                  statusFilter={filters.status}
-                  onStatusFilter={handleStatusFilter}
-                />
+              <FadeIn index={2}>
+              <div ref={filterBarRef} className="mt-16 flex scroll-mt-28 flex-col gap-3 sm:mt-18 lg:flex-row lg:items-center lg:justify-between">
+                <StatusSegmented value={filters.status} counts={counts} onChange={handleStatusFilter} />
                 <LibraryFilterBar
-                  ref={filterBarRef}
                   query={query}
                   onQueryChange={setQuery}
                   year={filters.year}
@@ -279,11 +304,15 @@ function LibraryContent() {
                   {countBooks(visibleBooks.length)} shown
                 </p>
               </div>
+              </FadeIn>
             )}
+
+            {/* one FadeIn around everything the filters swap, so changing a filter never replays the entrance */}
+            <FadeIn index={3}>
 
             {/* EMPTY */}
             {visibleBooks.length === 0 && (
-              <div className="text-center py-20 border border-dashed border-border/50 rounded-2xl">
+              <div className="mt-14 py-16 text-center">
                 <p className="text-sm text-muted-foreground">
                   {books.length === 0 ? 'No books yet.' : 'No books match these filters.'}
                 </p>
@@ -302,10 +331,10 @@ function LibraryContent() {
 
             {/* YEAR VIEW — one slice of the reading log */}
             {visibleBooks.length > 0 && isYearView && (
-              <section className="space-y-3 md:space-y-6">
+              <section className="mt-14">
                 <YearHeading year={filters.year} books={completedBooks} as="h2" large />
                 {filters.year === UNDATED && isAdmin && (
-                  <p className="text-sm text-muted-foreground md:-mt-3">
+                  <p className="-mt-3 mb-7 text-sm text-muted-foreground">
                     Edit a book and set when you finished it to file it under its year.
                   </p>
                 )}
@@ -313,32 +342,25 @@ function LibraryContent() {
               </section>
             )}
 
-            {/* SECTIONS */}
+            {/* SHELVES */}
             {visibleBooks.length > 0 && !isYearView && (
-              <div className="space-y-10 md:space-y-14">
-                {sectionOrder.map(({ status, label, accent }) => {
+              <div className="mt-14 flex flex-col gap-16">
+                {sectionOrder.map(({ status, label }) => {
                   const sectionBooks = booksByStatus[status]
                   if (!sectionBooks.length) return null
+                  if (status === BookStatus.InProgress && showReadingNow) return null
 
                   const yearGroups = status === BookStatus.Completed ? groupByCompletionYear(sectionBooks) : []
                   // only worth grouping once at least one book has a date
                   const groupByYear = yearGroups.some(group => group.year !== UNDATED)
 
                   return (
-                    <section key={status} className="space-y-3 md:space-y-6">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-1 h-4 rounded-full shrink-0 ${accent}`} />
-                        <h2 className="text-sm font-semibold text-foreground">
-                          {label}
-                        </h2>
-                        <div className="flex-1 h-px bg-border/40" />
-                        <span className="text-xs tabular-nums text-muted-foreground">{sectionBooks.length}</span>
-                      </div>
-
+                    <section key={status}>
+                      <SectionHeading label={label} count={sectionBooks.length} />
                       {groupByYear ? (
-                        <div className="space-y-6 md:space-y-10">
+                        <div className="flex flex-col gap-12">
                           {yearGroups.map(group => (
-                            <div key={group.year} className="space-y-1 md:space-y-4">
+                            <div key={group.year}>
                               <YearHeading year={group.year} books={group.books} />
                               <BooksGrid books={group.books} {...gridProps} />
                             </div>
@@ -352,9 +374,9 @@ function LibraryContent() {
                 })}
               </div>
             )}
+            </FadeIn>
           </>
         )}
-      </div>
 
       {isAdmin && (
         <BookFormModal
@@ -381,6 +403,6 @@ function LibraryContent() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageContainer>
   )
 }
