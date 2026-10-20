@@ -186,33 +186,6 @@
   @apply block px-5 py-4 text-[13px] leading-relaxed font-mono;
 }
 
-/* ── Pomodoro dial — ambient glow while a phase is running ── */
-@keyframes pulse-glow {
-  0%, 100% { filter: drop-shadow(0 0 5px oklch(from var(--brand-accent) l c h / 45%)); }
-  50% { filter: drop-shadow(0 0 13px oklch(from var(--brand-accent) l c h / 85%)); }
-}
-
-.pulse-glow {
-  animation: pulse-glow 2.4s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pulse-glow {
-    animation: none;
-  }
-}
-
-/* Instrument surfaces (stats, charts, timers) — a measured surface reads
-   differently from a content card. Reuses the hero's own dot-grid motif
-   at a smaller, quieter scale instead of introducing a new device. */
-.instrument-panel {
-  --instrument-dot: oklch(0.5 0 0 / 0.14);
-  background-color: var(--card);
-  background-image: radial-gradient(circle, var(--instrument-dot) 1px, transparent 1px);
-  background-size: 18px 18px;
-  border-radius: var(--radius-xl);
-}
-
 /* Now-playing equalizer — only animates while something is actually
    playing; a static bar height otherwise so it never lies about state. */
 @keyframes eq-bounce {
@@ -554,5 +527,12 @@
 @media (prefers-reduced-motion: reduce) {
   .photo-card-inner {
     transition: none;
+  }
+}
+
+/* Focus chart bars rise from the baseline on first paint */
+@keyframes bar-grow {
+  from {
+    transform: scaleY(0);
   }
 }

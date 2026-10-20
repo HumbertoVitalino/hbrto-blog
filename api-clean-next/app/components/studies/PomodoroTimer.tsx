@@ -8,13 +8,17 @@ import { usePomodoroTimer } from '@/app/hooks/usePomodoroTimer'
 import { POMODORO_CYCLE, PHASE_LABEL } from '@/lib/pomodoroCycle'
 import { PomodoroPhaseType } from '@/domain/PomodoroPhaseType'
 import { computeTodayStats, formatMinutes } from '@/lib/studyStats'
-import { Play, Pause, Square, Coffee, Brain, Clock, CalendarCheck2, Flame } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 function formatTime(totalSeconds: number) {
     const minutes = Math.floor(totalSeconds / 60)
     const seconds = totalSeconds % 60
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 }
+
+const RADIUS = 112
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS
+const FOCUS_ROUNDS = POMODORO_CYCLE.filter(p => p.type === PomodoroPhaseType.Focus).length
 
 interface PomodoroTimerProps {
     topics: StudyTopicData[]
@@ -25,15 +29,19 @@ interface PomodoroTimerProps {
     onPendingTopicChange: (id: string) => void
 }
 
+// Clock-app round buttons: a ring of the button's own colour, separated from the fill by the card colour
+const round = 'grid size-18 place-items-center rounded-full text-sm font-medium shadow-[0_0_0_3px_var(--card),0_0_0_4.5px_currentColor] transition-[transform,opacity] duration-100 ease-out active:scale-[0.96] disabled:opacity-40'
+
+/** The focus timer as the Clock app draws one: a ring that empties, a thin readout, two round buttons. */
 export function PomodoroTimer({ topics, epics, sessions, timer, pendingTopicId, onPendingTopicChange }: PomodoroTimerProps) {
     const { phase, phaseIndex, status, remainingSeconds, topicId, start, pause, resume, stop } = timer
-    const isFocus = phase.type === PomodoroPhaseType.Focus
     const isIdle = status === 'idle'
-    const isRunning = status === 'running'
     const activeTopic = topics.find(t => t.id === (isIdle ? pendingTopicId : topicId))
-
     const progress = 1 - remainingSeconds / (phase.minutes * 60)
     const today = useMemo(() => computeTodayStats(sessions), [sessions])
+
+    // which focus round of the cycle this is (breaks count toward the round they follow)
+    const round_ = POMODORO_CYCLE.slice(0, phaseIndex + 1).filter(p => p.type === PomodoroPhaseType.Focus).length || 1
 
     const topicsByEpic = useMemo(() => {
         const epicTitleById = new Map(epics.filter(e => e.id).map(e => [e.id as string, e.title]))
@@ -47,159 +55,79 @@ export function PomodoroTimer({ topics, epics, sessions, timer, pendingTopicId, 
     }, [topics, epics])
 
     return (
-        <div className="instrument-panel relative border border-border/60 p-6 overflow-hidden">
-            <div className="flex items-center justify-between mb-6">
-                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                    Pomodoro
-                </p>
-                <div className="flex items-center gap-1.5">
-                    {POMODORO_CYCLE.map((p, i) => (
-                        <span
-                            key={i}
-                            title={`${PHASE_LABEL[p.type]} · ${p.minutes}min`}
-                            className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                                i === phaseIndex && !isIdle
-                                    ? 'bg-brand-accent'
-                                    : i < phaseIndex
-                                    ? 'bg-muted-foreground/50'
-                                    : 'bg-muted'
-                            }`}
-                        />
-                    ))}
+        <div className="raised-card grid justify-items-center gap-6 px-6 py-8">
+            <div className="relative size-60">
+                <svg viewBox="0 0 240 240" className="size-full" aria-hidden>
+                    <circle cx="120" cy="120" r={RADIUS} fill="none" strokeWidth="8" className="stroke-muted" />
+                    <circle
+                        cx="120"
+                        cy="120"
+                        r={RADIUS}
+                        fill="none"
+                        strokeWidth="8"
+                        strokeLinecap="round"
+                        strokeDasharray={CIRCUMFERENCE}
+                        strokeDashoffset={CIRCUMFERENCE * progress}
+                        className={cn('origin-center -rotate-90 transition-[stroke-dashoffset] duration-1000 ease-linear', isIdle ? 'stroke-muted-foreground/40' : 'stroke-brand-accent')}
+                    />
+                </svg>
+                <div className="absolute inset-0 grid place-content-center text-center" aria-live="polite">
+                    <p className="text-[3.25rem] font-light leading-none tracking-tight tabular-nums">
+                        <span className="sr-only">Time left: </span>{formatTime(remainingSeconds)}
+                    </p>
+                    <p className="mt-2.5 text-[13px] text-muted-foreground">
+                        {PHASE_LABEL[phase.type]}{phase.type === PomodoroPhaseType.Focus && ` · ${round_} of ${FOCUS_ROUNDS}`}
+                    </p>
                 </div>
             </div>
 
-            <div className="relative flex flex-col items-center gap-4">
-                {/* ambient glow — only while a phase is actively running */}
-                <div
-                    className={`pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 w-72 h-72 blur-3xl transition-opacity duration-700 ${
-                        isRunning ? 'opacity-40' : 'opacity-0'
-                    }`}
-                    style={{ background: 'radial-gradient(circle, var(--brand-accent) 0%, transparent 70%)' }}
-                />
-
-                <div className="relative flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                    {isFocus ? <Brain className="w-4 h-4" /> : <Coffee className="w-4 h-4" />}
-                    {PHASE_LABEL[phase.type]}
-                </div>
-
-                <div className="relative w-52 h-52 flex items-center justify-center">
-                    <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="46" className="stroke-muted" strokeWidth="3.5" fill="none" />
-                        <circle
-                            cx="50" cy="50" r="46"
-                            className={`${isRunning ? 'stroke-brand-accent pulse-glow' : 'stroke-muted-foreground/40'}`}
-                            strokeWidth="3.5"
-                            fill="none"
-                            strokeLinecap="round"
-                            strokeDasharray={2 * Math.PI * 46}
-                            strokeDashoffset={2 * Math.PI * 46 * (1 - progress)}
-                            style={{ transition: 'stroke-dashoffset 1s linear' }}
-                        />
-                    </svg>
-                    <span className="absolute text-4xl font-bold tabular-nums">
-                        {formatTime(remainingSeconds)}
-                    </span>
-                </div>
-
-                <div className="relative w-full max-w-70">
+            {isIdle ? (
+                <label className="w-full max-w-72">
+                    <span className="sr-only">Topic for this session</span>
                     <select
-                        value={isIdle ? (pendingTopicId ?? '') : (topicId ?? '')}
+                        value={pendingTopicId ?? ''}
                         onChange={(e) => onPendingTopicChange(e.target.value)}
-                        disabled={!isIdle || topics.length === 0}
-                        className="w-full px-3 py-2 text-sm border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-70"
+                        disabled={topics.length === 0}
+                        className="w-full rounded-full bg-muted px-4 py-2 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
                     >
-                        <option value="" disabled>
-                            {topics.length === 0 ? 'Add a topic first' : 'Select a topic'}
-                        </option>
-                        {[...topicsByEpic.entries()].map(([label, groupTopics]) => (
+                        <option value="" disabled>{topics.length === 0 ? 'Add a topic first' : 'Choose a topic'}</option>
+                        {[...topicsByEpic.entries()].map(([label, group]) => (
                             <optgroup key={label} label={label}>
-                                {groupTopics.map(t => (
-                                    <option key={t.id} value={t.id}>{t.title}</option>
-                                ))}
+                                {group.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
                             </optgroup>
                         ))}
                     </select>
-                    {!isIdle && activeTopic && (
-                        <p className="text-center text-xs text-muted-foreground mt-2 truncate">
-                            Studying <span className="text-foreground font-medium">{activeTopic.title}</span>
-                        </p>
-                    )}
-                </div>
+                </label>
+            ) : (
+                <p className="max-w-full truncate text-[13px] text-muted-foreground">
+                    On <span className="font-medium text-foreground">{activeTopic?.title ?? 'a topic'}</span>
+                </p>
+            )}
 
-                <div className="relative flex items-center gap-2">
-                    {isIdle && (
-                        <button
-                            onClick={() => pendingTopicId && start(pendingTopicId)}
-                            disabled={!pendingTopicId}
-                            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-40"
-                        >
-                            <Play className="w-4 h-4" /> Start
-                        </button>
-                    )}
-
-                    {status === 'running' && (
-                        <>
-                            <button
-                                onClick={pause}
-                                className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium border border-border hover:bg-muted/60 transition-colors"
-                            >
-                                <Pause className="w-4 h-4" /> Pause
-                            </button>
-                            <button
-                                onClick={stop}
-                                className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                            >
-                                <Square className="w-4 h-4" /> Stop
-                            </button>
-                        </>
-                    )}
-
-                    {status === 'paused' && (
-                        <>
-                            <button
-                                onClick={resume}
-                                className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-                            >
-                                <Play className="w-4 h-4" /> Resume
-                            </button>
-                            <button
-                                onClick={stop}
-                                className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                            >
-                                <Square className="w-4 h-4" /> Stop
-                            </button>
-                        </>
-                    )}
-                </div>
+            <div className="flex gap-12">
+                <button type="button" onClick={stop} disabled={isIdle} className={cn(round, 'bg-muted text-muted-foreground')}>
+                    Cancel
+                </button>
+                {isIdle ? (
+                    <button type="button" onClick={() => pendingTopicId && start(pendingTopicId)} disabled={!pendingTopicId} className={cn(round, 'bg-brand-accent/15 text-brand-accent')}>
+                        Start
+                    </button>
+                ) : status === 'running' ? (
+                    <button type="button" onClick={pause} className={cn(round, 'bg-brand-accent/15 text-brand-accent')}>
+                        Pause
+                    </button>
+                ) : (
+                    <button type="button" onClick={resume} className={cn(round, 'bg-brand-accent/15 text-brand-accent')}>
+                        Resume
+                    </button>
+                )}
             </div>
 
-            {/* TODAY strip */}
-            <div className="relative grid grid-cols-3 gap-3 mt-6 pt-5 border-t border-border/50">
-                <div className="flex flex-col items-center gap-1">
-                    <div className="flex items-center gap-1.5 text-success">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span className="text-sm font-semibold tabular-nums">
-                            {today.todaySeconds > 0 ? formatMinutes(today.todaySeconds) : '—'}
-                        </span>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Today</span>
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                    <div className="flex items-center gap-1.5 text-info">
-                        <CalendarCheck2 className="w-3.5 h-3.5" />
-                        <span className="text-sm font-semibold tabular-nums">{today.todayCount}</span>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Sessions</span>
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                    <div className="flex items-center gap-1.5 text-brand-accent">
-                        <Flame className="w-3.5 h-3.5" />
-                        <span className="text-sm font-semibold tabular-nums">{today.streak}</span>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Streak</span>
-                </div>
-            </div>
+            <dl className="flex gap-8 border-t border-border pt-5 text-center text-[13px] text-muted-foreground">
+                <div><dt>Today</dt><dd className="mt-0.5 text-base font-semibold tabular-nums text-foreground">{today.todaySeconds > 0 ? formatMinutes(today.todaySeconds) : '—'}</dd></div>
+                <div><dt>Sessions</dt><dd className="mt-0.5 text-base font-semibold tabular-nums text-foreground">{today.todayCount}</dd></div>
+                <div><dt>Day streak</dt><dd className="mt-0.5 text-base font-semibold tabular-nums text-foreground">{today.streak}</dd></div>
+            </dl>
         </div>
     )
 }
