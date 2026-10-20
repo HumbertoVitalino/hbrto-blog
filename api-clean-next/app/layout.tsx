@@ -46,11 +46,20 @@ export default function RootLayout({
             >
               Skip to content
             </a>
-            <Header />
-            <main id="main-content" className="flex-1">
-              {children}
-            </main>
-            <Footer />
+            {/* The frame: the page's ground with the content on a column edged like a sheet.
+                It's fixed behind everything, so it runs the full height however short the page. */}
+            <div aria-hidden className="pointer-events-none fixed inset-0 flex justify-center sm:px-8">
+              <div className="flex w-full max-w-7xl lg:px-8">
+                <div className="w-full sm:bg-card sm:ring-1 sm:ring-secondary" />
+              </div>
+            </div>
+            <div className="relative flex w-full flex-1 flex-col">
+              <Header />
+              <main id="main-content" className="flex-1">
+                {children}
+              </main>
+              <Footer />
+            </div>
             <Toaster />
           </AuthProvider>
         </ThemeProvider>

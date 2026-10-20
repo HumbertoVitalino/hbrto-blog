@@ -305,7 +305,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen text-foreground">
 
       {/* ── HERO / DASHBOARD HEADER ── */}
       <section className="relative pt-16 pb-20 md:pt-20 md:pb-24 overflow-hidden">

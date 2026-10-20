@@ -130,7 +130,7 @@ export default function AdminPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
 
       {/* PAGE HEADER */}
       <section className="border-b bg-muted/10">
