@@ -4,6 +4,7 @@ import { useTheme } from 'next-themes'
 import { useSyncExternalStore } from 'react'
 import { Sun, Moon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Halo } from '@/app/components/motion/Halo'
 
 const noop = () => () => {}
 
@@ -19,8 +20,9 @@ export function ThemeToggle({ className }: { className?: string }) {
       type="button"
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-      className={cn('group grid place-items-center', className)}
+      className={cn('group relative grid place-items-center', className)}
     >
+      <Halo />
       {/* the icon waits for the theme to resolve, so it never shows the wrong one first */}
       {mounted && (isDark
         ? <Moon className="size-4.5 text-muted-foreground transition-colors group-hover:text-brand-accent" />

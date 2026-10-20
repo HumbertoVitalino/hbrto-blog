@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/app/context/AuthContext'
 import { ThemeToggle } from '@/app/components/layout/ThemeToggle'
 import { NAV_ITEMS, isActive } from '@/app/components/layout/navigation'
+import { Halo } from '@/app/components/motion/Halo'
 import { ChevronDown, LogOut, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -35,14 +36,16 @@ export default function Header() {
   return (
     <header className="pointer-events-none sticky top-0 z-50 pt-[max(1.5rem,env(safe-area-inset-top))] pb-2">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 sm:px-8">
-        <Link href="/" aria-label="Home" className={cn(chip, 'size-10 p-0.5')}>
+        <Link href="/" aria-label="Home" className={cn(chip, 'group relative size-10 p-0.5')}>
+          <Halo />
           <span className="grid size-full place-items-center rounded-full bg-muted text-[13px] font-semibold tracking-wide text-foreground">
             HV
           </span>
         </Link>
 
-        <nav aria-label="Main" className="hidden md:block">
-          <ul className={cn(chip, 'flex px-3 text-sm font-medium')}>
+        <nav aria-label="Main" className={cn(chip, 'group relative hidden md:block')}>
+          <Halo />
+          <ul className="flex px-3 text-sm font-medium">
             {NAV_ITEMS.map(item => {
               const active = isActive(pathname, item.href)
               return (
@@ -84,8 +87,9 @@ export default function Header() {
               onClick={handleLogout}
               aria-label={`Sign out ${user.email}`}
               title={`Signed in as ${user.email}`}
-              className={cn(chip, 'group hidden size-10 place-items-center md:grid')}
+              className={cn(chip, 'group relative hidden size-10 place-items-center md:grid')}
             >
+              <Halo />
               <LogOut className="size-4 text-muted-foreground transition-colors group-hover:text-brand-accent" />
             </button>
           )}
