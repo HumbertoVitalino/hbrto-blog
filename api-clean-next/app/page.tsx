@@ -8,13 +8,13 @@ import { NewsletterBanner } from '@/app/components/newsletter/NewsletterBanner'
 import { FiGithub } from 'react-icons/fi'
 import { motion, AnimatePresence, type Variants } from 'motion/react'
 import { useBooks } from '@/app/hooks/useBooks'
-import { useReviews } from '@/app/hooks/useReviews'
+import { useNotes } from '@/app/hooks/useNotes'
 import { useNowPlaying } from '@/app/hooks/useNowPlaying'
 import { useReleaseNotes } from '@/app/hooks/useReleaseNotes'
 import { BookStatus } from '@/domain/BookStatus'
 import {
   Server, Layout, Cloud, Database, Activity,
-  BookOpen, Star, Music, Zap, ArrowUpRight, ArrowRight,
+  BookOpen, NotebookPen, Music, Zap, ArrowUpRight, ArrowRight,
   Layers, GitBranch, Cpu, GraduationCap, Briefcase, RefreshCw
 } from 'lucide-react'
 
@@ -89,11 +89,11 @@ const blogSections = [
     color: 'text-chart-4',
   },
   {
-    href: '/reviews',
-    slug: 'reviews',
-    icon: Star,
-    label: 'Reviews',
-    description: 'Honest takes on what I\'ve been reading.',
+    href: '/notes',
+    slug: 'notes',
+    icon: NotebookPen,
+    label: 'Notes',
+    description: 'What I wanted to write down about books, games and work.',
     color: 'text-chart-5',
   },
   {
@@ -257,17 +257,17 @@ function formatElapsed(totalSeconds: number): string {
   return [h, m, s].map(n => String(n).padStart(2, '0')).join(':')
 }
 
-const requestRoutes = ['/library', '/reviews', '/games', '/studies', '/music', '/release-notes']
+const requestRoutes = ['/library', '/notes', '/games', '/studies', '/music', '/release-notes']
 const eqBarHeights = ['h-1.5', 'h-4', 'h-2.5', 'h-3.5']
 
 export default function HomePage() {
   const { books } = useBooks()
-  const { reviews } = useReviews()
+  const { notes: writtenNotes } = useNotes()
   const { data: nowPlaying } = useNowPlaying()
   const { notes } = useReleaseNotes()
 
   const readingBook = books.find(b => b.status === BookStatus.InProgress)
-  const latestReview = reviews[0]
+  const latestWritten = writtenNotes[0]
   const latestNote = notes[0]
 
   // session widget — real elapsed time since this page was opened, ticking live
@@ -297,7 +297,7 @@ export default function HomePage() {
 
   const blogPreviews: Record<string, string | undefined> = {
     '/library': readingBook ? `Reading "${readingBook.title}"` : 'No active read right now',
-    '/reviews': latestReview ? `★ ${latestReview.rating}/5 — "${latestReview.title}"` : 'No reviews published yet',
+    '/notes': latestWritten ? `Latest — "${latestWritten.entries[0].title}"` : 'No notes published yet',
     '/music': nowPlaying?.title
       ? `${nowPlaying.isPlaying ? 'Now playing' : 'Last played'} — ${nowPlaying.title}`
       : 'Nothing playing right now',

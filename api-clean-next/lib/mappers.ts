@@ -1,5 +1,5 @@
 import { Book } from "@/domain/Book";
-import { Review } from "@/domain/Review";
+import { Note } from "@/domain/Note";
 import { ReleaseNote } from "@/domain/ReleaseNote";
 import { Subscriber } from "@/domain/Subscriber";
 import { Game } from "@/domain/Game";
@@ -25,21 +25,22 @@ export function booksToPlain(books: Book[]) {
     return books.map(bookToPlain);
 }
 
-export function reviewToPlain(review: Review) {
+export function noteToPlain(note: Note) {
     return {
-        id: review.id,
-        title: review.title,
-        bookId: review.bookId,
-        rating: review.rating,
-        comment: review.comment,
-        createdAt: review.createdAt,
-        language: review.language,
+        id: note.id,
+        createdAt: note.createdAt.toISOString(),
+        updatedAt: note.updatedAt.toISOString(),
+        entries: note.entries,
+        subjects: note.subjects,
     };
 }
 
-export function reviewsToPlain(reviews: Review[]) {
-    return reviews.map(reviewToPlain);
+export function notesToPlain(notes: Note[]) {
+    return notes.map(noteToPlain);
 }
+
+/** A note as it crosses to the browser: the API's JSON and server-rendered props share this shape. */
+export type NoteData = ReturnType<typeof noteToPlain>;
 
 export function releaseNoteToPlain(note: ReleaseNote) {
     return {

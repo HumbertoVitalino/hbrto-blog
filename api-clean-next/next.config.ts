@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async redirects() {
+    // reviews became notes; single reviews are resolved in app/reviews/[reviewId]
+    return [{ source: "/reviews", destination: "/notes", permanent: true }];
+  },
 };
 
 export default nextConfig;

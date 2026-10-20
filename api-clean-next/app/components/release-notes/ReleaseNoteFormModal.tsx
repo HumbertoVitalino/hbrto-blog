@@ -10,7 +10,7 @@ import {
     DialogTitle,
     DialogFooter,
 } from '@/components/ui/dialog'
-import { MarkdownRenderer } from '@/app/components/reviews/MarkdownRenderer'
+import { MarkdownRenderer } from '@/app/components/markdown/MarkdownRenderer'
 
 interface ReleaseNoteFormModalProps {
     open: boolean

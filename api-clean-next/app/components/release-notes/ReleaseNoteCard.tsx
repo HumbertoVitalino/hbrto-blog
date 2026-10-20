@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Trash2, Edit2, ChevronDown, ChevronUp } from 'lucide-react'
 import { ReleaseNoteData } from '@/app/hooks/useReleaseNotes'
 import { ReleaseNoteFormModal } from './ReleaseNoteFormModal'
-import { MarkdownRenderer } from '@/app/components/reviews/MarkdownRenderer'
+import { MarkdownRenderer } from '@/app/components/markdown/MarkdownRenderer'
 import { formatDate } from '@/lib/formatDate'
 import { toast } from 'sonner'
 import {

@@ -1,29 +1,17 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
 import { useBooks } from '@/app/hooks/useBooks'
-import { useReviews } from '@/app/hooks/useReviews'
-import { useAuth } from '@/app/context/AuthContext'
-import { ReviewsGrid } from '@/app/components/reviews/ReviewsGrid'
-import { ReviewFormModal } from '@/app/components/reviews/ReviewFormModal'
+import { useNotes } from '@/app/hooks/useNotes'
+import { NewNoteButton } from '@/app/components/notes/NoteAdmin'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { AlertCircle, ArrowLeft, Plus, ShoppingCart, Star } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Plus, ShoppingCart } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Book } from '@/domain/Book'
 import { BookStatus } from '@/domain/BookStatus'
-import { Review, ReviewLanguage } from '@/domain/Review'
-import { toast } from 'sonner'
+import { noteDate, noteExcerpt } from '@/lib/notes'
 
 function getStatusConfig(status?: BookStatus) {
   switch (status) {
@@ -60,26 +48,9 @@ export default function BookDetailPage() {
   const { bookId } = useParams() as { bookId: string }
 
   const { books, isLoading: booksLoading } = useBooks()
-  const {
-    reviews,
-    isLoading: reviewsLoading,
-    error,
-    createReview,
-    updateReview,
-    deleteReview,
-  } = useReviews(bookId)
-
-  const { isAdmin } = useAuth()
+  const { notes, isLoading: notesLoading, error } = useNotes({ kind: 'book', id: bookId })
 
   const [book, setBook] = useState<Book | null>(null)
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
-
-  const [selectedReview, setSelectedReview] = useState<Review | undefined>()
-  const [isEditOpen, setIsEditOpen] = useState(false)
-  const [deletingId, setDeletingId] = useState<string | undefined>()
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | undefined>()
 
   useEffect(() => {
     if (!booksLoading) {
@@ -96,49 +67,6 @@ export default function BookDetailPage() {
       }) as Book : null)
     }
   }, [books, bookId, booksLoading])
-
-  const handleSubmit = async (data: { title: string; rating: number; comment: string }) => {
-    try {
-      setIsSubmitting(true)
-      setSubmitError(null)
-      await createReview(data.title, bookId, data.rating, data.comment)
-      toast.success('Review published')
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to save review'
-      setSubmitError(message)
-      throw err
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const handleEdit = (review: Review) => {
-    setSelectedReview(review)
-    setIsEditOpen(true)
-  }
-
-  const handleEditSubmit = async (data: { title: string; bookId: string | null; rating: number; comment: string; language?: ReviewLanguage }) => {
-    if (!selectedReview) return
-    await updateReview(selectedReview.id, selectedReview.bookId, data.title, data.rating, data.comment, data.language)
-    setIsEditOpen(false)
-    toast.success('Review updated')
-  }
-
-  const handleDelete = (id: string) => {
-    setPendingDeleteId(id)
-  }
-
-  const confirmDelete = async () => {
-    if (!pendingDeleteId) return
-    setDeletingId(pendingDeleteId)
-    try {
-      await deleteReview(pendingDeleteId, bookId)
-      toast.success('Review deleted')
-    } finally {
-      setDeletingId(undefined)
-      setPendingDeleteId(undefined)
-    }
-  }
 
   // LOADING
   if (booksLoading) {
@@ -168,9 +96,6 @@ export default function BookDetailPage() {
   }
 
   const statusConfig = getStatusConfig(book.status)
-  const avgRating = reviews.length > 0
-    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-    : null
 
   return (
     <div className="min-h-screen bg-background">
@@ -235,15 +160,6 @@ export default function BookDetailPage() {
                   {book.genre.replace('-', ' ')}
                 </div>
               )}
-
-              {/* Rating — derived from reviews already loaded below */}
-              {avgRating !== null && (
-                <div className="bg-warning/10 text-warning text-sm font-medium px-3 py-1.5 rounded-full border border-warning/20 flex items-center gap-1.5">
-                  <Star className="w-3.5 h-3.5 fill-warning" />
-                  {avgRating.toFixed(1)}
-                  <span className="opacity-70">({reviews.length})</span>
-                </div>
-              )}
             </div>
 
             {/* Amazon affiliate button */}
@@ -262,106 +178,50 @@ export default function BookDetailPage() {
 
         <hr className="border-border/50" />
 
-        {/* REVIEWS HEADER */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-            Reviews
-          </h2>
-
-          {isAdmin && (
-            <Button size="sm" variant="outline" onClick={() => setIsFormOpen(true)} className="gap-2">
-              <Plus className="w-4 h-4" />
-              Add Review
-            </Button>
-          )}
-        </div>
-
-        {/* ERRORS */}
-        {(error || submitError) && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>
-              {error || submitError}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* REVIEWS FEED */}
-        {reviewsLoading ? (
-          <div className="flex justify-center py-16">
-            <div className="h-5 w-5 rounded-full border border-muted border-t-foreground animate-spin" />
-          </div>
-        ) : reviews.length === 0 ? (
-          <div className="text-center py-16 bg-muted/10 rounded-lg border border-dashed border-border/50">
-            <p className="text-sm text-muted-foreground">
-              No reviews yet.
-            </p>
-
-            {isAdmin && (
-              <Button
-                variant="ghost"
-                onClick={() => setIsFormOpen(true)}
-                className="mt-4"
-              >
-                Write the first review
-              </Button>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-8">
-            <ReviewsGrid
-              reviews={reviews}
-              bookId={bookId}
-              isAdmin={isAdmin}
-              deletingId={deletingId}
-              onEdit={isAdmin ? handleEdit : undefined}
-              onDelete={isAdmin ? handleDelete : undefined}
+        {/* NOTES ON THIS BOOK */}
+        <section aria-labelledby="book-notes-heading">
+          <div className="flex items-center justify-between gap-4">
+            <h2 id="book-notes-heading" className="text-sm font-semibold">Notes on this book</h2>
+            <NewNoteButton
+              preset={{ kind: 'book', id: bookId }}
+              trigger={open => (
+                <Button size="sm" variant="outline" onClick={open} className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  Write a note
+                </Button>
+              )}
             />
           </div>
-        )}
+
+          {error && (
+            <p role="alert" className="mt-8 text-sm text-muted-foreground">
+              The notes on this book couldn’t be loaded right now.
+            </p>
+          )}
+
+          {notesLoading ? (
+            <div className="flex justify-center py-16">
+              <div className="h-5 w-5 rounded-full border border-muted border-t-foreground animate-spin" />
+            </div>
+          ) : !error && notes.length === 0 ? (
+            <p className="mt-8 text-sm text-muted-foreground">Nothing written about this book yet.</p>
+          ) : (
+            <ol className="mt-12 flex flex-col gap-14">
+              {notes.map(note => (
+                <li key={note.id} className="hover-surface flex flex-col items-start">
+                  <h3 className="text-base font-semibold tracking-tight text-balance">
+                    <Link href={`/notes/${note.id}`} className="stretched-link">{note.entries[0].title}</Link>
+                  </h3>
+                  <time dateTime={note.createdAt} className="order-first mb-3 text-sm text-muted-foreground">
+                    {noteDate(note.createdAt)}
+                  </time>
+                  <p className="mt-2 text-sm text-muted-foreground text-pretty">{noteExcerpt(note.entries[0].body, 200)}</p>
+                </li>
+              ))}
+            </ol>
+          )}
+        </section>
       </div>
-
-      {/* MODALS */}
-      {isAdmin && (
-        <>
-          <ReviewFormModal
-            open={isFormOpen}
-            onOpenChange={setIsFormOpen}
-            onSubmit={handleSubmit}
-            mode="create"
-            bookId={bookId}
-          />
-          <ReviewFormModal
-            open={isEditOpen}
-            onOpenChange={setIsEditOpen}
-            onSubmit={handleEditSubmit}
-            initialValues={selectedReview ? {
-              title: selectedReview.title,
-              rating: selectedReview.rating,
-              comment: selectedReview.comment,
-              createdAt: selectedReview.createdAt,
-              language: selectedReview.language,
-            } : undefined}
-            mode="edit"
-          />
-        </>
-      )}
-
-      <AlertDialog open={!!pendingDeleteId} onOpenChange={(open) => !open && setPendingDeleteId(undefined)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete this review?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action can&apos;t be undone. The review will be permanently removed.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel />
-            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }

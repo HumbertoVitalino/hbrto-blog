@@ -4,12 +4,14 @@ export { CreateBookUseCase, type CreateBookDTO } from "./CreateBookUseCase";
 export { UpdateBookUseCase, type UpdateBookDTO } from "./UpdateBookUseCase";
 export { DeleteBookUseCase } from "./DeleteBookUseCase";
 
-export { GetAllReviewsUseCase } from "./GetAllReviewsUseCase";
-export { GetReviewByIdUseCase } from "./GetReviewByIdUseCase";
-export { GetReviewsByBookIdUseCase } from "./GetReviewsByBookIdUseCase";
-export { CreateReviewUseCase, type CreateReviewDTO } from "./CreateReviewUseCase";
-export { UpdateReviewUseCase, type UpdateReviewDTO } from "./UpdateReviewUseCase";
-export { DeleteReviewUseCase } from "./DeleteReviewUseCase";
+export { GetAllNotesUseCase } from "./GetAllNotesUseCase";
+export { GetNoteByIdUseCase } from "./GetNoteByIdUseCase";
+export { GetNotesBySubjectUseCase } from "./GetNotesBySubjectUseCase";
+export { GetNoteIdByLegacyReviewUseCase } from "./GetNoteIdByLegacyReviewUseCase";
+export { CreateNoteUseCase, type CreateNoteDTO } from "./CreateNoteUseCase";
+export { UpdateNoteUseCase, type UpdateNoteDTO } from "./UpdateNoteUseCase";
+export { DeleteNoteUseCase } from "./DeleteNoteUseCase";
+export { NotifySubscribersOfNoteUseCase } from "./NotifySubscribersOfNoteUseCase";
 
 export { GetNowPlayingUseCase } from "./GetNowPlayingUseCase";
 export { GetRecentlyPlayedUseCase } from "./GetRecentlyPlayedUseCase";
