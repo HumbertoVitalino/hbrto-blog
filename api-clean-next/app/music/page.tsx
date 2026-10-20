@@ -1,169 +1,148 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNowPlaying } from '@/app/hooks/useNowPlaying'
 import { useRecentlyPlayed } from '@/app/hooks/useRecentlyPlayed'
 import { useTopTracks } from '@/app/hooks/useTopTracks'
 import { useTopArtists } from '@/app/hooks/useTopArtists'
 import { NowPlayingCard } from '@/app/components/music/NowPlayingCard'
-import { RecentTrackItem } from '@/app/components/music/RecentTrackItem'
-import { TopTrackItem } from '@/app/components/music/TopTrackItem'
+import { TrackRow } from '@/app/components/music/TrackRow'
 import { TopArtistItem } from '@/app/components/music/TopArtistItem'
-import { RevealGroup, RevealItem } from '@/app/components/motion/Reveal'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle } from 'lucide-react'
+import { joinNames, musicSummary } from '@/app/components/music/musicSummary'
+import { PageContainer, PageHeader, PageLead } from '@/app/components/layout/PageHeader'
+import { Segmented } from '@/app/components/layout/Segmented'
+import { FadeIn } from '@/app/components/motion/FadeIn'
 import { TimeRange } from '@/infrastructure/repositories/SpotifyRepository'
+import { timeAgo } from '@/lib/formatDate'
 
-const TIME_RANGES: { label: string; value: TimeRange }[] = [
-    { label: "4 weeks", value: "short_term" },
-    { label: "6 months", value: "medium_term" },
-    { label: "All time", value: "long_term" },
+const TIME_RANGES: { value: TimeRange; label: string }[] = [
+    { value: 'short_term', label: '4 weeks' },
+    { value: 'medium_term', label: '6 months' },
+    { value: 'long_term', label: 'All time' },
 ]
 
 function Spinner() {
     return (
-        <div className="flex justify-center py-8">
-            <div className="h-4 w-4 rounded-full border border-muted border-t-foreground animate-spin" />
+        <div className="flex justify-center py-20">
+            <div className="h-5 w-5 rounded-full border border-muted border-t-foreground animate-spin" />
         </div>
     )
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-    return (
-        <h2 className="font-display text-xl font-medium tracking-tight text-foreground">
-            {children}
-        </h2>
-    )
-}
-
-function SectionError({ message }: { message: string }) {
-    return (
-        <p className="text-sm text-destructive-text py-4 text-center">{message}</p>
-    )
-}
+const Names = ({ names }: { names: string[] }) => (
+    <b className="font-semibold text-foreground">{joinNames(names)}</b>
+)
 
 export default function MusicPage() {
-    const [timeRange, setTimeRange] = useState<TimeRange>("short_term")
+    const [timeRange, setTimeRange] = useState<TimeRange>('short_term')
 
     const { data: nowPlaying, isLoading: loadingNow, error: errorNow } = useNowPlaying()
-    const { tracks: recentTracks, isLoading: loadingRecent, error: errorRecent } = useRecentlyPlayed()
-    const { tracks: topTracks, isLoading: loadingTopTracks, error: errorTopTracks } = useTopTracks(timeRange)
-    const { artists: topArtists, isLoading: loadingTopArtists, error: errorTopArtists } = useTopArtists(timeRange)
+    const { tracks: recentTracks, isLoading: loadingRecent } = useRecentlyPlayed()
+    const { tracks: topTracks, isLoading: loadingTopTracks } = useTopTracks(timeRange)
+    const { artists: topArtists, isLoading: loadingTopArtists } = useTopArtists(timeRange)
+    // the opening line always reads "lately" against "all time", whatever range is picked below
+    const { artists: latelyArtists } = useTopArtists('short_term')
+    const { artists: allTimeArtists } = useTopArtists('long_term')
+
+    const summary = useMemo(() => musicSummary(latelyArtists, allTimeArtists), [latelyArtists, allTimeArtists])
+
+    const firstLoad = loadingNow && loadingRecent
+    // Spotify answers all of these with one token; if the first two fail, it's down for the page
+    const spotifyDown = !loadingNow && !loadingRecent && !!errorNow && recentTracks.length === 0
 
     return (
-        <div className="min-h-screen">
-            <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
-
-                {/* TITLE BAR — editorial masthead */}
-                <div>
-                    <h1 className="font-display text-3xl font-medium tracking-tight">Music</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
-                        What I&apos;m listening to — live Spotify activity.
-                    </p>
-                </div>
-
-                {/* NOW PLAYING — hero, full width, always the anchor */}
-                {loadingNow ? (
-                    <Spinner />
-                ) : errorNow ? (
-                    <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Now Playing unavailable</AlertTitle>
-                        <AlertDescription>{errorNow}</AlertDescription>
-                    </Alert>
-                ) : nowPlaying?.title ? (
-                    <NowPlayingCard data={nowPlaying} />
-                ) : (
-                    <div className="rounded-2xl border border-dashed border-border/50 px-5 py-8 text-center">
-                        <p className="text-sm text-muted-foreground">Nothing playing right now.</p>
-                    </div>
+        <PageContainer>
+            <PageHeader title="What I’ve been listening to.">
+                {summary && (
+                    <PageLead>
+                        {summary.lately.length > 0 && <>Lately it’s <Names names={summary.lately} /> on repeat.</>}
+                        {summary.always.length > 0 && <> Over the years, <Names names={summary.always} />.</>}
+                    </PageLead>
                 )}
+            </PageHeader>
 
-                <RevealGroup className="space-y-10">
+            {firstLoad && <Spinner />}
 
-                    {/* RECENTLY PLAYED — its own full-width section, unaffected by the time range */}
-                    <RevealItem className="space-y-3">
-                        <SectionLabel>Recently Played</SectionLabel>
-                        <div className="rounded-2xl border border-border/60 bg-card p-5">
-                            {loadingRecent ? (
-                                <Spinner />
-                            ) : errorRecent ? (
-                                <SectionError message={errorRecent} />
-                            ) : recentTracks.length === 0 ? (
-                                <p className="text-sm text-muted-foreground py-4 text-center">No recent tracks.</p>
-                            ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
-                                    {recentTracks.map((track, i) => (
-                                        <RecentTrackItem key={`${track.songUrl}-${i}`} track={track} />
-                                    ))}
-                                </div>
-                            )}
+            {spotifyDown && (
+                <p role="status" className="mt-14 text-sm text-muted-foreground">
+                    Spotify isn’t answering right now. Try again in a minute.
+                </p>
+            )}
+
+            {nowPlaying?.title && (
+                <FadeIn index={1} className="mt-14">
+                    <NowPlayingCard data={nowPlaying} lastPlayedAt={recentTracks[0]?.playedAt} />
+                </FadeIn>
+            )}
+
+            {recentTracks.length > 0 && (
+                <FadeIn index={2}>
+                    <section aria-labelledby="recent-heading" className="mt-18">
+                        <h2 id="recent-heading" className="text-sm font-semibold">Recently played</h2>
+                        <ul className="mt-7 grid gap-x-10 gap-y-1 md:grid-cols-2">
+                            {recentTracks.map((track, i) => (
+                                <TrackRow
+                                    key={`${track.songUrl}-${track.playedAt}-${i}`}
+                                    title={track.title}
+                                    artist={track.artist}
+                                    albumImageUrl={track.albumImageUrl}
+                                    songUrl={track.songUrl}
+                                    trail={
+                                        <time dateTime={track.playedAt} className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                                            {timeAgo(track.playedAt)}
+                                        </time>
+                                    }
+                                />
+                            ))}
+                        </ul>
+                    </section>
+                </FadeIn>
+            )}
+
+            {!spotifyDown && !firstLoad && (
+                <FadeIn index={3}>
+                    <section aria-labelledby="top-heading" className="mt-18">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <h2 id="top-heading" className="text-sm font-semibold">Most played</h2>
+                            <Segmented id="music-range" label="Time range" options={TIME_RANGES} value={timeRange} onChange={setTimeRange} />
                         </div>
-                    </RevealItem>
 
-                    {/* TOP CHARTS — Tracks + Artists share one header and one time-range control */}
-                    <RevealItem className="space-y-3">
-                        <div className="flex items-center justify-between gap-3 flex-wrap">
-                            <SectionLabel>Top Charts</SectionLabel>
-                            <div className="flex gap-1.5">
-                                {TIME_RANGES.map(({ label, value }) => (
-                                    <button
-                                        key={value}
-                                        onClick={() => setTimeRange(value)}
-                                        className={`text-xs font-medium px-3 py-1 rounded-full transition-colors ${
-                                            timeRange === value
-                                                ? 'bg-primary text-primary-foreground'
-                                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-                                        }`}
-                                    >
-                                        {label}
-                                    </button>
+                        <h3 className="mb-4 mt-7 text-[13px] font-semibold text-muted-foreground">Artists</h3>
+                        {loadingTopArtists ? (
+                            <Spinner />
+                        ) : topArtists.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">Nothing for this period yet.</p>
+                        ) : (
+                            // five across; on a phone the row scrolls sideways instead of shrinking the faces
+                            <ol className="grid snap-x snap-mandatory auto-cols-[30%] grid-flow-col gap-4 overflow-x-auto pb-2 [scrollbar-width:none] sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-5 sm:overflow-visible sm:pb-0">
+                                {topArtists.map((artist, i) => (
+                                    <TopArtistItem key={artist.artistUrl} artist={artist} rank={i + 1} />
                                 ))}
-                            </div>
-                        </div>
+                            </ol>
+                        )}
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                            {/* Top Tracks */}
-                            <div className="rounded-2xl border border-border/60 bg-card p-5">
-                                <h3 className="text-xs font-medium text-muted-foreground mb-3">Tracks</h3>
-                                {loadingTopTracks ? (
-                                    <Spinner />
-                                ) : errorTopTracks ? (
-                                    <SectionError message={errorTopTracks} />
-                                ) : topTracks.length === 0 ? (
-                                    <p className="text-sm text-muted-foreground py-4 text-center">No data.</p>
-                                ) : (
-                                    <div>
-                                        {topTracks.map((track, i) => (
-                                            <TopTrackItem key={track.songUrl} track={track} rank={i + 1} />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Top Artists */}
-                            <div className="rounded-2xl border border-border/60 bg-card p-5">
-                                <h3 className="text-xs font-medium text-muted-foreground mb-3">Artists</h3>
-                                {loadingTopArtists ? (
-                                    <Spinner />
-                                ) : errorTopArtists ? (
-                                    <SectionError message={errorTopArtists} />
-                                ) : topArtists.length === 0 ? (
-                                    <p className="text-sm text-muted-foreground py-4 text-center">No data.</p>
-                                ) : (
-                                    <div>
-                                        {topArtists.map((artist, i) => (
-                                            <TopArtistItem key={artist.artistUrl} artist={artist} rank={i + 1} />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </RevealItem>
-
-                </RevealGroup>
-
-            </div>
-        </div>
+                        <h3 className="mb-2 mt-10 text-[13px] font-semibold text-muted-foreground">Songs</h3>
+                        {loadingTopTracks ? (
+                            <Spinner />
+                        ) : topTracks.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">Nothing for this period yet.</p>
+                        ) : (
+                            <ol className="divide-y divide-border">
+                                {topTracks.map((track, i) => (
+                                    <TrackRow
+                                        key={track.songUrl}
+                                        title={track.title}
+                                        artist={track.artist}
+                                        albumImageUrl={track.albumImageUrl}
+                                        songUrl={track.songUrl}
+                                        lead={<span className="w-5.5 shrink-0 text-right text-[15px] font-semibold tabular-nums text-muted-foreground">{i + 1}</span>}
+                                    />
+                                ))}
+                            </ol>
+                        )}
+                    </section>
+                </FadeIn>
+            )}
+        </PageContainer>
     )
 }
