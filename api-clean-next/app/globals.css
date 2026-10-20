@@ -598,3 +598,24 @@
     transform: none;
   }
 }
+
+/* Game boxes run between PlayStation's ~4:5 and Switch's ~5:8; 3:4 crops least from either. */
+.cover-object.is-game {
+  aspect-ratio: 3 / 4;
+  border-radius: 6px;
+}
+
+/* The one raised surface a page gets (Reading now, Playing now, the Chess.com card). */
+.raised-card {
+  position: relative;
+  border-radius: 20px;
+  background: var(--card);
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 1px 2px oklch(0.18 0.006 295 / 0.05),
+    0 12px 32px -16px oklch(0.18 0.006 295 / 0.18);
+}
+
+.dark .raised-card {
+  box-shadow: 0 0 0 1px var(--border);
+}

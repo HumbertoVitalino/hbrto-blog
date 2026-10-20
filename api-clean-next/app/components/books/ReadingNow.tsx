@@ -13,7 +13,7 @@ export function ReadingNow({ books }: { books: BookData[] }) {
       {books.map(book => (
         <article
           key={book.id}
-          className="cover-item relative flex items-center gap-6 rounded-[20px] bg-card p-5 shadow-[0_1px_2px_oklch(0.18_0.006_295/0.05),0_12px_32px_-16px_oklch(0.18_0.006_295/0.18)] dark:shadow-none ring-1 ring-border sm:gap-7 sm:px-7 sm:py-6"
+          className="raised-card cover-item flex items-center gap-6 p-5 sm:gap-7 sm:px-7 sm:py-6"
         >
           <div className="cover-object w-21 shrink-0 sm:w-26">
             {book.coverImageUrl ? (
