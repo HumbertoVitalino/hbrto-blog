@@ -38,9 +38,7 @@ export default function Header() {
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 sm:px-8">
         <Link href="/" aria-label="Home" className={cn(chip, 'group relative size-10 p-0.5')}>
           <Halo />
-          <span className="grid size-full place-items-center rounded-full bg-muted text-[13px] font-semibold tracking-wide text-foreground">
-            HV
-          </span>
+          <img src="/photos/avatar.webp" alt="" width={36} height={36} className="size-full rounded-full bg-muted object-cover" />
         </Link>
 
         <nav aria-label="Main" className={cn(chip, 'group relative hidden md:block')}>

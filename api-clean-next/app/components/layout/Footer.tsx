@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { NAV_ITEMS } from '@/app/components/layout/navigation'
+import { FOOTER_ITEMS } from '@/app/components/layout/navigation'
 
 export default function Footer() {
   return (
@@ -10,7 +10,7 @@ export default function Footer() {
           <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-6 px-4 sm:flex-row sm:px-8">
             <nav aria-label="Footer">
               <ul className="flex flex-wrap justify-center gap-x-6 gap-y-1 text-sm font-medium">
-                {NAV_ITEMS.map(item => (
+                {FOOTER_ITEMS.map(item => (
                   <li key={item.href}>
                     <Link href={item.href} className="transition-colors hover:text-brand-accent">
                       {item.label}
