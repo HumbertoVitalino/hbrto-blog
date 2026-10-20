@@ -142,7 +142,8 @@
   --border: rgb(255 255 255 / 0.08);
   --input: rgb(255 255 255 / 0.15);
   --ring: oklch(0.75 0.14 295);
-  --chart-1: oklch(0.75 0.14 295);
+  /* a step below the accent: data marks on #161616 validate at L 0.66, not 0.75 */
+  --chart-1: oklch(0.66 0.16 295);
   --chart-2: #d4d4d4;
   --chart-3: #a1a1a1;
   --chart-4: #737373;
@@ -535,4 +536,23 @@
   from {
     transform: scaleY(0);
   }
+}
+
+/* ── Life areas (habit tracker): identity colours, the reference categorical slots 1-5,
+   validated for colour-vision deficiency and normal vision on both surfaces. Always shown
+   beside the area's name, never as the only cue. ── */
+:root {
+  --area-health: #2a78d6;
+  --area-mind: #eb6834;
+  --area-career: #1baf7a;
+  --area-people: #eda100;
+  --area-rest: #e87ba4;
+}
+
+.dark {
+  --area-health: #3987e5;
+  --area-mind: #d95926;
+  --area-career: #199e70;
+  --area-people: #c98500;
+  --area-rest: #d55181;
 }

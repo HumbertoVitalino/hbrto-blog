@@ -3,17 +3,23 @@ import 'server-only'
 import { NextRequest } from "next/server";
 import { supabase } from "@/infrastructure/supabase/client";
 
-/** True when the request carries the admin's Supabase access token. */
-export async function isAdminRequest(request: NextRequest): Promise<boolean> {
+/** The admin's access token when the request carries a valid one, otherwise null. */
+export async function adminAccessToken(request: NextRequest): Promise<string | null> {
     try {
         const authHeader = request.headers.get("authorization");
-        if (!authHeader?.startsWith("Bearer ")) return false;
+        if (!authHeader?.startsWith("Bearer ")) return null;
 
-        const { data, error } = await supabase.auth.getUser(authHeader.slice(7));
-        if (error || !data.user) return false;
+        const token = authHeader.slice(7);
+        const { data, error } = await supabase.auth.getUser(token);
+        if (error || !data.user) return null;
 
-        return data.user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+        return data.user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL ? token : null;
     } catch {
-        return false;
+        return null;
     }
+}
+
+/** True when the request carries the admin's Supabase access token. */
+export async function isAdminRequest(request: NextRequest): Promise<boolean> {
+    return (await adminAccessToken(request)) !== null;
 }

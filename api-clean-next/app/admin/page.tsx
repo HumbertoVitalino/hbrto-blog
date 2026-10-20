@@ -5,7 +5,6 @@ import { useAuth } from '@/app/context/AuthContext'
 import { useEffect, useState, useCallback } from 'react'
 import { useBooks } from '@/app/hooks/useBooks'
 import { useNotes } from '@/app/hooks/useNotes'
-import { noteDate } from '@/lib/notes'
 import { useSubscribers } from '@/app/hooks/useSubscribers'
 import { BookStatus } from '@/domain/BookStatus'
 import Link from 'next/link'
@@ -14,11 +13,11 @@ import {
   Library, Mail, Trash2, Send, ArrowUpRight, Users, FileText, Gamepad2, BookMarked
 } from 'lucide-react'
 import { useGames } from '@/app/hooks/useGames'
-import { GameStatus } from '@/domain/GameStatus'
-import { GamePlatform } from '@/domain/GamePlatform'
 import { useStudyTopics } from '@/app/hooks/useStudyTopics'
-import { StudyTopicStatus } from '@/domain/StudyTopicStatus'
 import { toast } from 'sonner'
+import { PageContainer } from '@/app/components/layout/PageHeader'
+import { Segmented } from '@/app/components/layout/Segmented'
+import { HabitTracker } from '@/app/components/habits/HabitTracker'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +29,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 
-type Tab = 'overview' | 'books' | 'notes' | 'games' | 'studies' | 'newsletter'
+type Tab = 'today' | 'site' | 'newsletter'
 
 export default function AdminPage() {
   const router = useRouter()
@@ -41,7 +40,7 @@ export default function AdminPage() {
   const { games, isLoading: gamesLoading } = useGames()
   const { topics, isLoading: topicsLoading } = useStudyTopics()
 
-  const [tab, setTab] = useState<Tab>('overview')
+  const [tab, setTab] = useState<Tab>('today')
   const [removingEmail, setRemovingEmail] = useState<string | null>(null)
   const [compose, setCompose] = useState(false)
   const [broadcastSubject, setBroadcastSubject] = useState('')
@@ -94,9 +93,9 @@ export default function AdminPage() {
       toast.success('Newsletter sent')
       setBroadcastSubject('')
       setBroadcastMessage('')
-    } catch (err: any) {
+    } catch (err) {
       setBroadcastStatus('error')
-      setBroadcastError(err.message)
+      setBroadcastError(err instanceof Error ? err.message : 'Failed to send')
     }
   }, [broadcastSubject, broadcastMessage])
 
@@ -117,52 +116,31 @@ export default function AdminPage() {
   const formatDate = (date: string | Date) =>
     new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
-  const tabs: { id: Tab; label: string }[] = [
-    { id: 'overview',   label: 'Overview'   },
-    { id: 'books',      label: 'Books'      },
-    { id: 'notes',      label: 'Notes'      },
-    { id: 'games',      label: 'Games'      },
-    { id: 'studies',    label: 'Studies'    },
-    { id: 'newsletter', label: 'Newsletter' },
+  const tabs: { value: Tab; label: string; count?: number }[] = [
+    { value: 'today', label: 'Today' },
+    { value: 'site', label: 'Site' },
+    { value: 'newsletter', label: 'Newsletter', count: subscribersLoading ? undefined : subscribers.length },
   ]
 
   return (
-    <div className="min-h-screen">
-
-      {/* PAGE HEADER */}
-      <section className="border-b bg-muted/10">
-        <div className="max-w-5xl mx-auto px-6 pt-12 pb-0">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Admin</p>
-          <h1 className="font-display text-3xl font-medium tracking-tight mb-8">Dashboard</h1>
-
-          {/* TABS */}
-          <div className="flex gap-1">
-            {tabs.map(t => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors border-b-2 -mb-px ${
-                  tab === t.id
-                    ? 'border-foreground text-foreground bg-background'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {t.label}
-                {t.id === 'newsletter' && !subscribersLoading && subscribers.length > 0 && (
-                  <span className="ml-2 text-xs bg-brand-accent/15 text-brand-accent px-1.5 py-0.5 rounded-full font-medium">
-                    {subscribers.length}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
+    <PageContainer>
+      <header className="pt-10 sm:pt-16">
+        <p className="text-[13px] font-semibold text-muted-foreground">Admin</p>
+        <h1 className="mt-1 text-[2rem] font-semibold leading-10 tracking-tight sm:text-[2.75rem] sm:leading-13">
+          {tab === 'today' ? 'Today' : tab === 'site' ? 'The site' : 'Newsletter'}
+        </h1>
+        <div className="mt-6">
+          <Segmented id="admin-tab" label="Admin section" options={tabs} value={tab} onChange={setTab} />
         </div>
-      </section>
+      </header>
 
-      <div className="max-w-5xl mx-auto px-6 py-10">
+      <div className={tab === 'today' ? 'mx-auto mt-8 max-w-xl' : 'mt-10'}>
 
-        {/* ── OVERVIEW ── */}
-        {tab === 'overview' && (
+        {/* ── TODAY: the habit tracker ── */}
+        {tab === 'today' && <HabitTracker />}
+
+        {/* ── SITE (redesigned in a later step) ── */}
+        {tab === 'site' && (
           <div className="space-y-8">
 
             {/* STAT CARDS */}
@@ -254,170 +232,6 @@ export default function AdminPage() {
                     ))}
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── BOOKS ── */}
-        {tab === 'books' && (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-sm text-muted-foreground">
-                {booksLoading ? '—' : `${books.length} books total`}
-              </p>
-              <Link href="/library" className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-                <Library className="w-3.5 h-3.5" /> Manage in Library
-              </Link>
-            </div>
-
-            {booksLoading ? <Spinner /> : books.length === 0 ? (
-              <Empty message="No books yet." />
-            ) : (
-              <div className="divide-y divide-border/50 border border-border/60 rounded-2xl overflow-hidden bg-card">
-                {books.map((book) => (
-                  <div key={book.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-muted/30 transition-colors">
-                    {book.coverImageUrl ? (
-                      <img src={book.coverImageUrl} alt="" className="w-8 h-10 object-cover rounded shrink-0" />
-                    ) : (
-                      <div className="w-8 h-10 bg-muted rounded shrink-0 flex items-center justify-center">
-                        <BookOpen className="w-3.5 h-3.5 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{book.title}</p>
-                      <p className="text-xs text-muted-foreground">{book.author}</p>
-                    </div>
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${
-                      book.status === BookStatus.Completed  ? 'bg-success/10 text-success' :
-                      book.status === BookStatus.InProgress ? 'bg-info/10 text-info'       :
-                      'bg-muted text-muted-foreground'
-                    }`}>
-                      {book.status === BookStatus.Completed  ? 'Completed' :
-                       book.status === BookStatus.InProgress ? 'Reading'   : 'To read'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── NOTES ── */}
-        {tab === 'notes' && (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-sm text-muted-foreground">
-                {writtenNotesLoading ? '—' : `${writtenNotes.length} notes total`}
-              </p>
-              <Link href="/notes" className="flex items-center gap-1.5 text-sm font-medium text-brand-accent hover:text-brand-accent/80 transition-colors">
-                <FileText className="w-3.5 h-3.5" /> Manage in Notes
-              </Link>
-            </div>
-
-            {writtenNotesLoading ? <Spinner /> : writtenNotes.length === 0 ? (
-              <Empty message="No notes yet." />
-            ) : (
-              <div className="divide-y divide-border/50 border border-border/60 rounded-2xl overflow-hidden bg-card">
-                {writtenNotes.map((note) => (
-                  <Link key={note.id} href={`/notes/${note.id}`} className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-muted/30 transition-colors">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{note.entries[0].title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{noteDate(note.createdAt)}</p>
-                    </div>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {note.entries.map(e => (e.language === 'pt-BR' ? 'PT' : 'EN')).join(' · ')}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── GAMES ── */}
-        {tab === 'games' && (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-sm text-muted-foreground">
-                {gamesLoading ? '—' : `${games.length} games total`}
-              </p>
-              <Link href="/games" className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-                <Gamepad2 className="w-3.5 h-3.5" /> Manage in Games
-              </Link>
-            </div>
-
-            {gamesLoading ? <Spinner /> : games.length === 0 ? (
-              <Empty message="No games yet." />
-            ) : (
-              <div className="divide-y divide-border/50 border border-border/60 rounded-2xl overflow-hidden bg-card">
-                {games.map((game) => (
-                  <div key={game.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-muted/30 transition-colors">
-                    {game.coverImageUrl ? (
-                      <img src={game.coverImageUrl} alt="" className="w-12 h-8 object-cover rounded shrink-0" />
-                    ) : (
-                      <div className="w-12 h-8 bg-muted rounded shrink-0 flex items-center justify-center">
-                        <Gamepad2 className="w-3.5 h-3.5 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{game.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {game.platform === GamePlatform.PSN ? 'PlayStation' : 'Nintendo Switch'}
-                        {game.genre ? ` · ${game.genre}` : ''}
-                      </p>
-                    </div>
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${
-                      game.status === GameStatus.Completed ? 'bg-success/10 text-success' :
-                      game.status === GameStatus.Playing   ? 'bg-info/10 text-info'       :
-                      'bg-muted text-muted-foreground'
-                    }`}>
-                      {game.status === GameStatus.Completed ? 'Completed' :
-                       game.status === GameStatus.Playing   ? 'Playing'   : 'Backlog'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── STUDIES ── */}
-        {tab === 'studies' && (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-sm text-muted-foreground">
-                {topicsLoading ? '—' : `${topics.length} topics total`}
-              </p>
-              <Link href="/studies" className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-                <BookMarked className="w-3.5 h-3.5" /> Manage in Studies
-              </Link>
-            </div>
-
-            {topicsLoading ? <Spinner /> : topics.length === 0 ? (
-              <Empty message="No study topics yet." />
-            ) : (
-              <div className="divide-y divide-border/50 border border-border/60 rounded-2xl overflow-hidden bg-card">
-                {topics.map((topic) => (
-                  <div key={topic.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-muted/30 transition-colors">
-                    <div className="w-8 h-8 bg-muted rounded-lg shrink-0 flex items-center justify-center">
-                      <BookMarked className="w-3.5 h-3.5 text-muted-foreground" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{topic.title}</p>
-                    </div>
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${
-                      topic.status === StudyTopicStatus.Completed  ? 'bg-success/10 text-success' :
-                      topic.status === StudyTopicStatus.InProgress ? 'bg-info/10 text-info'       :
-                      topic.status === StudyTopicStatus.OnHold     ? 'bg-warning/10 text-warning' :
-                      'bg-muted text-muted-foreground'
-                    }`}>
-                      {topic.status === StudyTopicStatus.Completed  ? 'Completed' :
-                       topic.status === StudyTopicStatus.InProgress ? 'In progress' :
-                       topic.status === StudyTopicStatus.OnHold     ? 'On hold'   : 'Planned'}
-                    </span>
-                  </div>
-                ))}
               </div>
             )}
           </div>
@@ -570,7 +384,7 @@ export default function AdminPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageContainer>
   )
 }
 
