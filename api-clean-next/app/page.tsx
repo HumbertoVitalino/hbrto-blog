@@ -10,11 +10,10 @@ import { motion, AnimatePresence, type Variants } from 'motion/react'
 import { useBooks } from '@/app/hooks/useBooks'
 import { useNotes } from '@/app/hooks/useNotes'
 import { useNowPlaying } from '@/app/hooks/useNowPlaying'
-import { useReleaseNotes } from '@/app/hooks/useReleaseNotes'
 import { BookStatus } from '@/domain/BookStatus'
 import {
   Server, Layout, Cloud, Database, Activity,
-  BookOpen, NotebookPen, Music, Zap, ArrowUpRight, ArrowRight,
+  BookOpen, NotebookPen, Music, ArrowUpRight, ArrowRight,
   Layers, GitBranch, Cpu, GraduationCap, Briefcase, RefreshCw
 } from 'lucide-react'
 
@@ -103,14 +102,6 @@ const blogSections = [
     label: 'Music',
     description: 'What\'s playing while I write and build.',
     color: 'text-chart-3',
-  },
-  {
-    href: '/release-notes',
-    slug: 'release-notes',
-    icon: Zap,
-    label: 'Releases',
-    description: 'Changelog of what\'s new on this blog.',
-    color: 'text-chart-2',
   },
 ]
 
@@ -257,18 +248,16 @@ function formatElapsed(totalSeconds: number): string {
   return [h, m, s].map(n => String(n).padStart(2, '0')).join(':')
 }
 
-const requestRoutes = ['/library', '/notes', '/games', '/studies', '/music', '/release-notes']
+const requestRoutes = ['/library', '/notes', '/games', '/studies', '/music']
 const eqBarHeights = ['h-1.5', 'h-4', 'h-2.5', 'h-3.5']
 
 export default function HomePage() {
   const { books } = useBooks()
   const { notes: writtenNotes } = useNotes()
   const { data: nowPlaying } = useNowPlaying()
-  const { notes } = useReleaseNotes()
 
   const readingBook = books.find(b => b.status === BookStatus.InProgress)
   const latestWritten = writtenNotes[0]
-  const latestNote = notes[0]
 
   // session widget — real elapsed time since this page was opened, ticking live
   const [elapsed, setElapsed] = useState(0)
@@ -301,7 +290,6 @@ export default function HomePage() {
     '/music': nowPlaying?.title
       ? `${nowPlaying.isPlaying ? 'Now playing' : 'Last played'} — ${nowPlaying.title}`
       : 'Nothing playing right now',
-    '/release-notes': latestNote ? `v${latestNote.version} — ${latestNote.title}` : 'No releases logged yet',
   }
 
   return (
@@ -341,8 +329,6 @@ export default function HomePage() {
             </span>
             <span className="hidden sm:inline text-border">|</span>
             <span>uptime <span className="text-foreground">4+ yrs</span></span>
-            <span className="hidden sm:inline text-border">|</span>
-            <span>last deploy <span className="text-foreground">{latestNote ? `v${latestNote.version}` : '—'}</span></span>
             <span className="ml-auto flex items-center gap-1.5 text-muted-foreground/70">
               <RefreshCw className="w-3 h-3" />
               auto-refresh

@@ -6,12 +6,11 @@ import { useEffect, useState, useCallback } from 'react'
 import { useBooks } from '@/app/hooks/useBooks'
 import { useNotes } from '@/app/hooks/useNotes'
 import { noteDate } from '@/lib/notes'
-import { useReleaseNotes } from '@/app/hooks/useReleaseNotes'
 import { useSubscribers } from '@/app/hooks/useSubscribers'
 import { BookStatus } from '@/domain/BookStatus'
 import Link from 'next/link'
 import {
-  Loader2, BookOpen, NotebookPen, Zap, CheckCircle, Clock,
+  Loader2, BookOpen, NotebookPen, CheckCircle, Clock,
   Library, Mail, Trash2, Send, ArrowUpRight, Users, FileText, Gamepad2, BookMarked
 } from 'lucide-react'
 import { useGames } from '@/app/hooks/useGames'
@@ -37,9 +36,7 @@ export default function AdminPage() {
   const router = useRouter()
   const { user, isLoading: authLoading } = useAuth()
   const { books, isLoading: booksLoading } = useBooks()
-  // `notes` below is the release notes; these are the written notes
   const { notes: writtenNotes, isLoading: writtenNotesLoading } = useNotes()
-  const { notes, isLoading: notesLoading } = useReleaseNotes()
   const { subscribers, isLoading: subscribersLoading, removeSubscriber } = useSubscribers()
   const { games, isLoading: gamesLoading } = useGames()
   const { topics, isLoading: topicsLoading } = useStudyTopics()
@@ -177,7 +174,6 @@ export default function AdminPage() {
                 { label: 'Notes',        value: writtenNotesLoading ? null : writtenNotes.length, icon: NotebookPen, color: 'text-warning',      bg: 'bg-warning/10',      border: 'border-warning/20'      },
                 { label: 'Games',        value: gamesLoading ? null : games.length,            icon: Gamepad2,    color: 'text-brand-accent', bg: 'bg-brand-accent/10', border: 'border-brand-accent/20' },
                 { label: 'Study topics', value: topicsLoading ? null : topics.length,          icon: BookMarked,  color: 'text-info',         bg: 'bg-info/10',         border: 'border-info/20'         },
-                { label: 'Releases',     value: notesLoading ? null : notes.length,            icon: Zap,         color: 'text-primary',      bg: 'bg-primary/10',      border: 'border-primary/20'      },
                 { label: 'Subscribers',  value: subscribersLoading ? null : subscribers.length, icon: Users,      color: 'text-brand-accent', bg: 'bg-brand-accent/10', border: 'border-brand-accent/20' },
               ].map(({ label, value, icon: Icon, color, bg, border }) => (
                 <div key={label} className={`p-5 rounded-2xl border ${border} ${bg}`}>

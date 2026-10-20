@@ -18,12 +18,6 @@ export { GetRecentlyPlayedUseCase } from "./GetRecentlyPlayedUseCase";
 export { GetTopTracksUseCase } from "./GetTopTracksUseCase";
 export { GetTopArtistsUseCase } from "./GetTopArtistsUseCase";
 
-export { GetAllReleaseNotesUseCase } from "./GetAllReleaseNotesUseCase";
-export { GetReleaseNoteByIdUseCase } from "./GetReleaseNoteByIdUseCase";
-export { CreateReleaseNoteUseCase, type CreateReleaseNoteDTO } from "./CreateReleaseNoteUseCase";
-export { UpdateReleaseNoteUseCase, type UpdateReleaseNoteDTO } from "./UpdateReleaseNoteUseCase";
-export { DeleteReleaseNoteUseCase } from "./DeleteReleaseNoteUseCase";
-
 export { SubscribeUseCase, type SubscribeDTO } from "./SubscribeUseCase";
 export { UnsubscribeUseCase, type UnsubscribeDTO } from "./UnsubscribeUseCase";
 export { GetAllSubscribersUseCase } from "./GetAllSubscribersUseCase";

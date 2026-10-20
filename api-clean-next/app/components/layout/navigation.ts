@@ -10,7 +10,6 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/music', label: 'Music' },
   { href: '/games', label: 'Games' },
   { href: '/studies', label: 'Studies' },
-  { href: '/release-notes', label: 'Releases' },
 ]
 
 /** Home only matches itself; every other section also owns its sub-pages. */
