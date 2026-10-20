@@ -8,10 +8,11 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
-  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /* Inter everywhere; kept as an alias so pages not yet migrated still render */
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -61,97 +62,98 @@
 }
 
 /*
- * ── Umbra — twilight-violet identity ──
- * Gengar-inspired, tempered for daylight use. See the approved style guide
- * for the full rationale; these are the literal tokens from that proposal.
+ * ── Identity: quiet neutrals, one violet accent ──
+ * Inspired by b-r.io's restraint. Neutrals carry a faint violet bias (hue 295) so they read
+ * as chosen, not default gray. Violet lives in --brand-accent and is spent only on links,
+ * calls to action, focus and active states; buttons stay neutral (--primary).
  */
 :root {
-  --background: oklch(0.985 0.005 300);
-  --foreground: oklch(0.20 0.035 300);
-  --card: oklch(0.995 0.004 300);
-  --card-foreground: oklch(0.20 0.035 300);
-  --popover: oklch(0.995 0.004 300);
-  --popover-foreground: oklch(0.20 0.035 300);
-  --primary: oklch(0.40 0.16 300);
-  --primary-foreground: oklch(0.98 0.01 300);
-  --secondary: oklch(0.95 0.014 300);
-  --secondary-foreground: oklch(0.30 0.05 300);
-  --muted: oklch(0.96 0.01 300);
-  --muted-foreground: oklch(0.50 0.025 300);
-  --accent: oklch(0.93 0.035 322);
-  --accent-foreground: oklch(0.34 0.11 322);
-  --destructive: oklch(0.53 0.19 18);
-  --destructive-foreground: oklch(0.98 0.01 18);
-  --destructive-text: oklch(0.53 0.19 18);
-  --success: oklch(0.58 0.11 165);
-  --success-foreground: oklch(0.98 0.01 165);
+  --background: oklch(0.985 0.002 295);
+  --foreground: oklch(0.18 0.006 295);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.006 295);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.006 295);
+  --primary: oklch(0.21 0.006 295);
+  --primary-foreground: oklch(0.985 0.002 295);
+  --secondary: oklch(0.962 0.004 295);
+  --secondary-foreground: oklch(0.21 0.006 295);
+  --muted: oklch(0.962 0.004 295);
+  --muted-foreground: oklch(0.50 0.01 295);
+  --accent: oklch(0.955 0.005 295);
+  --accent-foreground: oklch(0.18 0.006 295);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.985 0.002 25);
+  --destructive-text: oklch(0.52 0.2 25);
+  --success: oklch(0.56 0.12 155);
+  --success-foreground: oklch(0.985 0.01 155);
   --warning: oklch(0.72 0.14 75);
   --warning-foreground: oklch(0.25 0.05 75);
-  --info: oklch(0.55 0.14 258);
-  --info-foreground: oklch(0.98 0.01 258);
-  --brand-accent: oklch(0.62 0.19 328);
-  --brand-accent-foreground: oklch(0.98 0.02 328);
-  --border: oklch(0.90 0.012 300);
-  --input: oklch(0.90 0.012 300);
-  --ring: oklch(0.55 0.15 300);
-  --chart-1: oklch(0.40 0.16 300);
-  --chart-2: oklch(0.62 0.19 328);
-  --chart-3: oklch(0.58 0.11 165);
-  --chart-4: oklch(0.72 0.14 75);
-  --chart-5: oklch(0.55 0.14 258);
+  --info: oklch(0.55 0.13 250);
+  --info-foreground: oklch(0.985 0.01 250);
+  --brand-accent: oklch(0.50 0.20 295);
+  --brand-accent-foreground: oklch(0.99 0.005 295);
+  --border: oklch(0.925 0.005 295);
+  --input: oklch(0.90 0.005 295);
+  --ring: oklch(0.50 0.20 295);
+  --chart-1: oklch(0.50 0.20 295);
+  --chart-2: oklch(0.40 0.008 295);
+  --chart-3: oklch(0.56 0.008 295);
+  --chart-4: oklch(0.70 0.008 295);
+  --chart-5: oklch(0.82 0.006 295);
   --radius: 0.625rem;
-  --sidebar: oklch(0.97 0.008 300);
-  --sidebar-foreground: oklch(0.20 0.035 300);
-  --sidebar-primary: oklch(0.40 0.16 300);
-  --sidebar-primary-foreground: oklch(0.98 0.01 300);
-  --sidebar-accent: oklch(0.93 0.035 322);
-  --sidebar-accent-foreground: oklch(0.34 0.11 322);
-  --sidebar-border: oklch(0.90 0.012 300);
-  --sidebar-ring: oklch(0.55 0.15 300);
+  --sidebar: oklch(0.985 0.002 295);
+  --sidebar-foreground: oklch(0.18 0.006 295);
+  --sidebar-primary: oklch(0.21 0.006 295);
+  --sidebar-primary-foreground: oklch(0.985 0.002 295);
+  --sidebar-accent: oklch(0.955 0.005 295);
+  --sidebar-accent-foreground: oklch(0.18 0.006 295);
+  --sidebar-border: oklch(0.925 0.005 295);
+  --sidebar-ring: oklch(0.50 0.20 295);
 }
 
 .dark {
-  --background: oklch(0.155 0.028 300);
-  --foreground: oklch(0.94 0.012 300);
-  --card: oklch(0.205 0.032 300);
-  --card-foreground: oklch(0.94 0.012 300);
-  --popover: oklch(0.205 0.032 300);
-  --popover-foreground: oklch(0.94 0.012 300);
-  --primary: oklch(0.57 0.17 300);
-  --primary-foreground: oklch(0.99 0.01 300);
-  --secondary: oklch(0.255 0.032 300);
-  --secondary-foreground: oklch(0.90 0.014 300);
-  --muted: oklch(0.235 0.03 300);
-  --muted-foreground: oklch(0.66 0.02 300);
-  --accent: oklch(0.30 0.06 322);
-  --accent-foreground: oklch(0.92 0.03 322);
-  --destructive: oklch(0.60 0.19 18);
-  --destructive-foreground: oklch(0.98 0.01 18);
-  --destructive-text: oklch(0.65 0.19 18);
-  --success: oklch(0.68 0.13 165);
-  --success-foreground: oklch(0.13 0.03 165);
-  --warning: oklch(0.78 0.13 75);
+  --background: oklch(0 0 0);
+  --foreground: oklch(0.97 0.003 295);
+  --card: oklch(0.19 0.004 295);
+  --card-foreground: oklch(0.97 0.003 295);
+  --popover: oklch(0.19 0.004 295);
+  --popover-foreground: oklch(0.97 0.003 295);
+  --primary: oklch(0.93 0.004 295);
+  --primary-foreground: oklch(0.18 0.006 295);
+  --secondary: oklch(0.22 0.006 295);
+  --secondary-foreground: oklch(0.97 0.003 295);
+  --muted: oklch(0.205 0.006 295);
+  --muted-foreground: oklch(0.70 0.01 295);
+  --accent: oklch(0.24 0.006 295);
+  --accent-foreground: oklch(0.97 0.003 295);
+  --destructive: oklch(0.62 0.2 25);
+  --destructive-foreground: oklch(0.985 0.002 25);
+  --destructive-text: oklch(0.70 0.17 25);
+  --success: oklch(0.70 0.13 155);
+  --success-foreground: oklch(0.15 0.03 155);
+  --warning: oklch(0.80 0.13 75);
   --warning-foreground: oklch(0.20 0.04 75);
-  --info: oklch(0.66 0.14 258);
-  --info-foreground: oklch(0.98 0.01 258);
-  --brand-accent: oklch(0.70 0.19 328);
-  --brand-accent-foreground: oklch(0.15 0.03 328);
-  --border: oklch(1 0.01 300 / 12%);
-  --input: oklch(1 0.01 300 / 15%);
-  --ring: oklch(0.60 0.15 300);
-  --chart-1: oklch(0.58 0.17 300);
-  --chart-2: oklch(0.70 0.19 328);
-  --chart-3: oklch(0.68 0.13 165);
-  --chart-4: oklch(0.78 0.13 75);
-  --chart-5: oklch(0.66 0.14 258);
-  --sidebar: oklch(0.19 0.03 300);
-  --sidebar-foreground: oklch(0.94 0.012 300);
-  --sidebar-primary: oklch(0.58 0.17 300);
-  --sidebar-primary-foreground: oklch(0.99 0.01 300);
-  --sidebar-accent: oklch(0.30 0.06 322);
-  --sidebar-accent-foreground: oklch(0.92 0.03 322);
-  --sidebar-border: oklch(1 0.01 300 / 12%);
-  --sidebar-ring: oklch(0.60 0.15 300);
+  --info: oklch(0.70 0.12 250);
+  --info-foreground: oklch(0.15 0.03 250);
+  --brand-accent: oklch(0.75 0.14 295);
+  --brand-accent-foreground: oklch(0.16 0.02 295);
+  --border: oklch(1 0 0 / 9%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.75 0.14 295);
+  --chart-1: oklch(0.75 0.14 295);
+  --chart-2: oklch(0.88 0.004 295);
+  --chart-3: oklch(0.70 0.006 295);
+  --chart-4: oklch(0.52 0.006 295);
+  --chart-5: oklch(0.38 0.006 295);
+  --sidebar: oklch(0.19 0.004 295);
+  --sidebar-foreground: oklch(0.97 0.003 295);
+  --sidebar-primary: oklch(0.93 0.004 295);
+  --sidebar-primary-foreground: oklch(0.18 0.006 295);
+  --sidebar-accent: oklch(0.24 0.006 295);
+  --sidebar-accent-foreground: oklch(0.97 0.003 295);
+  --sidebar-border: oklch(1 0 0 / 9%);
+  --sidebar-ring: oklch(0.75 0.14 295);
 }
 
 @layer base {
@@ -341,4 +343,190 @@
     animation: none;
     transform: scaleY(0.6);
   }
+}
+/* ── Lists of things to open: a soft surface grows in behind the item on hover ──
+   Put .hover-surface on the item and .stretched-link on its one main link; the link's
+   overlay then makes the whole item clickable while other controls stay reachable
+   (give those `relative z-10`). */
+.hover-surface {
+  position: relative;
+  isolation: isolate;
+}
+
+.hover-surface::before {
+  content: "";
+  position: absolute;
+  inset: -1rem;
+  z-index: -1;
+  border-radius: var(--radius-2xl);
+  background: var(--muted);
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+  pointer-events: none;
+}
+
+.stretched-link::after {
+  content: "";
+  position: absolute;
+  inset: -1rem;
+  z-index: 1;
+  border-radius: var(--radius-2xl);
+}
+
+@media (min-width: 640px) {
+  .hover-surface::before,
+  .stretched-link::after {
+    inset: -1.5rem;
+  }
+}
+
+@media (hover: hover) {
+  .hover-surface:hover::before {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.hover-surface:focus-within::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.stretched-link:focus-visible {
+  outline: none;
+}
+
+.stretched-link:focus-visible::after {
+  outline: 2px solid var(--ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hover-surface::before {
+    transition: none;
+  }
+}
+
+/* ── Long-form reading (notes): quiet body, strong headings, violet links ── */
+.prose-note {
+  color: var(--muted-foreground);
+  font-size: 1rem;
+  line-height: 1.75rem;
+  overflow-wrap: break-word;
+}
+
+.prose-note > * + * {
+  margin-top: 1.5rem;
+}
+
+.prose-note > :first-child {
+  margin-top: 0;
+}
+
+.prose-note h1,
+.prose-note h2,
+.prose-note h3 {
+  margin-top: 3.5rem;
+  color: var(--foreground);
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.prose-note h4 {
+  margin-top: 2.5rem;
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.prose-note :is(h1, h2, h3, h4) + * {
+  margin-top: 1rem;
+}
+
+.prose-note strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.prose-note em {
+  color: var(--foreground);
+}
+
+.prose-note a {
+  color: var(--brand-accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--brand-accent) 30%, transparent);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s;
+}
+
+.prose-note a:hover {
+  text-decoration-color: var(--brand-accent);
+}
+
+.prose-note hr {
+  margin-block: 3rem;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.prose-note ul,
+.prose-note ol {
+  padding-left: 1.25rem;
+}
+
+.prose-note ul {
+  list-style-type: disc;
+}
+
+.prose-note ol {
+  list-style-type: decimal;
+}
+
+.prose-note li + li {
+  margin-top: 0.5rem;
+}
+
+.prose-note li::marker {
+  color: var(--muted-foreground);
+}
+
+.prose-note blockquote {
+  padding-left: 1.25rem;
+  border-left: 2px solid var(--border);
+  font-style: italic;
+}
+
+.prose-note :not(pre) > code {
+  padding: 0.1em 0.35em;
+  border-radius: 0.375rem;
+  background: var(--muted);
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}
+
+.prose-note img {
+  border-radius: var(--radius-xl);
+}
+
+.prose-note table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.prose-note th,
+.prose-note td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.prose-note th {
+  color: var(--foreground);
+  font-weight: 600;
 }

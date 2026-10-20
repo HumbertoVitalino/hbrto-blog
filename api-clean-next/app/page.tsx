@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { SocialFooter } from '@/app/components/layout/Footer'
+import { SocialFooter } from '@/app/components/layout/SocialFooter'
 import { NewsletterBanner } from '@/app/components/newsletter/NewsletterBanner'
 import { FiGithub } from 'react-icons/fi'
 import { motion, AnimatePresence, type Variants } from 'motion/react'

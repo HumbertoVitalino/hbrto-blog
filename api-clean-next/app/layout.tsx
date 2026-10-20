@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces } from "next/font/google";
+import { Inter, Geist_Mono } from "next/font/google";
 import { ReactNode } from "react";
 import { AuthProvider } from "@/app/context/AuthContext";
 import Header from "@/app/components/layout/Header";
+import Footer from "@/app/components/layout/Footer";
 import { ThemeProvider } from "@/app/components/layout/ThemeProvider";
 import { Toaster } from "sonner";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -17,15 +18,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-});
-
 export const metadata: Metadata = {
-  title: "HumbertoVitalino",
-  description: "Blog about development, books and technology",
+  title: {
+    default: "Humberto Vitalino",
+    template: "%s · Humberto Vitalino",
+  },
+  description: "Software engineer. Notes on what I read, play and build.",
 };
 
 export default function RootLayout({
@@ -36,7 +34,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
@@ -52,6 +50,7 @@ export default function RootLayout({
             <main id="main-content" className="flex-1">
               {children}
             </main>
+            <Footer />
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
