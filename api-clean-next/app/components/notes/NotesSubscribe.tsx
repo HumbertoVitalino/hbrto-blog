@@ -13,6 +13,10 @@ export function NotesSubscribe({ className }: { className?: string }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!email.trim()) {
+      setState({ kind: 'error', message: 'Enter your email address to subscribe.' })
+      return
+    }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setState({ kind: 'error', message: 'That email address doesn’t look complete.' })
       return
@@ -33,19 +37,24 @@ export function NotesSubscribe({ className }: { className?: string }) {
   }
 
   return (
-    <section aria-labelledby={`${id}-title`} className={cn('rounded-2xl border border-border bg-card p-6', className)}>
-      <h2 id={`${id}-title`} className="flex items-center gap-3 text-sm font-semibold">
-        <Mail className="size-5 text-muted-foreground" aria-hidden />
-        Get new notes by email
-      </h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        One email when I publish a note. Nothing else, and you can leave any time.
-      </p>
+    // a container query, not a viewport one: the box stacks in a narrow reading column and
+    // lays out as one row (words left, form right) once it's given the full content width
+    <section aria-labelledby={`${id}-title`} className={cn('@container rounded-2xl border border-border bg-card p-6', className)}>
+      <div className="flex flex-col gap-5 @3xl:flex-row @3xl:items-center @3xl:justify-between @3xl:gap-10">
+      <div className="min-w-0">
+        <h2 id={`${id}-title`} className="flex items-center gap-3 text-sm font-semibold">
+          <Mail className="size-5 text-muted-foreground" aria-hidden />
+          Get new notes by email
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          One email when I publish a note. Nothing else, and you can leave any time.
+        </p>
+      </div>
 
       {state.kind === 'done' ? (
-        <p role="status" className="mt-5 text-sm">You’re in. Check your inbox for a welcome email.</p>
+        <p role="status" className="text-sm @3xl:shrink-0">You’re in. Check your inbox for a welcome email.</p>
       ) : (
-        <form onSubmit={handleSubmit} noValidate className="mt-5 flex flex-wrap gap-3">
+        <form onSubmit={handleSubmit} noValidate className="flex flex-wrap gap-3 @3xl:w-md @3xl:shrink-0">
           <label htmlFor={`${id}-email`} className="sr-only">Email address</label>
           <input
             id={`${id}-email`}
@@ -56,12 +65,14 @@ export function NotesSubscribe({ className }: { className?: string }) {
             placeholder="you@example.com"
             aria-invalid={state.kind === 'error'}
             aria-describedby={state.kind === 'error' ? `${id}-error` : undefined}
-            className="min-w-0 flex-[1_1_12rem] rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-brand-accent focus:outline-none focus:ring-3 focus:ring-brand-accent/20"
+            // the edge is drawn inside the fill (inset ring, not a border), so the field reads exactly as tall
+            // as the button; text-base on phones stops iOS zooming in
+            className="h-10 min-w-0 flex-[1_1_12rem] rounded-md bg-card px-3 text-base shadow-sm shadow-foreground/5 ring-1 ring-inset ring-input placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-accent dark:bg-white/4 sm:text-sm"
           />
           <button
             type="submit"
             disabled={state.kind === 'sending'}
-            className="rounded-md bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+            className="h-10 shrink-0 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-[opacity,transform] duration-100 ease-out hover:opacity-90 active:scale-[0.97] disabled:opacity-60"
           >
             {state.kind === 'sending' ? 'Subscribing…' : 'Subscribe'}
           </button>
@@ -70,6 +81,7 @@ export function NotesSubscribe({ className }: { className?: string }) {
           )}
         </form>
       )}
+      </div>
     </section>
   )
 }

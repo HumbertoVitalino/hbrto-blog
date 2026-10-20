@@ -11,6 +11,7 @@ import { noteDate, noteExcerpt, subjectHref } from '@/lib/notes'
 import { NoteBody } from '@/app/components/notes/NoteBody'
 import { NoteActions } from '@/app/components/notes/NoteAdmin'
 import { NotesSubscribe } from '@/app/components/notes/NotesSubscribe'
+import { FadeIn } from '@/app/components/motion/FadeIn'
 
 export const revalidate = 60
 
@@ -76,6 +77,7 @@ export default async function NotePage({ params }: Props) {
           <ArrowLeft className="size-4 text-muted-foreground transition group-hover:-translate-x-0.5 group-hover:text-brand-accent" />
         </Link>
 
+        <FadeIn>
         <article>
           <NoteBody
             versions={versions}
@@ -114,15 +116,20 @@ export default async function NotePage({ params }: Props) {
             }
           />
         </article>
+        </FadeIn>
 
         {(newer || older) && (
-          <nav aria-label="More notes" className="mt-20 grid gap-12 border-t border-border pt-10 sm:grid-cols-2">
-            {newer ? <PagerLink note={newer} label="Newer" align="start" /> : <span className="hidden sm:block" />}
-            {older && <PagerLink note={older} label="Older" align="end" />}
-          </nav>
+          <FadeIn index={1}>
+            <nav aria-label="More notes" className="mt-20 grid gap-12 border-t border-border pt-10 sm:grid-cols-2">
+              {newer ? <PagerLink note={newer} label="Newer" align="start" /> : <span className="hidden sm:block" />}
+              {older && <PagerLink note={older} label="Older" align="end" />}
+            </nav>
+          </FadeIn>
         )}
 
-        <NotesSubscribe className="mt-28" />
+        <FadeIn index={2}>
+          <NotesSubscribe className="mt-28" />
+        </FadeIn>
       </div>
     </div>
   )

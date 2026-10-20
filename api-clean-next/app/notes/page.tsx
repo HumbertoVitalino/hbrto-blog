@@ -7,6 +7,8 @@ import { noteDate, noteDay, noteExcerpt, noteOpening, noteYear } from '@/lib/not
 import { NotesArchive, Cites, type ArchiveRow } from '@/app/components/notes/NotesArchive'
 import { NotesSubscribe } from '@/app/components/notes/NotesSubscribe'
 import { NewNoteButton } from '@/app/components/notes/NoteAdmin'
+import { PageContainer, PageHeader, PageLead } from '@/app/components/layout/PageHeader'
+import { FadeIn } from '@/app/components/motion/FadeIn'
 
 // Publishing revalidates this page right away; the timer only covers edits made elsewhere.
 export const revalidate = 60
@@ -48,18 +50,16 @@ export default async function NotesPage() {
   const [latest, ...rest] = notes ?? []
 
   return (
-    <div className="mx-auto max-w-5xl px-4 sm:px-8">
-      <div className="mx-auto max-w-3xl">
-        <header className="pt-16 sm:pt-24">
-          <h1 className="text-[2rem] font-semibold leading-10 tracking-tight text-balance sm:text-5xl sm:leading-14">
-            Notes on what I read, play and build.
-          </h1>
-          <p className="mt-6 max-w-xl text-base text-muted-foreground text-pretty">
+    <PageContainer>
+      {/* left-aligned like every page; the list keeps a reading width */}
+      <div className="max-w-3xl">
+        <PageHeader title="Notes on what I read, play and build.">
+          <PageLead>
             Things I wanted to write down after finishing a book or a game, or after a week of work.
             {notes && notes.length > 0 && <> {countLine(notes)}</>}
-          </p>
+          </PageLead>
           <NewNoteButton className="mt-8" />
-        </header>
+        </PageHeader>
 
         {notes === null && (
           <p role="alert" className="mt-16 text-sm text-muted-foreground">
@@ -72,6 +72,7 @@ export default async function NotesPage() {
         )}
 
         {latest && (
+          <FadeIn index={1}>
           <section aria-labelledby="latest-heading" className="mt-16 sm:mt-20">
             <h2 id="latest-heading" className="text-sm font-semibold">Latest</h2>
             <article className="hover-surface mt-10 flex flex-col items-start">
@@ -90,12 +91,21 @@ export default async function NotesPage() {
               </span>
             </article>
           </section>
+          </FadeIn>
         )}
 
-        {rest.length > 0 && <NotesArchive rows={rest.map(toRow)} />}
+        {rest.length > 0 && (
+          <FadeIn index={2}>
+            <NotesArchive rows={rest.map(toRow)} />
+          </FadeIn>
+        )}
 
-        <NotesSubscribe className="mt-28" />
       </div>
-    </div>
+
+      {/* outside the reading width: the box spans the whole content column, edge to edge with the footer */}
+      <FadeIn index={3}>
+        <NotesSubscribe className="mt-28" />
+      </FadeIn>
+    </PageContainer>
   )
 }
