@@ -1,55 +1,30 @@
-import { ExternalLink, Mic2 } from 'lucide-react'
+import { Mic2 } from 'lucide-react'
 import { TopArtistData } from '@/app/hooks/useTopArtists'
 
-interface TopArtistItemProps {
-    artist: TopArtistData
-    rank: number
-}
-
-export function TopArtistItem({ artist, rank }: TopArtistItemProps) {
+/** An artist as a portrait in a row of circles, the way Apple Music shows them. */
+export function TopArtistItem({ artist, rank }: { artist: TopArtistData; rank: number }) {
     return (
-        <div className="group flex items-center gap-3 px-2 py-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
-            <span className="w-5 text-xs font-mono text-muted-foreground/40 text-right shrink-0 select-none">
-                {rank}
-            </span>
-
-            {artist.imageUrl ? (
-                <img
-                    src={artist.imageUrl}
-                    alt={artist.name}
-                    className="w-11 h-11 rounded-full object-cover shrink-0 shadow-sm"
-                />
-            ) : (
-                <div className="w-11 h-11 rounded-full bg-muted flex items-center justify-center shrink-0">
-                    <Mic2 className="w-4 h-4 text-muted-foreground" />
-                </div>
-            )}
-
-            <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium leading-tight truncate">{artist.name}</p>
-                {artist.genres.length > 0 && (
-                    <div className="flex gap-1 mt-1 flex-wrap">
-                        {artist.genres.map((g) => (
-                            <span
-                                key={g}
-                                className="inline-flex items-center text-[10px] font-medium bg-muted px-1.5 py-0.5 rounded-full capitalize text-muted-foreground"
-                            >
-                                {g}
-                            </span>
-                        ))}
+        <li className="group relative min-w-0 snap-start text-center">
+            <div className="relative aspect-square w-full overflow-hidden rounded-full bg-muted shadow-[0_1px_2px_rgb(10_10_10/0.10),0_12px_28px_-12px_rgb(10_10_10/0.38)] transition-transform duration-450 ease-(--ease-ios) group-active:scale-[0.97] group-active:duration-100 motion-safe:[@media(hover:hover)]:group-hover:-translate-y-0.75 dark:shadow-[0_1px_2px_rgb(0_0_0/0.6),0_12px_28px_-12px_rgb(0_0_0/0.95)]">
+                {artist.imageUrl ? (
+                    <img src={artist.imageUrl} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" />
+                ) : (
+                    <div className="absolute inset-0 grid place-items-center">
+                        <Mic2 className="size-6 text-muted-foreground/50" />
                     </div>
                 )}
             </div>
-
-            <a
-                href={artist.artistUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-foreground shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 rounded-sm"
-                aria-label="Open in Spotify"
-            >
-                <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-        </div>
+            <p className="mt-3 truncate text-[13px] font-semibold leading-[1.15rem]">
+                <a
+                    href={artist.artistUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:rounded-2xl focus-visible:after:ring-2 focus-visible:after:ring-ring"
+                >
+                    {artist.name}
+                </a>
+            </p>
+            <p className="text-xs tabular-nums text-muted-foreground">#{rank}</p>
+        </li>
     )
 }

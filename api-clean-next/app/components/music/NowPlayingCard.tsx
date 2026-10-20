@@ -1,87 +1,69 @@
-import { ExternalLink, Music } from 'lucide-react'
+import { ChevronRight, Music } from 'lucide-react'
 import { NowPlayingData } from '@/app/hooks/useNowPlaying'
+import { timeAgo } from '@/lib/formatDate'
 
-interface NowPlayingCardProps {
-    data: NowPlayingData
-}
+const EQ_HEIGHTS = ['h-full', 'h-2/3', 'h-1/2']
 
-export function NowPlayingCard({ data }: NowPlayingCardProps) {
+/**
+ * The album as the page's hero, lit by its own colours the way Apple Music tints a player.
+ * Live playback gets the moving equalizer; otherwise it says how long ago the last song was.
+ */
+export function NowPlayingCard({ data, lastPlayedAt }: { data: NowPlayingData; lastPlayedAt?: string }) {
     return (
-        <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm">
-            {/* Ambient blur backdrop */}
+        <section aria-label={data.isPlaying ? 'Now playing' : 'Last played'} className="raised-card isolate overflow-hidden">
             {data.albumImageUrl && (
                 <div
-                    className="absolute inset-0 scale-110 opacity-15 blur-2xl"
-                    style={{
-                        backgroundImage: `url(${data.albumImageUrl})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                    }}
+                    aria-hidden
+                    className="absolute -inset-[40%] -z-10 bg-cover bg-center opacity-20 blur-[60px] saturate-150 dark:opacity-30"
+                    style={{ backgroundImage: `url(${data.albumImageUrl})` }}
                 />
             )}
 
-            <div className="relative flex items-stretch">
-                {/* Album art */}
-                {data.albumImageUrl ? (
-                    <img
-                        src={data.albumImageUrl}
-                        alt={`${data.album} cover`}
-                        className="w-36 h-36 sm:w-48 sm:h-48 shrink-0 object-cover"
-                    />
-                ) : (
-                    <div className="w-36 h-36 sm:w-48 sm:h-48 shrink-0 bg-muted flex items-center justify-center">
-                        <Music className="w-10 h-10 text-muted-foreground" />
-                    </div>
-                )}
+            <div className="flex items-center gap-6 p-5 sm:gap-8 sm:p-7">
+                <div className="relative aspect-square w-30 shrink-0 overflow-hidden rounded-[10px] bg-muted shadow-[0_1px_2px_rgb(10_10_10/0.10),0_12px_28px_-12px_rgb(10_10_10/0.38)] sm:w-42">
+                    {data.albumImageUrl ? (
+                        <img src={data.albumImageUrl} alt="" className="absolute inset-0 size-full object-cover" />
+                    ) : (
+                        <div className="absolute inset-0 grid place-items-center">
+                            <Music className="size-8 text-muted-foreground/50" />
+                        </div>
+                    )}
+                </div>
 
-                {/* Track info */}
-                <div className="flex flex-col justify-between px-5 py-5 sm:px-7 sm:py-6 flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                        {data.isPlaying ? (
-                            <>
-                                <span className="relative flex h-2 w-2 shrink-0">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-accent opacity-75" />
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-accent" />
-                                </span>
-                                <span className="text-xs font-medium text-brand-accent tracking-wide">
-                                    Now Playing
-                                </span>
-                            </>
-                        ) : (
-                            <>
-                                <span className="w-2 h-2 rounded-full bg-muted-foreground/30 shrink-0" />
-                                <span className="text-xs font-medium text-muted-foreground tracking-wide">
-                                    Last Played
-                                </span>
-                            </>
-                        )}
-                    </div>
-
-                    <div className="space-y-1 mt-3">
-                        <p className="font-bold text-xl sm:text-2xl leading-tight line-clamp-2 tracking-tight">
-                            {data.title}
+                <div className="min-w-0">
+                    {data.isPlaying ? (
+                        <p className="flex items-center gap-2 text-[13px] font-semibold text-brand-accent">
+                            <span aria-hidden className="inline-flex h-3 items-end gap-0.5">
+                                {EQ_HEIGHTS.map((h, i) => (
+                                    <span key={i} className={`eq-bar w-0.75 rounded-[1px] bg-current ${h}`} style={{ animationDelay: `${-i * 0.3}s` }} />
+                                ))}
+                            </span>
+                            Now playing
                         </p>
-                        <p className="text-sm sm:text-base text-muted-foreground line-clamp-1 font-medium">
-                            {data.artist}
+                    ) : (
+                        <p className="text-[13px] font-semibold text-muted-foreground">
+                            Last played{lastPlayedAt && <> · {timeAgo(lastPlayedAt)}</>}
                         </p>
-                        <p className="text-xs text-muted-foreground/60 line-clamp-1">
-                            {data.album}
-                        </p>
-                    </div>
-
+                    )}
+                    <h2 className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-balance sm:text-[1.875rem] sm:leading-9">
+                        {data.title}
+                    </h2>
+                    <p className="mt-1 text-[15px] text-muted-foreground">
+                        {data.artist}{data.album && <> · {data.album}</>}
+                    </p>
                     {data.songUrl && (
                         <a
                             href={data.songUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mt-4 w-fit"
+                            className="mt-3.5 inline-flex items-center text-sm font-medium text-brand-accent hover:underline underline-offset-3"
                         >
-                            <ExternalLink className="w-3 h-3" />
                             Open in Spotify
+                            <ChevronRight className="ml-0.5 size-4" />
                         </a>
                     )}
                 </div>
             </div>
-        </div>
+        </section>
     )
 }

@@ -5,6 +5,37 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
+// Resend rejects batch requests with more than 100 emails
+const BATCH_LIMIT = 100;
+
+type BatchEmail = Parameters<typeof resend.batch.send>[0][number];
+
+function escapeHtml(value: string) {
+    return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+// The Resend SDK returns { data, error } instead of throwing, so failures must be checked explicitly
+async function sendBatch(messages: BatchEmail[]): Promise<number> {
+    let sent = 0;
+
+    for (let i = 0; i < messages.length; i += BATCH_LIMIT) {
+        const { error } = await resend.batch.send(messages.slice(i, i + BATCH_LIMIT));
+
+        if (error) {
+            throw new Error(`Resend batch failed after ${sent}/${messages.length} emails: ${error.message}`);
+        }
+
+        sent += Math.min(BATCH_LIMIT, messages.length - i);
+    }
+
+    return sent;
+}
+
 function baseHtml(content: string, unsubscribeUrl?: string) {
     const footer = unsubscribeUrl
         ? `<hr style="border:none;border-top:1px solid #e5e7eb;margin:0 0 24px;" />
@@ -47,7 +78,7 @@ export class EmailService {
             html: baseHtml(`
                 <p style="margin:0 0 24px;font-size:16px;color:#111827;line-height:1.7;">Hey,</p>
                 <p style="margin:0 0 24px;font-size:16px;color:#111827;line-height:1.7;">
-                    You're subscribed. I'll send you a note every time I post a new review — nothing else.
+                    You're subscribed. I'll write when I publish a new note on what I'm reading, playing or building. Nothing else.
                 </p>
                 <p style="margin:0 0 48px;font-size:16px;color:#111827;line-height:1.7;">
                     See you on the other side.<br />— Humberto
@@ -56,23 +87,23 @@ export class EmailService {
         });
     }
 
-    async sendNewReview(emails: string[], reviewTitle: string, reviewId: string): Promise<void> {
-        if (emails.length === 0) return;
+    async sendNewNote(emails: string[], noteTitle: string, noteId: string): Promise<number> {
+        if (emails.length === 0) return 0;
 
-        const reviewUrl = `${SITE_URL}/reviews`;
+        const noteUrl = `${SITE_URL}/notes/${encodeURIComponent(noteId)}`;
 
-        await resend.batch.send(
+        return await sendBatch(
             emails.map((email) => ({
                 from: FROM,
                 to: email,
-                subject: `New review: ${reviewTitle}`,
+                subject: `New note: ${noteTitle}`,
                 html: baseHtml(`
                     <p style="margin:0 0 24px;font-size:16px;color:#111827;line-height:1.7;">Hey,</p>
                     <p style="margin:0 0 24px;font-size:16px;color:#111827;line-height:1.7;">
-                        I just published a new review: <strong>${reviewTitle}</strong>.
+                        I just published a new note: <strong>${escapeHtml(noteTitle)}</strong>.
                     </p>
                     <p style="margin:0 0 48px;">
-                        <a href="${reviewUrl}" style="font-size:15px;color:#111827;font-weight:600;text-decoration:underline;">
+                        <a href="${noteUrl}" style="font-size:15px;color:#111827;font-weight:600;text-decoration:underline;">
                             Read it →
                         </a>
                     </p>
@@ -84,10 +115,10 @@ export class EmailService {
         );
     }
 
-    async sendBroadcast(emails: string[], subject: string, message: string): Promise<void> {
-        if (emails.length === 0) return;
+    async sendBroadcast(emails: string[], subject: string, message: string): Promise<number> {
+        if (emails.length === 0) return 0;
 
-        await resend.batch.send(
+        return await sendBatch(
             emails.map((email) => ({
                 from: FROM,
                 to: email,

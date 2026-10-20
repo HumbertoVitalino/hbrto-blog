@@ -1,52 +1,28 @@
-import { ExternalLink } from 'lucide-react'
 import { SteamGameData } from '@/app/hooks/useSteamGames'
-
-interface SteamGameItemProps {
-    game: SteamGameData
-    rank: number
-}
 
 function formatHours(minutes: number): string {
     const hours = Math.round(minutes / 60)
     return hours < 1 ? `${minutes}m` : `${hours}h`
 }
 
-export function SteamGameItem({ game, rank }: SteamGameItemProps) {
-    const storeUrl = `https://store.steampowered.com/app/${game.appId}`
-
+/** One recent Steam game: its wide header art, name and playtime; the whole row opens the store page. */
+export function SteamGameItem({ game }: { game: SteamGameData }) {
     return (
-        <div className="group flex items-center gap-3 px-2 py-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
-            <span className="w-5 text-xs font-mono text-muted-foreground/40 text-right shrink-0 select-none">
-                {rank}
-            </span>
-
-            <img
-                src={game.headerImageUrl}
-                alt={game.name}
-                className="w-16 h-9 rounded-md object-cover shrink-0 shadow-sm"
-            />
-
-            <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium leading-tight truncate">{game.name}</p>
-                <p className="text-xs text-muted-foreground truncate mt-0.5">
+        <li className="hover-surface flex items-center gap-4">
+            <div className="relative aspect-460/215 w-28 shrink-0 overflow-hidden rounded-md bg-muted shadow-sm ring-1 ring-foreground/5">
+                <img src={game.headerImageUrl} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" />
+            </div>
+            <div className="min-w-0">
+                <h3 className="truncate text-sm font-semibold">
+                    <a href={`https://store.steampowered.com/app/${game.appId}`} target="_blank" rel="noopener noreferrer" className="stretched-link">
+                        {game.name}
+                    </a>
+                </h3>
+                <p className="text-[13px] tabular-nums text-muted-foreground">
                     {formatHours(game.playtimeForever)} total
-                    {game.playtime2weeks > 0 && (
-                        <span className="text-success">
-                            {' '}· {formatHours(game.playtime2weeks)} recently
-                        </span>
-                    )}
+                    {game.playtime2weeks > 0 && <> · {formatHours(game.playtime2weeks)} in the last two weeks</>}
                 </p>
             </div>
-
-            <a
-                href={storeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-foreground shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 rounded-sm"
-                aria-label={`Open ${game.name} on Steam`}
-            >
-                <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-        </div>
+        </li>
     )
 }

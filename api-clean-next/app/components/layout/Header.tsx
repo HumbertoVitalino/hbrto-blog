@@ -1,15 +1,32 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useAuth } from '@/app/context/AuthContext'
-import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/app/components/layout/ThemeToggle'
-import { Menu, X, LogOut } from 'lucide-react'
+import { NAV_ITEMS, isActive } from '@/app/components/layout/navigation'
+import { Halo } from '@/app/components/motion/Halo'
+import { ChevronDown, LogOut, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+// The floating surface every header control sits on.
+const chip = 'pointer-events-auto rounded-full bg-card/90 shadow-lg shadow-foreground/5 ring-1 ring-border backdrop-blur-sm dark:bg-muted/90'
 
 export default function Header() {
-  const { user, isAdmin, logout } = useAuth()
-  const [isOpen, setIsOpen] = useState(false)
+  const pathname = usePathname()
+  const { user, logout } = useAuth()
+  // the menu remembers the page it was opened on, so navigating away closes it
+  const [openOn, setOpenOn] = useState<string | null>(null)
+  const isOpen = openOn === pathname
+  const setIsOpen = (open: boolean) => setOpenOn(open ? pathname : null)
+
+  useEffect(() => {
+    if (!isOpen) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpenOn(null)
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [isOpen])
 
   const handleLogout = async () => {
     await logout()
@@ -17,150 +34,113 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="pointer-events-none sticky top-0 z-50 pt-[max(1.5rem,env(safe-area-inset-top))] pb-2">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 sm:px-8">
+        <Link href="/" aria-label="Home" className={cn(chip, 'group relative size-10 p-0.5')}>
+          <Halo />
+          <img src="/photos/avatar.webp" alt="" width={36} height={36} className="size-full rounded-full bg-muted object-cover" />
+        </Link>
 
-        {/* CONTAINER PRINCIPAL USANDO FLEX INVES DE GRID */}
-        <div className="flex h-16 items-center justify-between">
+        <nav aria-label="Main" className={cn(chip, 'group relative hidden md:block')}>
+          <Halo />
+          <ul className="flex px-3 text-sm font-medium">
+            {NAV_ITEMS.map(item => {
+              const active = isActive(pathname, item.href)
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    aria-current={active ? 'page' : undefined}
+                    className={cn(
+                      'relative block px-3 py-2 transition-colors hover:text-brand-accent',
+                      active && 'text-brand-accent',
+                    )}
+                  >
+                    {item.label}
+                    {active && (
+                      <span className="absolute inset-x-1 -bottom-px h-px bg-linear-to-r from-brand-accent/0 via-brand-accent/40 to-brand-accent/0" />
+                    )}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        </nav>
 
-          {/* LEFT - Logo */}
-          <div className="flex-1 flex items-center">
-            <Link href="/" className="font-bold text-xl whitespace-nowrap">
-              Humberto Vitalino
-            </Link>
-          </div>
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          aria-expanded={isOpen}
+          aria-controls="mobile-nav"
+          className={cn(chip, 'flex items-center gap-1.5 px-4 py-2 text-sm font-medium md:hidden')}
+        >
+          Menu
+          <ChevronDown className="size-3.5 text-muted-foreground" />
+        </button>
 
-          {/* CENTER - Navigation (Desktop) */}
-          <nav className="hidden md:flex items-center justify-center gap-8">
-            <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">
-              Home
-            </Link>
-            <Link href="/library" className="text-sm font-medium hover:text-primary transition-colors">
-              Library
-            </Link>
-            <Link href="/reviews" className="text-sm font-medium hover:text-primary transition-colors">
-              Reviews
-            </Link>
-            <Link href="/music" className="text-sm font-medium hover:text-primary transition-colors">
-              Music
-            </Link>
-            <Link href="/games" className="text-sm font-medium hover:text-primary transition-colors">
-              Games
-            </Link>
-            <Link href="/studies" className="text-sm font-medium hover:text-primary transition-colors">
-              Studies
-            </Link>
-            <Link href="/release-notes" className="text-sm font-medium hover:text-primary transition-colors">
-              Releases
-            </Link>
-          </nav>
+        <div className="flex items-center gap-2">
+          {user && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              aria-label={`Sign out ${user.email}`}
+              title={`Signed in as ${user.email}`}
+              className={cn(chip, 'group relative hidden size-10 place-items-center md:grid')}
+            >
+              <Halo />
+              <LogOut className="size-4 text-muted-foreground transition-colors group-hover:text-brand-accent" />
+            </button>
+          )}
+          <ThemeToggle className={cn(chip, 'size-10')} />
+        </div>
+      </div>
 
-          {/* RIGHT - Auth + Theme + Mobile Button */}
-          <div className="flex flex-1 items-center justify-end gap-2">
-
-            {/* Desktop Auth */}
+      {isOpen && (
+        <div className="pointer-events-auto md:hidden">
+          <div aria-hidden className="fixed inset-0 z-50 bg-foreground/40 backdrop-blur-xs dark:bg-black/80" onClick={() => setIsOpen(false)} />
+          <div
+            id="mobile-nav"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation"
+            className="fixed inset-x-4 top-[max(2rem,env(safe-area-inset-top))] z-50 rounded-3xl bg-card p-8 ring-1 ring-border"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-medium text-muted-foreground">Navigation</h2>
+              <button type="button" onClick={() => setIsOpen(false)} aria-label="Close menu" className="-m-1 p-1">
+                <X className="size-5 text-muted-foreground" />
+              </button>
+            </div>
+            <nav aria-label="Main" className="mt-6">
+              <ul className="-my-2 divide-y divide-border text-base">
+                {NAV_ITEMS.map(item => {
+                  const active = isActive(pathname, item.href)
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        aria-current={active ? 'page' : undefined}
+                        className={cn('block py-2.5', active && 'text-brand-accent')}
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+            </nav>
             {user && (
-              <div className="hidden md:flex items-center gap-3">
-                <span className="text-sm text-muted-foreground">
-                  {user.email}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="gap-2"
-                >
-                  <LogOut className="w-4 h-4" />
+              <div className="mt-6 border-t border-border pt-6">
+                <p className="truncate text-sm text-muted-foreground">{user.email}</p>
+                <button type="button" onClick={handleLogout} className="mt-3 flex items-center gap-2 text-sm font-medium">
+                  <LogOut className="size-4" />
                   Sign out
-                </Button>
+                </button>
               </div>
             )}
-
-            <ThemeToggle />
-
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden p-2 -mr-2 hover:bg-muted rounded-md transition-colors"
-              onClick={() => setIsOpen(!isOpen)}
-              aria-label="Toggle menu"
-            >
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
           </div>
         </div>
-
-        {/* MOBILE NAV */}
-        {isOpen && (
-          <nav className="md:hidden border-t py-4 space-y-2">
-            <Link
-              href="/"
-              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              Home
-            </Link>
-            <Link
-              href="/library"
-              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              Library
-            </Link>
-            <Link
-              href="/reviews"
-              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              Reviews
-            </Link>
-            <Link
-              href="/music"
-              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              Music
-            </Link>
-            <Link
-              href="/games"
-              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              Games
-            </Link>
-            <Link
-              href="/studies"
-              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              Studies
-            </Link>
-            <Link
-              href="/release-notes"
-              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              Releases
-            </Link>
-
-            {user && (
-              <div className="border-t mt-4 pt-4 px-4">
-                <p className="text-sm text-muted-foreground mb-3 truncate">
-                  {user.email}
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full gap-2"
-                  onClick={handleLogout}
-                >
-                  <LogOut className="w-4 h-4" />
-                  Sign out
-                </Button>
-              </div>
-            )}
-          </nav>
-        )}
-      </div>
+      )}
     </header>
   )
 }

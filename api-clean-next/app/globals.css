@@ -8,10 +8,11 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
-  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /* Inter everywhere; kept as an alias so pages not yet migrated still render */
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -61,97 +62,99 @@
 }
 
 /*
- * ── Umbra — twilight-violet identity ──
- * Gengar-inspired, tempered for daylight use. See the approved style guide
- * for the full rationale; these are the literal tokens from that proposal.
+ * ── Identity: b-r.io's neutrals, one violet accent ──
+ * The page is a gray (light) / black (dark) ground with the content on a framed column
+ * (--card, edged by --secondary); see the frame in app/layout.tsx. Neutrals are b-r.io's own
+ * values. Violet lives in --brand-accent and is spent only on links, calls to action, focus
+ * and active states; buttons stay neutral (--primary).
  */
 :root {
-  --background: oklch(0.985 0.005 300);
-  --foreground: oklch(0.20 0.035 300);
-  --card: oklch(0.995 0.004 300);
-  --card-foreground: oklch(0.20 0.035 300);
-  --popover: oklch(0.995 0.004 300);
-  --popover-foreground: oklch(0.20 0.035 300);
-  --primary: oklch(0.40 0.16 300);
-  --primary-foreground: oklch(0.98 0.01 300);
-  --secondary: oklch(0.95 0.014 300);
-  --secondary-foreground: oklch(0.30 0.05 300);
-  --muted: oklch(0.96 0.01 300);
-  --muted-foreground: oklch(0.50 0.025 300);
-  --accent: oklch(0.93 0.035 322);
-  --accent-foreground: oklch(0.34 0.11 322);
-  --destructive: oklch(0.53 0.19 18);
-  --destructive-foreground: oklch(0.98 0.01 18);
-  --destructive-text: oklch(0.53 0.19 18);
-  --success: oklch(0.58 0.11 165);
-  --success-foreground: oklch(0.98 0.01 165);
+  --background: #fafafa;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #171717;
+  --primary-foreground: #fafafa;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #171717;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --accent: #f5f5f5;
+  --accent-foreground: #171717;
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: #fafafa;
+  --destructive-text: oklch(0.52 0.2 25);
+  --success: oklch(0.56 0.12 155);
+  --success-foreground: oklch(0.985 0.01 155);
   --warning: oklch(0.72 0.14 75);
   --warning-foreground: oklch(0.25 0.05 75);
-  --info: oklch(0.55 0.14 258);
-  --info-foreground: oklch(0.98 0.01 258);
-  --brand-accent: oklch(0.62 0.19 328);
-  --brand-accent-foreground: oklch(0.98 0.02 328);
-  --border: oklch(0.90 0.012 300);
-  --input: oklch(0.90 0.012 300);
-  --ring: oklch(0.55 0.15 300);
-  --chart-1: oklch(0.40 0.16 300);
-  --chart-2: oklch(0.62 0.19 328);
-  --chart-3: oklch(0.58 0.11 165);
-  --chart-4: oklch(0.72 0.14 75);
-  --chart-5: oklch(0.55 0.14 258);
+  --info: oklch(0.55 0.13 250);
+  --info-foreground: oklch(0.985 0.01 250);
+  --brand-accent: oklch(0.50 0.20 295);
+  --brand-accent-foreground: oklch(0.99 0.005 295);
+  --border: #eeeeee;
+  --input: #e5e5e5;
+  --ring: oklch(0.50 0.20 295);
+  --chart-1: oklch(0.50 0.20 295);
+  --chart-2: #404040;
+  --chart-3: #737373;
+  --chart-4: #a1a1a1;
+  --chart-5: #d4d4d4;
   --radius: 0.625rem;
-  --sidebar: oklch(0.97 0.008 300);
-  --sidebar-foreground: oklch(0.20 0.035 300);
-  --sidebar-primary: oklch(0.40 0.16 300);
-  --sidebar-primary-foreground: oklch(0.98 0.01 300);
-  --sidebar-accent: oklch(0.93 0.035 322);
-  --sidebar-accent-foreground: oklch(0.34 0.11 322);
-  --sidebar-border: oklch(0.90 0.012 300);
-  --sidebar-ring: oklch(0.55 0.15 300);
+  --sidebar: #fafafa;
+  --sidebar-foreground: #0a0a0a;
+  --sidebar-primary: #171717;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #f5f5f5;
+  --sidebar-accent-foreground: #171717;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: oklch(0.50 0.20 295);
 }
 
 .dark {
-  --background: oklch(0.155 0.028 300);
-  --foreground: oklch(0.94 0.012 300);
-  --card: oklch(0.205 0.032 300);
-  --card-foreground: oklch(0.94 0.012 300);
-  --popover: oklch(0.205 0.032 300);
-  --popover-foreground: oklch(0.94 0.012 300);
-  --primary: oklch(0.57 0.17 300);
-  --primary-foreground: oklch(0.99 0.01 300);
-  --secondary: oklch(0.255 0.032 300);
-  --secondary-foreground: oklch(0.90 0.014 300);
-  --muted: oklch(0.235 0.03 300);
-  --muted-foreground: oklch(0.66 0.02 300);
-  --accent: oklch(0.30 0.06 322);
-  --accent-foreground: oklch(0.92 0.03 322);
-  --destructive: oklch(0.60 0.19 18);
-  --destructive-foreground: oklch(0.98 0.01 18);
-  --destructive-text: oklch(0.65 0.19 18);
-  --success: oklch(0.68 0.13 165);
-  --success-foreground: oklch(0.13 0.03 165);
-  --warning: oklch(0.78 0.13 75);
+  --background: #000000;
+  --foreground: #fafafa;
+  --card: #161616;
+  --card-foreground: #fafafa;
+  --popover: #171717;
+  --popover-foreground: #fafafa;
+  --primary: #e5e5e5;
+  --primary-foreground: #171717;
+  --secondary: #262626;
+  --secondary-foreground: #fafafa;
+  --muted: #262626;
+  --muted-foreground: #a1a1a1;
+  --accent: #262626;
+  --accent-foreground: #fafafa;
+  --destructive: oklch(0.62 0.2 25);
+  --destructive-foreground: #fafafa;
+  --destructive-text: oklch(0.70 0.17 25);
+  --success: oklch(0.70 0.13 155);
+  --success-foreground: oklch(0.15 0.03 155);
+  --warning: oklch(0.80 0.13 75);
   --warning-foreground: oklch(0.20 0.04 75);
-  --info: oklch(0.66 0.14 258);
-  --info-foreground: oklch(0.98 0.01 258);
-  --brand-accent: oklch(0.70 0.19 328);
-  --brand-accent-foreground: oklch(0.15 0.03 328);
-  --border: oklch(1 0.01 300 / 12%);
-  --input: oklch(1 0.01 300 / 15%);
-  --ring: oklch(0.60 0.15 300);
-  --chart-1: oklch(0.58 0.17 300);
-  --chart-2: oklch(0.70 0.19 328);
-  --chart-3: oklch(0.68 0.13 165);
-  --chart-4: oklch(0.78 0.13 75);
-  --chart-5: oklch(0.66 0.14 258);
-  --sidebar: oklch(0.19 0.03 300);
-  --sidebar-foreground: oklch(0.94 0.012 300);
-  --sidebar-primary: oklch(0.58 0.17 300);
-  --sidebar-primary-foreground: oklch(0.99 0.01 300);
-  --sidebar-accent: oklch(0.30 0.06 322);
-  --sidebar-accent-foreground: oklch(0.92 0.03 322);
-  --sidebar-border: oklch(1 0.01 300 / 12%);
-  --sidebar-ring: oklch(0.60 0.15 300);
+  --info: oklch(0.70 0.12 250);
+  --info-foreground: oklch(0.15 0.03 250);
+  --brand-accent: oklch(0.75 0.14 295);
+  --brand-accent-foreground: oklch(0.16 0.02 295);
+  --border: rgb(255 255 255 / 0.08);
+  --input: rgb(255 255 255 / 0.15);
+  --ring: oklch(0.75 0.14 295);
+  --chart-1: oklch(0.75 0.14 295);
+  --chart-2: #d4d4d4;
+  --chart-3: #a1a1a1;
+  --chart-4: #737373;
+  --chart-5: #404040;
+  --sidebar: #171717;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #e5e5e5;
+  --sidebar-primary-foreground: #171717;
+  --sidebar-accent: #262626;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: rgb(255 255 255 / 0.1);
+  --sidebar-ring: oklch(0.75 0.14 295);
 }
 
 @layer base {
@@ -181,121 +184,6 @@
 
 .hljs-block code.hljs {
   @apply block px-5 py-4 text-[13px] leading-relaxed font-mono;
-}
-
-/* ── Markdown content: tables ── */
-.markdown-content table {
-  @apply w-full text-sm border-collapse my-5;
-}
-
-.markdown-content thead tr {
-  @apply border-b border-border;
-}
-
-.markdown-content th {
-  @apply px-4 py-2.5 text-left font-semibold text-foreground bg-muted/40;
-}
-
-.markdown-content td {
-  @apply px-4 py-2.5 border-b border-border/50 text-foreground/90;
-}
-
-.markdown-content tbody tr:last-child td {
-  @apply border-b-0;
-}
-
-.markdown-content tbody tr:hover td {
-  @apply bg-muted/30;
-}
-
-/* ── Markdown content: inline code (not in blocks) ── */
-.markdown-content :not(pre) > code {
-  @apply text-[13px] font-mono bg-muted/60 text-foreground/85 px-1.5 py-0.5 rounded-md;
-}
-
-/* ── Markdown content: blockquote ── */
-.markdown-content blockquote {
-  @apply border-l-4 border-primary/40 pl-4 pr-2 py-1 my-4 text-muted-foreground italic bg-muted/20 rounded-r-lg;
-}
-
-/* ── Markdown content: images ── */
-.markdown-content img {
-  @apply rounded-xl border border-border/50 shadow-sm my-4;
-}
-
-/* ── Markdown content: horizontal rule ── */
-.markdown-content hr {
-  @apply border-border/50 my-8;
-}
-
-/* ── Markdown content: headings ── */
-.markdown-content h1,
-.markdown-content h2,
-.markdown-content h3,
-.markdown-content h4 {
-  @apply font-semibold tracking-tight text-foreground;
-  line-height: 1.3;
-}
-
-.markdown-content h1 {
-  @apply text-xl mt-8 mb-4 pb-2 border-b border-border;
-}
-
-.markdown-content h2 {
-  @apply text-lg mt-6 mb-3;
-}
-
-.markdown-content h3 {
-  @apply text-base mt-5 mb-2;
-}
-
-.markdown-content h4 {
-  @apply text-[15px] font-medium mt-4 mb-1.5;
-}
-
-/* ── Markdown content: paragraphs ── */
-.markdown-content p {
-  @apply text-[15px] leading-relaxed text-foreground/90 mb-4;
-}
-
-/* ── Markdown content: lists ── */
-.markdown-content ul,
-.markdown-content ol {
-  @apply my-4 pl-6;
-}
-
-.markdown-content ul {
-  list-style-type: disc;
-}
-
-.markdown-content ol {
-  list-style-type: decimal;
-}
-
-.markdown-content li {
-  @apply text-[15px] text-foreground/90 my-1;
-}
-
-.markdown-content li::marker {
-  @apply text-muted-foreground;
-}
-
-/* ── Markdown content: strong / em ── */
-.markdown-content strong {
-  @apply font-semibold text-foreground;
-}
-
-.markdown-content em {
-  @apply text-foreground/80;
-}
-
-/* ── Markdown content: remove excess spacing on first/last child ── */
-.markdown-content > :first-child {
-  margin-top: 0;
-}
-
-.markdown-content > :last-child {
-  margin-bottom: 0;
 }
 
 /* ── Pomodoro dial — ambient glow while a phase is running ── */
@@ -340,5 +228,331 @@
   .eq-bar {
     animation: none;
     transform: scaleY(0.6);
+  }
+}
+/* ── Lists of things to open: a soft surface grows in behind the item on hover ──
+   Put .hover-surface on the item and .stretched-link on its one main link; the link's
+   overlay then makes the whole item clickable while other controls stay reachable
+   (give those `relative z-10`). */
+.hover-surface {
+  position: relative;
+  isolation: isolate;
+}
+
+.hover-surface::before {
+  content: "";
+  position: absolute;
+  inset: -1rem;
+  z-index: -1;
+  border-radius: var(--radius-2xl);
+  background: var(--muted);
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+  pointer-events: none;
+}
+
+.stretched-link::after {
+  content: "";
+  position: absolute;
+  inset: -1rem;
+  z-index: 1;
+  border-radius: var(--radius-2xl);
+}
+
+@media (min-width: 640px) {
+  .hover-surface::before,
+  .stretched-link::after {
+    inset: -1.5rem;
+  }
+}
+
+@media (hover: hover) {
+  .hover-surface:hover::before {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.hover-surface:focus-within::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.stretched-link:focus-visible {
+  outline: none;
+}
+
+.stretched-link:focus-visible::after {
+  outline: 2px solid var(--ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hover-surface::before {
+    transition: none;
+  }
+}
+
+/* ── Long-form reading (notes): quiet body, strong headings, violet links ── */
+.prose-note {
+  color: var(--muted-foreground);
+  font-size: 1rem;
+  line-height: 1.75rem;
+  overflow-wrap: break-word;
+}
+
+.prose-note > * + * {
+  margin-top: 1.5rem;
+}
+
+.prose-note > :first-child {
+  margin-top: 0;
+}
+
+.prose-note h1,
+.prose-note h2,
+.prose-note h3 {
+  margin-top: 3.5rem;
+  color: var(--foreground);
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.prose-note h4 {
+  margin-top: 2.5rem;
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.prose-note :is(h1, h2, h3, h4) + * {
+  margin-top: 1rem;
+}
+
+.prose-note strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.prose-note em {
+  color: var(--foreground);
+}
+
+.prose-note a {
+  color: var(--brand-accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--brand-accent) 30%, transparent);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s;
+}
+
+.prose-note a:hover {
+  text-decoration-color: var(--brand-accent);
+}
+
+.prose-note hr {
+  margin-block: 3rem;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.prose-note ul,
+.prose-note ol {
+  padding-left: 1.25rem;
+}
+
+.prose-note ul {
+  list-style-type: disc;
+}
+
+.prose-note ol {
+  list-style-type: decimal;
+}
+
+.prose-note li + li {
+  margin-top: 0.5rem;
+}
+
+.prose-note li::marker {
+  color: var(--muted-foreground);
+}
+
+.prose-note blockquote {
+  padding-left: 1.25rem;
+  border-left: 2px solid var(--border);
+  font-style: italic;
+}
+
+.prose-note :not(pre) > code {
+  padding: 0.1em 0.35em;
+  border-radius: 0.375rem;
+  background: var(--muted);
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}
+
+.prose-note img {
+  border-radius: var(--radius-xl);
+}
+
+.prose-note table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.prose-note th,
+.prose-note td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.prose-note th {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+/* ── Covers as physical objects (books, games): soft depth, light on the spine ──
+   .cover-object on the cover box; .cover-item on the clickable item that holds it. */
+:root {
+  --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
+  --cover-shadow: 0 1px 2px oklch(0.18 0.006 295 / 0.10), 0 10px 24px -10px oklch(0.18 0.006 295 / 0.35);
+  --cover-shadow-lift: 0 2px 4px oklch(0.18 0.006 295 / 0.10), 0 18px 34px -12px oklch(0.18 0.006 295 / 0.42);
+}
+
+.dark {
+  --cover-shadow: 0 1px 2px oklch(0 0 0 / 0.6), 0 10px 24px -10px oklch(0 0 0 / 0.9);
+  --cover-shadow-lift: 0 2px 4px oklch(0 0 0 / 0.6), 0 18px 34px -12px oklch(0 0 0 / 1);
+}
+
+.cover-object {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 5px;
+  background: var(--muted);
+  box-shadow: var(--cover-shadow);
+  transition: transform 0.45s var(--ease-ios), box-shadow 0.45s var(--ease-ios);
+  /* the box takes its height from the 2:3 ratio alone, never from the image inside */
+  flex-shrink: 0;
+  min-height: 0;
+}
+
+.cover-object > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cover-object::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(to right, oklch(0 0 0 / 0.14), oklch(1 0 0 / 0.10) 3%, transparent 7%);
+  box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.06);
+}
+
+@media (hover: hover) {
+  .cover-item:hover .cover-object {
+    transform: translateY(-3px);
+    box-shadow: var(--cover-shadow-lift);
+  }
+}
+
+.cover-item:active .cover-object {
+  transform: scale(0.98);
+  transition-duration: 0.1s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cover-object {
+    transition: none;
+  }
+  .cover-item:hover .cover-object,
+  .cover-item:active .cover-object {
+    transform: none;
+  }
+}
+
+/* Game boxes run between PlayStation's ~4:5 and Switch's ~5:8; 3:4 crops least from either. */
+.cover-object.is-game {
+  aspect-ratio: 3 / 4;
+  border-radius: 6px;
+}
+
+/* The one raised surface a page gets (Reading now, Playing now, the Chess.com card). */
+.raised-card {
+  position: relative;
+  border-radius: 20px;
+  background: var(--card);
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 1px 2px oklch(0.18 0.006 295 / 0.05),
+    0 12px 32px -16px oklch(0.18 0.006 295 / 0.18);
+}
+
+.dark .raised-card {
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+/* ── Photo cards (home strip, about portrait): a print that flips to its paper back ── */
+.photo-card {
+  perspective: 1000px;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.photo-card-inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.6s var(--ease-ios);
+}
+
+.photo-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: 0 1px 2px rgb(10 10 10 / 0.08), 0 16px 32px -14px rgb(10 10 10 / 0.3);
+}
+
+.dark .photo-face {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.6), 0 16px 32px -14px rgb(0 0 0 / 0.9);
+}
+
+/* the back of a print: warm paper with a little grain, the same in both themes */
+.photo-paper {
+  transform: rotateY(180deg);
+  border: 1px solid rgb(107 81 48 / 0.1);
+  background: #fffaf2;
+  color: #68665f;
+}
+
+.photo-paper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.55;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.36 0 0 0 0 0.28 0 0 0 .18 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photo-card-inner {
+    transition: none;
   }
 }

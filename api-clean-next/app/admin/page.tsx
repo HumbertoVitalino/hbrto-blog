@@ -4,13 +4,13 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/app/context/AuthContext'
 import { useEffect, useState, useCallback } from 'react'
 import { useBooks } from '@/app/hooks/useBooks'
-import { useReviews } from '@/app/hooks/useReviews'
-import { useReleaseNotes } from '@/app/hooks/useReleaseNotes'
+import { useNotes } from '@/app/hooks/useNotes'
+import { noteDate } from '@/lib/notes'
 import { useSubscribers } from '@/app/hooks/useSubscribers'
 import { BookStatus } from '@/domain/BookStatus'
 import Link from 'next/link'
 import {
-  Loader2, BookOpen, Star, Zap, CheckCircle, Clock,
+  Loader2, BookOpen, NotebookPen, CheckCircle, Clock,
   Library, Mail, Trash2, Send, ArrowUpRight, Users, FileText, Gamepad2, BookMarked
 } from 'lucide-react'
 import { useGames } from '@/app/hooks/useGames'
@@ -30,14 +30,13 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 
-type Tab = 'overview' | 'books' | 'reviews' | 'games' | 'studies' | 'newsletter'
+type Tab = 'overview' | 'books' | 'notes' | 'games' | 'studies' | 'newsletter'
 
 export default function AdminPage() {
   const router = useRouter()
   const { user, isLoading: authLoading } = useAuth()
   const { books, isLoading: booksLoading } = useBooks()
-  const { reviews, isLoading: reviewsLoading } = useReviews()
-  const { notes, isLoading: notesLoading } = useReleaseNotes()
+  const { notes: writtenNotes, isLoading: writtenNotesLoading } = useNotes()
   const { subscribers, isLoading: subscribersLoading, removeSubscriber } = useSubscribers()
   const { games, isLoading: gamesLoading } = useGames()
   const { topics, isLoading: topicsLoading } = useStudyTopics()
@@ -121,14 +120,14 @@ export default function AdminPage() {
   const tabs: { id: Tab; label: string }[] = [
     { id: 'overview',   label: 'Overview'   },
     { id: 'books',      label: 'Books'      },
-    { id: 'reviews',    label: 'Reviews'    },
+    { id: 'notes',      label: 'Notes'      },
     { id: 'games',      label: 'Games'      },
     { id: 'studies',    label: 'Studies'    },
     { id: 'newsletter', label: 'Newsletter' },
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
 
       {/* PAGE HEADER */}
       <section className="border-b bg-muted/10">
@@ -172,10 +171,9 @@ export default function AdminPage() {
                 { label: 'Total books',  value: booksLoading ? null : books.length,            icon: BookOpen,    color: 'text-primary',      bg: 'bg-primary/10',      border: 'border-primary/20'      },
                 { label: 'Reading now',  value: booksLoading ? null : reading,                 icon: Clock,       color: 'text-info',         bg: 'bg-info/10',         border: 'border-info/20'         },
                 { label: 'Completed',    value: booksLoading ? null : completed,               icon: CheckCircle, color: 'text-success',      bg: 'bg-success/10',      border: 'border-success/20'      },
-                { label: 'Reviews',      value: reviewsLoading ? null : reviews.length,        icon: Star,        color: 'text-warning',      bg: 'bg-warning/10',      border: 'border-warning/20'      },
+                { label: 'Notes',        value: writtenNotesLoading ? null : writtenNotes.length, icon: NotebookPen, color: 'text-warning',      bg: 'bg-warning/10',      border: 'border-warning/20'      },
                 { label: 'Games',        value: gamesLoading ? null : games.length,            icon: Gamepad2,    color: 'text-brand-accent', bg: 'bg-brand-accent/10', border: 'border-brand-accent/20' },
                 { label: 'Study topics', value: topicsLoading ? null : topics.length,          icon: BookMarked,  color: 'text-info',         bg: 'bg-info/10',         border: 'border-info/20'         },
-                { label: 'Releases',     value: notesLoading ? null : notes.length,            icon: Zap,         color: 'text-primary',      bg: 'bg-primary/10',      border: 'border-primary/20'      },
                 { label: 'Subscribers',  value: subscribersLoading ? null : subscribers.length, icon: Users,      color: 'text-brand-accent', bg: 'bg-brand-accent/10', border: 'border-brand-accent/20' },
               ].map(({ label, value, icon: Icon, color, bg, border }) => (
                 <div key={label} className={`p-5 rounded-2xl border ${border} ${bg}`}>
@@ -198,7 +196,7 @@ export default function AdminPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
                   { label: 'Library',    icon: Library,   href: '/library',       targetTab: null             as Tab | null },
-                  { label: 'Reviews',    icon: FileText,  href: '/reviews',       targetTab: null             as Tab | null },
+                  { label: 'Notes',      icon: FileText,  href: '/notes',         targetTab: null             as Tab | null },
                   { label: 'Games',      icon: Gamepad2,  href: '/games',         targetTab: null             as Tab | null },
                   { label: 'Studies',    icon: BookMarked, href: '/studies',      targetTab: null             as Tab | null },
                   { label: 'Newsletter', icon: Mail,      href: null,             targetTab: 'newsletter'     as Tab | null },
@@ -305,36 +303,32 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ── REVIEWS ── */}
-        {tab === 'reviews' && (
+        {/* ── NOTES ── */}
+        {tab === 'notes' && (
           <div>
             <div className="flex items-center justify-between mb-6">
               <p className="text-sm text-muted-foreground">
-                {reviewsLoading ? '—' : `${reviews.length} reviews total`}
+                {writtenNotesLoading ? '—' : `${writtenNotes.length} notes total`}
               </p>
-              <Link href="/reviews" className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-                <FileText className="w-3.5 h-3.5" /> Manage in Reviews
+              <Link href="/notes" className="flex items-center gap-1.5 text-sm font-medium text-brand-accent hover:text-brand-accent/80 transition-colors">
+                <FileText className="w-3.5 h-3.5" /> Manage in Notes
               </Link>
             </div>
 
-            {reviewsLoading ? <Spinner /> : reviews.length === 0 ? (
-              <Empty message="No reviews yet." />
+            {writtenNotesLoading ? <Spinner /> : writtenNotes.length === 0 ? (
+              <Empty message="No notes yet." />
             ) : (
               <div className="divide-y divide-border/50 border border-border/60 rounded-2xl overflow-hidden bg-card">
-                {reviews.map((review) => (
-                  <div key={review.id} className="flex items-center justify-between px-5 py-4 hover:bg-muted/30 transition-colors">
+                {writtenNotes.map((note) => (
+                  <Link key={note.id} href={`/notes/${note.id}`} className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-muted/30 transition-colors">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{review.title}</p>
-                      {review.createdAt && (
-                        <p className="text-xs text-muted-foreground mt-0.5">{formatDate(review.createdAt)}</p>
-                      )}
+                      <p className="text-sm font-medium truncate">{note.entries[0].title}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{noteDate(note.createdAt)}</p>
                     </div>
-                    <div className="flex items-center gap-0.5 shrink-0 ml-4">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'fill-warning text-warning' : 'text-border'}`} />
-                      ))}
-                    </div>
-                  </div>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {note.entries.map(e => (e.language === 'pt-BR' ? 'PT' : 'EN')).join(' · ')}
+                    </span>
+                  </Link>
                 ))}
               </div>
             )}

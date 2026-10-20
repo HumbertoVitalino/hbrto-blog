@@ -1,35 +1,32 @@
 'use client'
 
 import { useTheme } from 'next-themes'
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 import { Sun, Moon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { Halo } from '@/app/components/motion/Halo'
 
-export function ThemeToggle() {
+const noop = () => () => {}
+
+export function ThemeToggle({ className }: { className?: string }) {
   const { resolvedTheme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
+  // false on the server and during hydration, true once running in the browser
+  const mounted = useSyncExternalStore(noop, () => true, () => false)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) {
-    return <div className="w-9 h-9" />
-  }
+  const isDark = mounted && resolvedTheme === 'dark'
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-      aria-label="Toggle theme"
-      className="w-9 h-9"
+    <button
+      type="button"
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+      className={cn('group relative grid place-items-center', className)}
     >
-      {resolvedTheme === 'dark' ? (
-        <Sun className="w-4 h-4" />
-      ) : (
-        <Moon className="w-4 h-4" />
-      )}
-    </Button>
+      <Halo />
+      {/* the icon waits for the theme to resolve, so it never shows the wrong one first */}
+      {mounted && (isDark
+        ? <Moon className="size-4.5 text-muted-foreground transition-colors group-hover:text-brand-accent" />
+        : <Sun className="size-4.5 text-muted-foreground transition-colors group-hover:text-brand-accent" />)}
+    </button>
   )
 }

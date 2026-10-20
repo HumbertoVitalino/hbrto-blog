@@ -28,7 +28,7 @@ async function getAuthHeader(): Promise<Record<string, string>> {
 
 export function useGames() {
     const [games, setGames] = useState<GameData[]>([])
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(true) // it fetches on mount, so it starts out loading
     const [error, setError] = useState<string | null>(null)
 
     const fetchGames = useCallback(async () => {
