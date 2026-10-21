@@ -5,10 +5,12 @@ import { adminAccessToken } from "@/lib/adminAuth";
 import { clientForToken } from "@/infrastructure/supabase/userClient";
 import { HabitRepository } from "@/infrastructure/repositories/HabitRepository";
 import { ScheduleRepository } from "@/infrastructure/repositories/ScheduleRepository";
+import { GoalRepository } from "@/infrastructure/repositories/GoalRepository";
 
 export interface TrackerRepos {
     habits: HabitRepository;
     schedule: ScheduleRepository;
+    goals: GoalRepository;
 }
 
 const NOT_FOUND = /not found/i;
@@ -29,7 +31,7 @@ export function trackerRoute<P>(
         }
         try {
             const db = clientForToken(token);
-            const result = await handler({ habits: new HabitRepository(db), schedule: new ScheduleRepository(db) }, request, await context.params);
+            const result = await handler({ habits: new HabitRepository(db), schedule: new ScheduleRepository(db), goals: new GoalRepository(db) }, request, await context.params);
             return result === undefined
                 ? new NextResponse(null, { status: 204 })
                 : NextResponse.json(result, { status: successStatus });

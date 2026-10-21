@@ -1,9 +1,12 @@
-import { BlockLog, Habit, HabitLog, ScheduleBlock, WeeklyReview } from "@/domain/Habit";
+import { BlockLog, Goal, Habit, HabitLog, ScheduleBlock, WeeklyReview } from "@/domain/Habit";
+import { BookStatus } from "@/domain/BookStatus";
 import { PomodoroPhaseType } from "@/domain/PomodoroPhaseType";
 import { HabitRepository } from "@/infrastructure/repositories/HabitRepository";
 import { ScheduleRepository } from "@/infrastructure/repositories/ScheduleRepository";
 import { StudySessionRepository } from "@/infrastructure/repositories/StudySessionRepository";
 import { NoteRepository } from "@/infrastructure/repositories/NoteRepository";
+import { GoalRepository } from "@/infrastructure/repositories/GoalRepository";
+import { BookRepository } from "@/infrastructure/repositories/BookRepository";
 import { assertRange, localDay } from "./habitDrafts";
 
 export interface TrackerSnapshot {
@@ -14,6 +17,7 @@ export interface TrackerSnapshot {
     blocks: ScheduleBlock[];
     blockLogs: BlockLog[];
     reviews: WeeklyReview[];
+    goals: Goal[];
 }
 
 /**
@@ -27,17 +31,20 @@ export class GetTrackerSnapshotUseCase {
         private schedule: ScheduleRepository,
         private studySessions: StudySessionRepository,
         private notes: NoteRepository,
+        private goals: GoalRepository,
+        private books: BookRepository,
     ) {}
 
     async execute(fromInput: unknown, toInput: unknown): Promise<TrackerSnapshot> {
         const { from, to } = assertRange(fromInput, toInput);
 
-        const [habits, manualLogs, blocks, blockLogs, reviews] = await Promise.all([
+        const [habits, manualLogs, blocks, blockLogs, reviews, goals] = await Promise.all([
             this.habits.findActive(),
             this.habits.findLogs(from, to),
             this.schedule.findForRange(from, to),
             this.schedule.findLogs(from, to),
             this.schedule.findReviews(from, to),
+            this.goals.findActive(),
         ]);
 
         const autoHabits = habits.filter(h => h.autoSource);
@@ -53,7 +60,20 @@ export class GetTrackerSnapshotUseCase {
             blocks,
             blockLogs,
             reviews,
+            goals: await this.countBooks(goals),
         };
+    }
+
+    /** A books goal counts the library's books finished in its year; nothing about it is stored. */
+    private async countBooks(goals: Goal[]): Promise<Goal[]> {
+        if (!goals.some(g => g.kind === "books")) return goals;
+        const finished = new Map<number, number>();
+        for (const book of await this.books.findAll()) {
+            if (book.status !== BookStatus.Completed || !book.completedAt) continue;
+            const year = Number(book.completedAt.slice(0, 4));
+            finished.set(year, (finished.get(year) ?? 0) + 1);
+        }
+        return goals.map(g => (g.kind === "books" ? { ...g, current: finished.get(g.year ?? 0) ?? 0 } : g));
     }
 
     private async autoLogs(habits: Habit[], from: string, to: string): Promise<HabitLog[]> {

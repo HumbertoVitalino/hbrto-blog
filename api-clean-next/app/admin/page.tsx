@@ -17,7 +17,7 @@ import { useStudyTopics } from '@/app/hooks/useStudyTopics'
 import { toast } from 'sonner'
 import { PageContainer } from '@/app/components/layout/PageHeader'
 import { Segmented } from '@/app/components/layout/Segmented'
-import { HabitTracker } from '@/app/components/habits/HabitTracker'
+import { HabitTracker, TRACKER_VIEW_TITLE, type TrackerView } from '@/app/components/habits/HabitTracker'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,7 +29,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 
-type Tab = 'today' | 'site' | 'newsletter'
+type Tab = 'tracker' | 'site' | 'newsletter'
 
 export default function AdminPage() {
   const router = useRouter()
@@ -40,7 +40,8 @@ export default function AdminPage() {
   const { games, isLoading: gamesLoading } = useGames()
   const { topics, isLoading: topicsLoading } = useStudyTopics()
 
-  const [tab, setTab] = useState<Tab>('today')
+  const [tab, setTab] = useState<Tab>('tracker')
+  const [trackerView, setTrackerView] = useState<TrackerView>('today')
   const [removingEmail, setRemovingEmail] = useState<string | null>(null)
   const [compose, setCompose] = useState(false)
   const [broadcastSubject, setBroadcastSubject] = useState('')
@@ -117,7 +118,7 @@ export default function AdminPage() {
     new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
   const tabs: { value: Tab; label: string; count?: number }[] = [
-    { value: 'today', label: 'Today' },
+    { value: 'tracker', label: 'Tracker' },
     { value: 'site', label: 'Site' },
     { value: 'newsletter', label: 'Newsletter', count: subscribersLoading ? undefined : subscribers.length },
   ]
@@ -127,17 +128,17 @@ export default function AdminPage() {
       <header className="pt-10 sm:pt-16">
         <p className="text-[13px] font-semibold text-muted-foreground">Admin</p>
         <h1 className="mt-1 text-[2rem] font-semibold leading-10 tracking-tight sm:text-[2.75rem] sm:leading-13">
-          {tab === 'today' ? 'Today' : tab === 'site' ? 'The site' : 'Newsletter'}
+          {tab === 'tracker' ? TRACKER_VIEW_TITLE[trackerView] : tab === 'site' ? 'The site' : 'Newsletter'}
         </h1>
         <div className="mt-6">
           <Segmented id="admin-tab" label="Admin section" options={tabs} value={tab} onChange={setTab} />
         </div>
       </header>
 
-      <div className={tab === 'today' ? 'mx-auto mt-8 max-w-xl' : 'mt-10'}>
+      <div className={tab === 'tracker' ? 'mx-auto mt-8 max-w-xl' : 'mt-10'}>
 
-        {/* ── TODAY: the habit tracker ── */}
-        {tab === 'today' && <HabitTracker />}
+        {/* ── TRACKER: Today, Week, Habits ── */}
+        {tab === 'tracker' && <HabitTracker view={trackerView} onViewChange={setTrackerView} />}
 
         {/* ── SITE (redesigned in a later step) ── */}
         {tab === 'site' && (

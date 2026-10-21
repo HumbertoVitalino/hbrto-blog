@@ -1,6 +1,7 @@
-import { AUTO_SOURCES, AutoSource, BlockStatus, LIFE_AREAS, LifeArea, TIMES_OF_DAY, TimeOfDay, WeeklyReview } from "@/domain/Habit";
+import { AUTO_SOURCES, AutoSource, BlockStatus, GOAL_KINDS, GoalKind, LIFE_AREAS, LifeArea, TIMES_OF_DAY, TimeOfDay, WeeklyReview } from "@/domain/Habit";
 import { HabitDraft } from "@/infrastructure/repositories/HabitRepository";
 import { ScheduleBlockDraft } from "@/infrastructure/repositories/ScheduleRepository";
+import { GoalDraft } from "@/infrastructure/repositories/GoalRepository";
 
 // Days are lived in São Paulo: a session at 23:00 there belongs to that day, not to UTC's next one.
 const TIME_ZONE = "America/Sao_Paulo";
@@ -124,4 +125,46 @@ export function toReview(weekStart: unknown, input: Partial<WeeklyReview>): Week
     if (new Date(`${day}T12:00:00`).getDay() !== 1) throw new Error("A week starts on a Monday");
     const text = (v: unknown) => (typeof v === "string" ? v.slice(0, 4000) : "");
     return { weekStart: day, wentWell: text(input.wentWell), gotInTheWay: text(input.gotInTheWay), changeNext: text(input.changeNext) };
+}
+
+export interface GoalInput {
+    title?: string;
+    kind?: string;
+    target?: number | null;
+    current?: number | null;
+    unit?: string | null;
+    habitId?: string | null;
+    year?: number | null;
+    position?: number;
+}
+
+/** A goal's fields for its kind; whatever another kind would use is dropped. */
+export function toGoalDraft(input: GoalInput): GoalDraft {
+    const title = input.title?.trim() ?? "";
+    if (!title) throw new Error("Give the goal a name");
+    if (!GOAL_KINDS.includes(input.kind as GoalKind)) throw new Error("Pick how the goal is measured");
+    const kind = input.kind as GoalKind;
+    const position = Number.isInteger(input.position) ? input.position! : 0;
+
+    if (kind === "habit") {
+        if (typeof input.habitId !== "string" || !input.habitId) throw new Error("Pick the habit that drives this goal");
+        return { title, kind, target: null, current: 0, unit: null, habitId: input.habitId, year: null, position };
+    }
+
+    const target = Number(input.target);
+    if (!Number.isFinite(target) || target <= 0) throw new Error("Set the target");
+
+    if (kind === "books") {
+        const year = Number(input.year);
+        if (!Number.isInteger(year) || year < 2000 || year > 2100) throw new Error("Pick the year");
+        return { title, kind, target, current: 0, unit: null, habitId: null, year, position };
+    }
+
+    return { title, kind, target, current: toGoalCurrent(input.current ?? 0), unit: input.unit?.trim() || null, habitId: null, year: null, position };
+}
+
+export function toGoalCurrent(value: unknown): number {
+    const current = Number(value);
+    if (!Number.isFinite(current) || current < 0) throw new Error("Progress must be zero or more");
+    return current;
 }

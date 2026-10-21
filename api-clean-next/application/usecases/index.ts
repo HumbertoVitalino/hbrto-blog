@@ -56,4 +56,7 @@ export {
     ArchiveScheduleBlockUseCase,
     LogScheduleBlockUseCase,
     SaveWeeklyReviewUseCase,
+    SaveGoalUseCase,
+    SetGoalProgressUseCase,
+    ArchiveGoalUseCase,
 } from "./HabitTrackerWrites";

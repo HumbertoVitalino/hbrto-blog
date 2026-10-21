@@ -1,7 +1,8 @@
-import { Habit, ScheduleBlock, WeeklyReview } from "@/domain/Habit";
+import { Goal, Habit, ScheduleBlock, WeeklyReview } from "@/domain/Habit";
 import { HabitRepository } from "@/infrastructure/repositories/HabitRepository";
+import { GoalRepository } from "@/infrastructure/repositories/GoalRepository";
 import { ScheduleRepository } from "@/infrastructure/repositories/ScheduleRepository";
-import { assertDay, BlockInput, HabitInput, toBlockDraft, toBlockStatus, toHabitDraft, toReview } from "./habitDrafts";
+import { assertDay, BlockInput, GoalInput, HabitInput, toBlockDraft, toBlockStatus, toGoalCurrent, toGoalDraft, toHabitDraft, toReview } from "./habitDrafts";
 
 /** Creates a habit, or replaces one when an id is given. */
 export class SaveHabitUseCase {
@@ -68,5 +69,34 @@ export class SaveWeeklyReviewUseCase {
         const review = toReview(weekStart, input);
         await this.schedule.saveReview(review);
         return review;
+    }
+}
+
+/** Creates a goal, or replaces one when an id is given. */
+export class SaveGoalUseCase {
+    constructor(private goals: GoalRepository) {}
+
+    async execute(input: GoalInput, id?: string): Promise<Goal> {
+        const draft = toGoalDraft(input);
+        return id ? this.goals.update(id, draft) : this.goals.create(draft);
+    }
+}
+
+/** Moves a manual goal's progress (phase 3 of 6). */
+export class SetGoalProgressUseCase {
+    constructor(private goals: GoalRepository) {}
+
+    async execute(id: string, current: unknown): Promise<void> {
+        if (!id) throw new Error("Goal ID is required");
+        await this.goals.setCurrent(id, toGoalCurrent(current));
+    }
+}
+
+export class ArchiveGoalUseCase {
+    constructor(private goals: GoalRepository) {}
+
+    async execute(id: string): Promise<void> {
+        if (!id) throw new Error("Goal ID is required");
+        await this.goals.archive(id);
     }
 }

@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import type { BlockStatus, Habit, HabitLog, ScheduleBlock, WeeklyReview, BlockLog } from '@/domain/Habit'
-import type { HabitInput, BlockInput } from '@/application/usecases/habitDrafts'
+import type { BlockStatus, Goal, Habit, HabitLog, ScheduleBlock, WeeklyReview, BlockLog } from '@/domain/Habit'
+import type { HabitInput, BlockInput, GoalInput } from '@/application/usecases/habitDrafts'
 import { supabase } from '@/infrastructure/supabase/client'
 import { addDays } from '@/lib/habitDates'
 
@@ -15,6 +15,7 @@ export interface TrackerData {
     blocks: ScheduleBlock[]
     blockLogs: BlockLog[]
     reviews: WeeklyReview[]
+    goals: Goal[]
 }
 
 // enough history behind the week for streaks and the 12-week heatmaps
@@ -128,5 +129,33 @@ export function useHabitTracker(weekStart: string) {
         })
     }, [])
 
-    return { data, isLoading, error, reload, logHabit, logBlock, saveHabit, archiveHabit, saveBlock, archiveBlock, saveReview }
+    const saveGoal = useCallback(async (input: GoalInput, id?: string) => {
+        await call<Goal>(id ? `/api/goals/${id}` : '/api/goals', id ? 'PUT' : 'POST', input)
+        await reload()
+    }, [reload])
+
+    const archiveGoal = useCallback(async (id: string) => {
+        await call(`/api/goals/${id}`, 'DELETE')
+        await reload()
+    }, [reload])
+
+    /** Moves a manual goal, showing it at once and putting it back if the save fails. */
+    const setGoalProgress = useCallback(async (id: string, current: number) => {
+        let before: number | undefined
+        const put = (goals: Goal[], value: number | undefined) =>
+            value === undefined ? goals : goals.map(g => (g.id === id ? { ...g, current: value } : g))
+        setData(state => {
+            if (!state) return state
+            before = state.goals.find(g => g.id === id)?.current
+            return { ...state, goals: put(state.goals, current) }
+        })
+        try {
+            await call(`/api/goals/${id}/progress`, 'PUT', { current })
+        } catch (err) {
+            setData(state => (state ? { ...state, goals: put(state.goals, before) } : state))
+            toast.error('That didn’t save', { description: err instanceof Error ? err.message : undefined })
+        }
+    }, [])
+
+    return { data, isLoading, error, reload, logHabit, logBlock, saveHabit, archiveHabit, saveBlock, archiveBlock, saveReview, saveGoal, archiveGoal, setGoalProgress }
 }

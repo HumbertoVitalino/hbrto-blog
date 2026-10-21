@@ -3,10 +3,23 @@
 import { useMemo } from 'react'
 import { useHabitTracker } from '@/app/hooks/useHabitTracker'
 import { todayKey, weekDays, weekStartOf } from '@/lib/habitDates'
+import { Segmented } from '@/app/components/layout/Segmented'
 import { TodayView } from './TodayView'
+import { WeekView } from './WeekView'
+import { HabitsView } from './HabitsView'
+
+export type TrackerView = 'today' | 'week' | 'habits'
+
+export const TRACKER_VIEW_TITLE: Record<TrackerView, string> = { today: 'Today', week: 'This week', habits: 'Habits' }
+
+const VIEWS: { value: TrackerView; label: string }[] = [
+    { value: 'today', label: 'Today' },
+    { value: 'week', label: 'Week' },
+    { value: 'habits', label: 'Habits' },
+]
 
 /** The habit tracker inside the admin. Holds the data once so every view of it agrees. */
-export function HabitTracker() {
+export function HabitTracker({ view, onViewChange }: { view: TrackerView; onViewChange: (view: TrackerView) => void }) {
     const today = useMemo(() => todayKey(), [])
     const weekStart = weekStartOf(today)
     const days = useMemo(() => weekDays(weekStart), [weekStart])
@@ -30,5 +43,12 @@ export function HabitTracker() {
         )
     }
 
-    return <TodayView data={tracker.data} tracker={tracker} today={today} days={days} />
+    return (
+        <div className="grid gap-6">
+            <Segmented id="tracker-view" label="Tracker view" options={VIEWS} value={view} onChange={onViewChange} />
+            {view === 'today' && <TodayView data={tracker.data} tracker={tracker} today={today} days={days} />}
+            {view === 'week' && <WeekView data={tracker.data} tracker={tracker} today={today} currentWeek={weekStart} />}
+            {view === 'habits' && <HabitsView data={tracker.data} tracker={tracker} today={today} currentWeek={weekStart} />}
+        </div>
+    )
 }

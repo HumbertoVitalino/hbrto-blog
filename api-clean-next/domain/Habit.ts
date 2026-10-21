@@ -98,3 +98,31 @@ export function isBlockOn(block: Pick<ScheduleBlock, 'weekdays' | 'oneOffDay'>, 
     if (block.oneOffDay) return block.oneOffDay === day
     return block.weekdays?.includes(new Date(`${day}T12:00:00`).getDay()) ?? false
 }
+
+/**
+ * How a goal is measured: by hand (current out of target), by books finished in a year, or by
+ * how many recent weeks a habit was done on every day it was planned.
+ */
+export const GOAL_KINDS = ['manual', 'books', 'habit'] as const
+export type GoalKind = (typeof GOAL_KINDS)[number]
+
+/** How many weeks back a habit goal looks. */
+export const GOAL_HABIT_WEEKS = 8
+
+export interface Goal {
+    id: string
+    title: string
+    kind: GoalKind
+    /** manual and books: how much counts as reached */
+    target: number | null
+    /** manual: stored, moved by hand; books: counted from the library on read */
+    current: number
+    /** manual: what's counted (phases, km) */
+    unit: string | null
+    /** habit: the habit that drives it */
+    habitId: string | null
+    /** books: whose books count */
+    year: number | null
+    position: number
+    createdAt: string
+}
