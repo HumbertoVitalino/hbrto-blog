@@ -50,7 +50,7 @@ export function HabitsView({ data, tracker, today, currentWeek }: { data: Tracke
     }), [data.habits, index, first, today])
 
     return (
-        <div className="grid gap-8">
+        <div className="grid grid-cols-1 gap-8">
             <GoalsSection
                 goals={data.goals}
                 habits={data.habits}
@@ -61,7 +61,7 @@ export function HabitsView({ data, tracker, today, currentWeek }: { data: Tracke
                 onArchive={tracker.archiveGoal}
                 onProgress={tracker.setGoalProgress}
             />
-            <section aria-labelledby="habits-heading" className="grid gap-3">
+            <section aria-labelledby="habits-heading" className="grid grid-cols-1 gap-3">
                 <h2 id="habits-heading" className="text-sm font-semibold">Habits · last 12 weeks</h2>
                 {data.habits.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">No habits yet. Add one from Today.</p>}
                 {cards.map(({ habit, cells, done, due, streak, steady }) => (

@@ -54,7 +54,7 @@ export function TodayView({ data, tracker, today, days }: { data: TrackerData; t
             : `${due.length - doneCount} ${due.length - doneCount === 1 ? 'habit' : 'habits'} left${isToday ? ' today' : ''}`
 
     return (
-        <div className="grid gap-6">
+        <div className="grid grid-cols-1 gap-6">
             <WeekStrip days={days} today={today} selected={selected} scores={scores} onSelect={setSelected} />
 
             <div className="raised-card flex items-center gap-4.5 px-5 py-4.5">

@@ -44,7 +44,7 @@ export function HabitTracker({ view, onViewChange }: { view: TrackerView; onView
     }
 
     return (
-        <div className="grid gap-6">
+        <div className="grid grid-cols-1 gap-6">
             <Segmented id="tracker-view" label="Tracker view" options={VIEWS} value={view} onChange={onViewChange} />
             {view === 'today' && <TodayView data={tracker.data} tracker={tracker} today={today} days={days} />}
             {view === 'week' && <WeekView data={tracker.data} tracker={tracker} today={today} currentWeek={weekStart} />}

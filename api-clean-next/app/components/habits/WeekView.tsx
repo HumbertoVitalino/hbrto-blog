@@ -119,7 +119,7 @@ export function WeekView({ data, tracker, today, currentWeek }: { data: TrackerD
     const delta = view.score !== null && view.lastScore !== null ? Math.round((view.score - view.lastScore) * 100) : null
 
     return (
-        <div className="grid gap-6">
+        <div className="grid grid-cols-1 gap-6">
             <div className="flex items-center justify-between gap-3">
                 <button
                     type="button"
