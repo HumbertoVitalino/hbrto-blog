@@ -137,3 +137,22 @@ export function computeOverviewStats(
         completedTopics: topics.filter(t => t.status === StudyTopicStatus.Completed).length,
     }
 }
+
+/** Focus seconds per topic id. */
+export function secondsByTopic(sessions: StudySessionData[]): Map<string, number> {
+    const totals = new Map<string, number>()
+    for (const s of focusSessions(sessions)) {
+        totals.set(s.topicId, (totals.get(s.topicId) ?? 0) + s.actualSeconds)
+    }
+    return totals
+}
+
+export type ActivityPeriod = 7 | 30 | 90
+
+export const ACTIVITY_PERIODS: ActivityPeriod[] = [7, 30, 90]
+
+/** The shortest period that has any focus in it, so the chart never opens on an empty window. */
+export function defaultActivityPeriod(sessions: StudySessionData[], now = new Date()): ActivityPeriod {
+    const ages = focusSessions(sessions).map(s => (now.getTime() - new Date(s.startedAt).getTime()) / 86_400_000)
+    return ACTIVITY_PERIODS.find(days => ages.some(age => age < days)) ?? 90
+}

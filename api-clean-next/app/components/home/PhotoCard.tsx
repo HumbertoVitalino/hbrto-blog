@@ -1,96 +1,84 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
 import { cn } from '@/lib/utils'
 import type { Photo } from './photos'
 
-// how far the card turns per pixel dragged
-const DEG_PER_PX = 0.6
-// Apple's projection constant: a flick keeps turning a while before it settles
-const DECELERATION = 0.99
-
-/** Where a spin of `velocity` deg/s, released at `angle`, comes to rest. */
-function project(angle: number, velocity: number) {
-    return angle + (velocity / 1000) * DECELERATION / (1 - DECELERATION)
-}
+const EASE_IOS = [0.32, 0.72, 0, 1] as const
+// past this many pixels a press is a drag, not a tap
+const TAP_SLOP = 8
 
 /**
- * A print that turns over to show its caption on the back. Tap (or Enter) flips it; dragging
- * turns it by hand, and on release the spin carries on from the finger's speed to the nearest
- * face, the way a flicked card would.
+ * A loose print. Tap (or Enter) turns it over to the caption on its back; when `draggable`, it
+ * can be picked up and thrown anywhere, carries on a little with the finger's speed and stays
+ * where it lands. `enterDelay` fades it in on mount, for prints laid down one after another.
  */
-export function PhotoCard({ photo, className, priority = false }: { photo: Photo; className?: string; priority?: boolean }) {
-    const inner = useRef<HTMLDivElement>(null)
-    const drag = useRef<{ x: number; from: number; samples: { x: number; t: number }[]; moved: boolean } | null>(null)
-    const [angle, setAngle] = useState(0)
-    const showingBack = Math.round(angle / 180) % 2 !== 0
+export function PhotoCard({
+    photo,
+    className,
+    priority = false,
+    draggable = true,
+    enterDelay,
+}: {
+    photo: Photo
+    className?: string
+    priority?: boolean
+    draggable?: boolean
+    enterDelay?: number
+}) {
+    const reduceMotion = useReducedMotion()
+    const [flipped, setFlipped] = useState(false)
+    const press = useRef<{ x: number; y: number } | null>(null)
+    const moved = useRef(false)
+    const flip = () => setFlipped(f => !f)
 
-    const turnTo = (deg: number) => {
-        // written straight to the element too: a drag that settles back on the same face
-        // doesn't change state, so React alone would leave the card at the dragged angle
-        if (inner.current) {
-            inner.current.style.transition = ''
-            inner.current.style.transform = `rotateY(${deg}deg)`
-        }
-        setAngle(deg)
-    }
-
-    const onPointerDown = (e: React.PointerEvent) => {
-        e.currentTarget.setPointerCapture(e.pointerId)
-        drag.current = { x: e.clientX, from: angle, samples: [{ x: e.clientX, t: e.timeStamp }], moved: false }
-    }
-
-    const onPointerMove = (e: React.PointerEvent) => {
-        const d = drag.current
-        if (!d) return
-        const dx = e.clientX - d.x
-        // a small dead zone keeps a tap from becoming a drag
-        if (!d.moved && Math.abs(dx) < 6) return
-        d.moved = true
-        d.samples.push({ x: e.clientX, t: e.timeStamp })
-        if (d.samples.length > 5) d.samples.shift()
-        // follow the pointer 1:1, no easing while held
-        if (inner.current) {
-            inner.current.style.transition = 'none'
-            inner.current.style.transform = `rotateY(${d.from + dx * DEG_PER_PX}deg)`
-        }
-    }
-
-    const onPointerUp = (e: React.PointerEvent) => {
-        const d = drag.current
-        drag.current = null
-        if (!d) return
-        if (!d.moved) return turnTo(angle + 180)
-        const first = d.samples[0]
-        const last = d.samples[d.samples.length - 1]
-        const velocity = ((last.x - first.x) / Math.max(1, last.t - first.t)) * 1000 * DEG_PER_PX
-        const released = d.from + (e.clientX - d.x) * DEG_PER_PX
-        turnTo(Math.round(project(released, velocity) / 180) * 180)
-    }
-
+    const enters = enterDelay !== undefined
     return (
-        <div
+        <motion.div
             role="button"
             tabIndex={0}
-            aria-pressed={showingBack}
-            aria-label={`${photo.alt}. Show caption`}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={() => { drag.current = null; turnTo(Math.round(angle / 180) * 180) }}
+            aria-pressed={flipped}
+            aria-label={`${photo.alt}. ${flipped ? 'Show photo' : 'Show caption'}`}
+            onPointerDownCapture={e => {
+                press.current = { x: e.clientX, y: e.clientY }
+                moved.current = false
+            }}
+            onPointerMoveCapture={e => {
+                const p = press.current
+                if (p && !moved.current && Math.hypot(e.clientX - p.x, e.clientY - p.y) > TAP_SLOP) moved.current = true
+            }}
+            onPointerUpCapture={() => {
+                if (press.current && !moved.current) flip()
+                press.current = null
+            }}
+            onPointerCancelCapture={() => { press.current = null }}
             onKeyDown={e => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault()
-                    turnTo(angle + 180)
+                    flip()
                 }
             }}
+            drag={draggable}
+            dragTransition={{ bounceStiffness: 400, bounceDamping: 40 }}
+            whileTap={{ scale: 1.06 }}
+            whileDrag={{ scale: 1.1, zIndex: 40 }}
+            initial={enters ? { opacity: 0, y: 20 } : false}
+            animate={{ opacity: 1, y: 0 }}
+            transition={reduceMotion ? { duration: 0 } : { duration: 0.7, ease: EASE_IOS, delay: enterDelay ?? 0 }}
             className={cn(
-                'photo-card relative aspect-4/5 cursor-grab rounded-xl outline-none active:cursor-grabbing focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background sm:rounded-2xl',
+                'photo-card relative aspect-4/5 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background sm:rounded-2xl',
+                draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer',
                 className,
             )}
         >
-            <div ref={inner} className="photo-card-inner rounded-[inherit]" style={{ transform: `rotateY(${angle}deg)` }}>
-                <div className="photo-face bg-muted" aria-hidden={showingBack}>
+            <motion.div
+                className="photo-card-inner rounded-[inherit]"
+                initial={false}
+                animate={{ rotateY: flipped ? 180 : 0 }}
+                transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 220, damping: 24 }}
+            >
+                <div className="photo-face bg-muted" aria-hidden={flipped}>
                     <img
                         src={photo.src}
                         alt={photo.alt}
@@ -100,13 +88,13 @@ export function PhotoCard({ photo, className, priority = false }: { photo: Photo
                         className="pointer-events-none absolute inset-0 size-full object-cover"
                     />
                 </div>
-                <div className="photo-face photo-paper flex items-center" aria-hidden={!showingBack}>
+                <div className="photo-face photo-paper flex items-center" aria-hidden={!flipped}>
                     <p className="relative px-6 font-mono uppercase leading-tight">
                         <span className="block text-sm">{photo.file}</span>
                         <span className="block text-xs">{photo.caption}</span>
                     </p>
                 </div>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     )
 }

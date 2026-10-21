@@ -22,7 +22,7 @@ export default function AboutPage() {
             <div className="grid grid-cols-1 gap-y-16 pt-14 sm:pt-22 lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:gap-y-12">
                 <div className="lg:pl-20">
                     <div className="max-w-76 px-2.5 lg:max-w-none">
-                        <PhotoCard photo={ABOUT_PHOTO} priority className="rotate-3" />
+                        <PhotoCard photo={ABOUT_PHOTO} priority draggable={false} className="rotate-3" />
                     </div>
                 </div>
 
