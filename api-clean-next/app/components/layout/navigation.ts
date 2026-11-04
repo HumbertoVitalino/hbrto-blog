@@ -6,6 +6,7 @@ export interface NavItem {
 // Home has no tab of its own: the avatar in the header goes there, as on b-r.io.
 export const NAV_ITEMS: NavItem[] = [
   { href: '/about', label: 'About' },
+  { href: '/projects', label: 'Projects' },
   { href: '/library', label: 'Library' },
   { href: '/notes', label: 'Notes' },
   { href: '/music', label: 'Music' },
