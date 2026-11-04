@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { PageContainer } from '@/app/components/layout/PageHeader'
 import { FadeIn } from '@/app/components/motion/FadeIn'
 import { PhotoCard } from '@/app/components/home/PhotoCard'
@@ -47,7 +48,7 @@ export default function AboutPage() {
                             On the side I started <Ext href="https://www.tegy.com.br">Tegy</Ext>, a pricing engine I
                             designed from the architecture up; it’s on pause for now. I’m also doing a postgrad in
                             Software Architecture at FIAP. My first project there is{' '}
-                            <Ext href="https://github.com/humbertovitalino/fiap-postgraduated-workshop">a backend for a car repair shop</Ext>{' '}
+                            <Link href="/projects/fiap-workshop" className={inline}>a backend for a car repair shop</Link>{' '}
                             in .NET 10 with Clean Architecture and DDD, a full service-order state machine, and 97%
                             test coverage.
                         </p>
