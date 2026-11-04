@@ -549,3 +549,149 @@
   --area-people: #c98500;
   --area-rest: #d55181;
 }
+
+/* ── Product shots (projects): screenshots dressed as a browser window and a phone, on a
+   soft stage. The stage crops the devices at its bottom edge, the way product pages do. ── */
+:root {
+  --stage-fill: linear-gradient(180deg, #f4f4f5, #ececee);
+  --window-shadow: 0 1px 1px rgb(0 0 0 / 0.04), 0 12px 24px -6px rgb(0 0 0 / 0.1), 0 40px 80px -20px rgb(0 0 0 / 0.22);
+  /* the frontend's own header colours, so a phone's status bar runs into the app */
+  --phone-status: #f7f8f5;
+}
+
+.dark {
+  --stage-fill: linear-gradient(180deg, #1c1c1e, #111112);
+  --window-shadow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 40px 80px -20px rgb(0 0 0 / 0.8);
+  --phone-status: #222426;
+}
+
+.product-stage {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  background: var(--stage-fill);
+}
+
+.product-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px var(--border);
+  pointer-events: none;
+}
+
+@media (min-width: 640px) {
+  .product-stage {
+    border-radius: 1.75rem;
+  }
+}
+
+.device-window {
+  overflow: hidden;
+  border-radius: 0.875rem;
+  background: var(--card);
+  box-shadow: var(--window-shadow);
+}
+
+/* a window that runs off the bottom of its stage */
+.device-window-flush {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* position comes from the component (relative, or absolute on a stage) */
+.device-phone {
+  border-radius: 1.6rem;
+  padding: 0.35rem;
+  background: #0b0b0c;
+  box-shadow: inset 0 0 0 1.5px #2a2a2c, 0 30px 60px -15px rgb(0 0 0 / 0.45), 0 12px 24px -8px rgb(0 0 0 / 0.25);
+}
+
+/* the island */
+.device-phone::before {
+  content: "";
+  position: absolute;
+  top: 0.6rem;
+  left: 50%;
+  z-index: 1;
+  width: 28%;
+  height: 0.7rem;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: #0b0b0c;
+}
+
+.device-phone-screen {
+  aspect-ratio: 390 / 844;
+  overflow: hidden;
+  border-radius: 1.3rem;
+  padding-top: 1.4rem;
+  background: var(--phone-status);
+}
+
+@media (min-width: 640px) {
+  .device-phone {
+    border-radius: 2.6rem;
+    padding: 0.55rem;
+  }
+
+  .device-phone::before {
+    top: 1.05rem;
+    height: 1.15rem;
+  }
+
+  .device-phone-screen {
+    border-radius: 2.05rem;
+    padding-top: 2.4rem;
+  }
+}
+
+/* hovering a project's card lifts its devices apart */
+.product-stage .device-window,
+.product-stage .device-phone {
+  transition: transform 0.6s var(--ease-ios);
+}
+
+@media (hover: hover) {
+  .product-card:hover .device-window {
+    transform: translateY(-6px);
+  }
+
+  .product-card:hover .device-phone {
+    transform: translateY(-14px) rotate(-1deg);
+  }
+}
+
+/* a case's hero settles flat as it scrolls into view; browsers without scroll timelines
+   (and reduced motion) just show it flat */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .product-settle .device-window {
+      transform-origin: 50% 0;
+      animation: product-settle linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 45%;
+    }
+
+    .product-settle .device-phone {
+      animation: product-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 50%;
+    }
+  }
+}
+
+@keyframes product-settle {
+  from {
+    transform: perspective(1600px) rotateX(16deg) scale(0.94);
+  }
+}
+
+@keyframes product-rise {
+  from {
+    transform: translateY(18%);
+    opacity: 0.4;
+  }
+}
